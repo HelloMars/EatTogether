@@ -26,13 +26,19 @@ var checkSignature = function(signature, timestamp, nonce, echostr, cb) {
 
 // 接收普通消息
 var receiveMessage = function(msg, cb) {
+  var content;
+  if (msg.xml.MsgType == 'voice') {
+    content = msg.xml.Recognition;
+  } else {
+    content = msg.xml.Content + '。用轮子真是太开心了！';
+  }
   var result = {
     xml: {
       ToUserName: msg.xml.FromUserName[0],
       FromUserName: '' + msg.xml.ToUserName + '',
       CreateTime: new Date().getTime(),
       MsgType: 'text',
-      Content: '用轮子真是太开心了！'
+      Content: content
     }
   }
   cb(null, result);
