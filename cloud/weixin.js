@@ -32,7 +32,7 @@ var receiveMessage = function(msg, cb) {
       FromUserName: '' + msg.xml.ToUserName + '',
       CreateTime: new Date().getTime(),
       MsgType: 'text',
-      Content: '你好，你发的内容是「' + msg.xml.Content + '」。'
+      Content: '用轮子真是太开心了！'
     }
   }
   cb(null, result);
