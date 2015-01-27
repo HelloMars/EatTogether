@@ -4,7 +4,6 @@
   "description": "饭团",
   "private": true,
   "dependencies": {
-    "xml2js": "^0.4.4",
-    "jssha": "^1.5.0"
+    "xml2js": "^0.4.4"
   }
 }

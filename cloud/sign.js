@@ -23,7 +23,7 @@ var raw = function (args) {
 };
 
 /**
-* @synopsis 签名算法 
+* @synopsis 签名算法
 *
 * @param jsapi_ticket 用于签名的 jsapi_ticket
 * @param url 用于签名的 url ，注意必须与调用 JSAPI 时的页面 URL 完全一致
@@ -38,7 +38,7 @@ var sign = function (jsapi_ticket, url) {
     url: url
   };
   var string = raw(ret);
-      jsSHA = require('jssha');
+      jsSHA = require('cloud/sha.js');
       shaObj = new jsSHA(string, 'TEXT');
   ret.signature = shaObj.getHash('SHA-1', 'HEX');
 
