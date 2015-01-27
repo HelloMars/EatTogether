@@ -2,6 +2,7 @@ var express = require('express');
 var xml2js = require('xml2js');
 var weixin = require('cloud/weixin.js');
 var utils = require('express/node_modules/connect/lib/utils');
+var sign = require("cloud/sign.js");
 
 // 解析微信的 xml 数据
 var xmlBodyParser = function (req, res, next) {
@@ -21,7 +22,7 @@ var xmlBodyParser = function (req, res, next) {
   var buf = '';
   req.setEncoding('utf8');
   req.on('data', function(chunk){ buf += chunk });
-  req.on('end', function(){  
+  req.on('end', function(){
     xml2js.parseString(buf, function(err, json) {
       if (err) {
           err.status = 400;
@@ -45,6 +46,10 @@ app.use(xmlBodyParser);
 // 使用 Express 路由 API 服务 /hello 的 HTTP GET 请求
 app.get('/hello', function(req, res) {
   res.render('hello', { message: 'Congrats, you just set up your app!' });
+});
+
+app.get('/wxsign', function(req, res) {
+  res.render('hello', { message: sign('jsapi_ticket', 'http://eat.avosapps.com/') });
 });
 
 app.get('/weixin', function(req, res) {

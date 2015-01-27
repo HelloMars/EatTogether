@@ -1,9 +1,10 @@
 {
-  "name": "cloud-code-weixin",
+  "name": "eat_together",
   "version": "0.0.1",
-  "description": "云代码微信接入示例",
+  "description": "饭团",
   "private": true,
   "dependencies": {
-    "xml2js": "^0.4.4"
+    "xml2js": "^0.4.4",
+    "jssha": "^1.5.0"
   }
 }
