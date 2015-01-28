@@ -3,6 +3,7 @@ var xml2js = require('xml2js');
 var weixin = require('cloud/weixin.js');
 var utils = require('express/node_modules/connect/lib/utils');
 var sign = require("cloud/sign.js");
+var https = require('https');
 
 // 解析微信的 xml 数据
 var xmlBodyParser = function (req, res, next) {
@@ -35,6 +36,56 @@ var xmlBodyParser = function (req, res, next) {
   });
 };
 
+var getAccessToken = function(callback) {
+  var options = {
+    host: 'api.weixin.qq.com',
+    port: 443,
+    path: '/cgi-bin/token?grant_type=client_credential&appid=wx215f75c4627af14a&secret=c4dfb380644d4fb5266468da939935d5',
+    method: 'GET'
+  };
+  var req = https.request(options, function(res) {
+    var output = '';
+    res.setEncoding('utf8');
+
+    res.on('data', function (chunk) {
+      output += chunk;
+    });
+
+    res.on('end', function() {
+      console.log(JSON.parse(output));
+      var access_token = JSON.parse(output).access_token;
+      callback(access_token);
+    });
+  });
+  req.end();
+};
+
+var getJsapiTicket = function(callback) {
+  getAccessToken(function(access_token) {
+    var options = {
+      host: 'api.weixin.qq.com',
+      port: 443,
+      path: '/cgi-bin/ticket/getticket?access_token=' + access_token + '&type=jsapi',
+      method: 'GET'
+    };
+    var req = https.request(options, function(res) {
+      var output = '';
+      res.setEncoding('utf8');
+
+      res.on('data', function (chunk) {
+        output += chunk;
+      });
+
+      res.on('end', function() {
+        console.log(JSON.parse(output));
+        var jsapi_ticket = JSON.parse(output).ticket;
+        callback(jsapi_ticket);
+      });
+    });
+    req.end();
+  });
+};
+
 var app = express();
 
 // App 全局配置
@@ -49,8 +100,10 @@ app.get('/hello', function(req, res) {
 });
 
 app.get('/wxsign', function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.jsonp(sign('jsapi_ticket', 'http://eat.avosapps.com/'));
+  getJsapiTicket(function(jsapi_ticket) {
+    res.setHeader('Content-Type', 'application/json');
+    res.jsonp(sign(jsapi_ticket, 'http://eat.avosapps.com/'));
+  });
 });
 
 app.get('/weixin', function(req, res) {
@@ -61,7 +114,7 @@ app.get('/weixin', function(req, res) {
     }
     return res.send(data);
   });
-})
+});
 
 app.post('/weixin', function(req, res) {
   console.log('weixin req:', req.body);
@@ -75,7 +128,7 @@ app.post('/weixin', function(req, res) {
     res.set('Content-Type', 'text/xml');
     return res.send(xml);
   });
-})
+});
 
 // 最后，必须有这行代码来使 express 响应 HTTP 请求
 app.listen();

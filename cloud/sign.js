@@ -10,7 +10,7 @@ var createTimestamp = function () {
 
 var raw = function (args) {
   var keys = Object.keys(args);
-  keys = keys.sort()
+  keys = keys.sort();
   var newArgs = {};
   keys.forEach(function (key) {
     newArgs[key.toLowerCase()] = args[key];
@@ -30,7 +30,7 @@ var raw = function (args) {
 * @param jsapi_ticket 用于签名的 jsapi_ticket
 * @param url 用于签名的 url ，注意必须与调用 JSAPI 时的页面 URL 完全一致
 *
-* @returns
+* @returns sign
 */
 var sign = function (jsapi_ticket, url) {
   var ret = {

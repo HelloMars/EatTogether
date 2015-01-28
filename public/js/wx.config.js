@@ -1,6 +1,6 @@
 var wxconfig = {
     debug: false,
-    appId: 'wxf8b4f85f3a794e77',
+    appId: 'wx215f75c4627af14a',
     timestamp: null,
     nonceStr: null,
     signature: null,
