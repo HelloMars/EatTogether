@@ -50,7 +50,7 @@ app.get('/hello', function(req, res) {
 
 app.get('/wxsign', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(sign('jsapi_ticket', 'http://eat.avosapps.com/')));
+  res.jsonp(sign('jsapi_ticket', 'http://eat.avosapps.com/'));
 });
 
 app.get('/weixin', function(req, res) {

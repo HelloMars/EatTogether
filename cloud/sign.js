@@ -1,3 +1,5 @@
+var jsSHA = require('cloud/sha.js');
+
 var createNonceStr = function () {
   return Math.random().toString(36).substr(2, 15);
 };
@@ -38,8 +40,7 @@ var sign = function (jsapi_ticket, url) {
     url: url
   };
   var string = raw(ret);
-      jsSHA = require('cloud/sha.js');
-      shaObj = new jsSHA(string, 'TEXT');
+  var shaObj = new jsSHA(string, 'TEXT');
   ret.signature = shaObj.getHash('SHA-1', 'HEX');
 
   return ret;
