@@ -1,5 +1,5 @@
 var wxconfig = {
-    debug: false,
+    debug: true,
     appId: 'wx215f75c4627af14a',
     timestamp: null,
     nonceStr: null,
