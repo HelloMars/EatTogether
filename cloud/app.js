@@ -36,13 +36,10 @@ var xmlBodyParser = function (req, res, next) {
   });
 };
 
-var getAccessToken = function(callback) {
-  var options = {
-    host: 'api.weixin.qq.com',
-    port: 443,
-    path: '/cgi-bin/token?grant_type=client_credential&appid=wx5296f7011ca92045&secret=6045d3cf71c2eba41faa0461d88b4f7d',
-    method: 'GET'
-  };
+var APPID = 'wx5296f7011ca92045';
+var APPSECRET = '6045d3cf71c2eba41faa0461d88b4f7d';
+
+var httpsget = function(options, callback) {
   var req = https.request(options, function(res) {
     var output = '';
     res.setEncoding('utf8');
@@ -53,11 +50,22 @@ var getAccessToken = function(callback) {
 
     res.on('end', function() {
       console.log(JSON.parse(output));
-      var access_token = JSON.parse(output).access_token;
-      callback(access_token);
+      callback(JSON.parse(output));
     });
   });
   req.end();
+};
+
+var getAccessToken = function(callback) {
+  var options = {
+    host: 'api.weixin.qq.com',
+    port: 443,
+    path: '/cgi-bin/token?grant_type=client_credential&appid='+APPID+'&secret='+APPSECRET,
+    method: 'GET'
+  };
+  httpsget(options, function(json) {
+    callback(json.access_token);
+  });
 };
 
 var getJsapiTicket = function(callback) {
@@ -68,21 +76,9 @@ var getJsapiTicket = function(callback) {
       path: '/cgi-bin/ticket/getticket?access_token=' + access_token + '&type=jsapi',
       method: 'GET'
     };
-    var req = https.request(options, function(res) {
-      var output = '';
-      res.setEncoding('utf8');
-
-      res.on('data', function (chunk) {
-        output += chunk;
-      });
-
-      res.on('end', function() {
-        console.log(JSON.parse(output));
-        var jsapi_ticket = JSON.parse(output).ticket;
-        callback(jsapi_ticket);
-      });
+    httpsget(options, function(json) {
+      callback(json.jsapi_ticket);
     });
-    req.end();
   });
 };
 
@@ -102,7 +98,9 @@ app.get('/hello', function(req, res) {
 app.get('/wxsign', function(req, res) {
   getJsapiTicket(function(jsapi_ticket) {
     res.setHeader('Content-Type', 'application/json');
-    res.jsonp(sign(jsapi_ticket, 'http://eat.avosapps.com/'));
+    var ret = sign(jsapi_ticket, req.query.url);
+    ret.appId = APPID;
+    res.jsonp(ret);
   });
 });
 
@@ -124,7 +122,7 @@ app.post('/weixin', function(req, res) {
     }
     var builder = new xml2js.Builder();
     var xml = builder.buildObject(data);
-    console.log('res:', data)
+    console.log('res:', data);
     res.set('Content-Type', 'text/xml');
     return res.send(xml);
   });

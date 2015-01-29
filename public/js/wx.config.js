@@ -1,6 +1,6 @@
 var wxconfig = {
     debug: true,
-    appId: 'wx5296f7011ca92045',
+    appId: null,
     timestamp: null,
     nonceStr: null,
     signature: null,
@@ -67,6 +67,7 @@ var wxconfig = {
 };
 
 function callback(json) {
+    wxconfig.appId = json.appId;
     wxconfig.timestamp = json.timestamp;
     wxconfig.nonceStr = json.nonceStr;
     wxconfig.signature = json.signature;
@@ -78,6 +79,6 @@ function callback(json) {
 
 window.onload = function(){
     var script = document.createElement('script');
-    script.src = "http://eat.avosapps.com/wxsign?callback=callback";
+    script.src = "http://eat.avosapps.com/wxsign?callback=callback&url="+location.href.split('#')[0];
     document.body.appendChild(script);
 };
