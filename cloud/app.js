@@ -40,7 +40,7 @@ var getAccessToken = function(callback) {
   var options = {
     host: 'api.weixin.qq.com',
     port: 443,
-    path: '/cgi-bin/token?grant_type=client_credential&appid=wx215f75c4627af14a&secret=c4dfb380644d4fb5266468da939935d5',
+    path: '/cgi-bin/token?grant_type=client_credential&appid=wx5296f7011ca92045&secret=6045d3cf71c2eba41faa0461d88b4f7d',
     method: 'GET'
   };
   var req = https.request(options, function(res) {
