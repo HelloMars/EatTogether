@@ -8,7 +8,7 @@ var APPID = 'wx215f75c4627af14a';
 var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 
 var API = new WechatAPI(APPID, APPSECRET);
-var OAUTH = new WechatOAuth('YOUR APPID', 'YOUR SECRET');
+var OAUTH = new WechatOAuth(APPID, APPSECRET);
 var MENU = {
     "button":[
         {
@@ -30,7 +30,7 @@ var MENU = {
 
 exports.Init = function() {
     API.createMenu(MENU, function (err, res) {
-        console.log("createMenu" + res);
+        console.log("createMenu" + JSON.stringify(res));
     });
 };
 

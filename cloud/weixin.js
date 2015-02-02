@@ -30,19 +30,21 @@ var receiveMessage = function(msg, cb) {
   if (msg.xml.MsgType == 'voice') {
     content = msg.xml.Recognition;
   } else if (msg.xml.MsgType == 'event') {
-    switch (msg.xml.Event) {
+    var event = msg.xml.Event + '';
+    var eventkey = msg.xml.EventKey + '';
+    switch (event) {
       case 'CLICK':
-        switch (msg.xml.EventKey) {
+        switch (eventkey) {
           case 'V001_UP':
               content = '跪谢赞！';
             break;
-          default: console.log('No support for EventKey: ' + msg.xml.EventKey);
+          default: console.log('No support for EventKey: ' + eventkey);
         }
         break;
       case 'VIEW':
-        console.log('Redirect to: ' + msg.xml.EventKey);
+        console.log('Redirect to: ' + eventkey);
         break;
-      default: console.log('No support for Event: ' + msg.xml.Event);
+      default: console.log('No support for Event: ' + event);
     }
   } else {
     content = msg.xml.Content + '。用轮子真是太开心了！';
