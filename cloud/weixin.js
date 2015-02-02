@@ -8,13 +8,13 @@ exports.exec = function(params, cb) {
   } else {
     receiveMessage(params, cb)
   }
-}
+};
 
 // 验证签名
 var checkSignature = function(signature, timestamp, nonce, echostr, cb) {
   var oriStr = [config.token, timestamp, nonce].sort().join('')
   var code = crypto.createHash('sha1').update(oriStr).digest('hex');
-  debug('code:', code)
+  debug('code:', code);
   if (code == signature) {
     cb(null, echostr);
   } else {
@@ -22,13 +22,28 @@ var checkSignature = function(signature, timestamp, nonce, echostr, cb) {
     err.code = 401;
     cb(err);
   }
-}
+};
 
 // 接收普通消息
 var receiveMessage = function(msg, cb) {
   var content;
   if (msg.xml.MsgType == 'voice') {
     content = msg.xml.Recognition;
+  } else if (msg.xml.MsgType == 'event') {
+    switch (msg.xml.Event) {
+      case 'CLICK':
+        switch (msg.xml.EventKey) {
+          case 'V001_UP':
+              content = '跪谢赞！';
+            break;
+          default: console.log('No support for EventKey: ' + msg.xml.EventKey);
+        }
+        break;
+      case 'VIEW':
+        console.log('Redirect to: ' + msg.xml.EventKey);
+        break;
+      default: console.log('No support for Event: ' + msg.xml.Event);
+    }
   } else {
     content = msg.xml.Content + '。用轮子真是太开心了！';
   }
@@ -40,6 +55,6 @@ var receiveMessage = function(msg, cb) {
       MsgType: 'text',
       Content: content
     }
-  }
+  };
   cb(null, result);
-}
+};

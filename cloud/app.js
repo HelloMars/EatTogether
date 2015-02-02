@@ -36,8 +36,8 @@ var xmlBodyParser = function (req, res, next) {
   });
 };
 
-var APPID = 'wx5296f7011ca92045';
-var APPSECRET = '6045d3cf71c2eba41faa0461d88b4f7d';
+var APPID = 'wx215f75c4627af14a';
+var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 
 var httpsget = function(options, callback) {
   var req = https.request(options, function(res) {
@@ -100,6 +100,14 @@ app.get('/wxsign', function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     var ret = sign(jsapi_ticket, req.query.url);
     ret.appId = APPID;
+    res.jsonp(ret);
+  });
+});
+
+app.get('/auth', function(req, res) {
+  utils.getOpenId(req.query.code, function(openid, accessToken){
+    res.setHeader('Content-Type', 'application/json');
+    ret.openid = openid;
     res.jsonp(ret);
   });
 });

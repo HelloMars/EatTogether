@@ -4,6 +4,8 @@
   "description": "饭团",
   "private": true,
   "dependencies": {
-    "xml2js": "^0.4.4"
+    "xml2js": "^0.4.4",
+    "wechat-api": "*",
+    "wechat-oauth": "*"
   }
 }
