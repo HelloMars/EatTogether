@@ -42,3 +42,21 @@ exports.getOpenId = function(code, callback) {
         callback(openid, accessToken);
     });
 };
+
+exports.SignUp = function(username, password) {
+    if (username === undefined || password === undefined) {
+        console.log("Error");
+        return;
+    }
+    var user = new AV.User();
+    user.set('username', username);
+    user.set('password', password);
+    user.signUp(null, {
+        success: function(user) {
+            console.log("注册成功");
+        },
+        error: function(user, error) {
+            console.log("注册失败");
+        }
+    });
+};
