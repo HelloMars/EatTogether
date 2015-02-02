@@ -110,6 +110,7 @@ app.get('/wxsign', function(req, res) {
 app.get('/auth', function(req, res) {
   utils.getOpenId(req.query.code, function(openid, accessToken){
     res.setHeader('Content-Type', 'application/json');
+    var ret = {};
     ret.openid = openid;
     res.jsonp(ret);
   });
