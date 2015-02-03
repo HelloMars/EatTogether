@@ -2,8 +2,6 @@ var express = require('express');
 var xml2js = require('xml2js');
 var weixin = require('cloud/weixin.js');
 var exputils = require('express/node_modules/connect/lib/utils');
-var sign = require("cloud/sign.js");
-var https = require('https');
 var utils = require('cloud/utils');
 
 // 解析微信的 xml 数据
@@ -37,52 +35,6 @@ var xmlBodyParser = function (req, res, next) {
   });
 };
 
-var APPID = 'wx215f75c4627af14a';
-var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
-
-var httpsget = function(options, callback) {
-  var req = https.request(options, function(res) {
-    var output = '';
-    res.setEncoding('utf8');
-
-    res.on('data', function (chunk) {
-      output += chunk;
-    });
-
-    res.on('end', function() {
-      console.log(JSON.parse(output));
-      callback(JSON.parse(output));
-    });
-  });
-  req.end();
-};
-
-var getAccessToken = function(callback) {
-  var options = {
-    host: 'api.weixin.qq.com',
-    port: 443,
-    path: '/cgi-bin/token?grant_type=client_credential&appid='+APPID+'&secret='+APPSECRET,
-    method: 'GET'
-  };
-  httpsget(options, function(json) {
-    callback(json.access_token);
-  });
-};
-
-var getJsapiTicket = function(callback) {
-  getAccessToken(function(access_token) {
-    var options = {
-      host: 'api.weixin.qq.com',
-      port: 443,
-      path: '/cgi-bin/ticket/getticket?access_token=' + access_token + '&type=jsapi',
-      method: 'GET'
-    };
-    httpsget(options, function(json) {
-      callback(json.jsapi_ticket);
-    });
-  });
-};
-
 var app = express();
 
 // App 全局配置
@@ -98,22 +50,10 @@ app.get('/hello', function(req, res) {
   res.render('hello', { message: 'Congrats, you just set up your app!' });
 });
 
-app.get('/wxsign', function(req, res) {
-  getJsapiTicket(function(jsapi_ticket) {
-    res.setHeader('Content-Type', 'application/json');
-    var ret = sign(jsapi_ticket, req.query.url);
-    ret.appId = APPID;
-    res.jsonp(ret);
-  });
-});
-
-app.get('/auth', function(req, res) {
+app.get('/myet', function(req, res) {
   utils.getOpenId(req.query.code, function(openid, accessToken){
     utils.SignUp(openid, 'pwd:'+openid);
-    res.setHeader('Content-Type', 'application/json');
-    var ret = {};
-    ret.openid = openid;
-    res.jsonp(ret);
+    res.render('hello', { message: 'Congrats, you just set up your app!' });
   });
 });
 

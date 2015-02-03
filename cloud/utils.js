@@ -14,7 +14,7 @@ var MENU = {
         {
             "type":"view",
             "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/auth', '0', 'snsapi_base')
+            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/myet', '0', 'snsapi_base')
         },
         {
             "name":"菜单",

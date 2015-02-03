@@ -1,17 +1,16 @@
-# 使用云代码接入微信的示例
+# Eat Together
 
-使用 [LeanCloud](http://leancloud.cn) [云代码](https://leancloud.cn/docs/cloud_code_guide.html) 功能可以方便的拥有一个属于你自己的服务端。可以将本应用部署在云代码上，简单快速的接入微信。
+使用 [LeanCloud](http://leancloud.cn) [云代码](https://leancloud.cn/docs/cloud_code_guide.html) 做后端
+使用 [Webot](https://github.com/node-webot) 做微信接口中间件
 
-## 了解微信「开发者中心」
-
-在尝试该项目之前，你需要了解微信 [开发者中心](http://mp.weixin.qq.com/wiki/17/2d4265491f12608cd170a95559800f2d.html)
+参考 [微信开发者中心](http://mp.weixin.qq.com/wiki/17/2d4265491f12608cd170a95559800f2d.html)
 
 ## 安装
 
 ### 下载代码：
 
 ```
-git clone git@github.com:leancloud/cloud-code-weixin.git
+git clone git@github.com:zhumeng1989/EatTogether.git
 ```
 
 ### 修改微信相关的配置 `cloud/config/weixin.js`
@@ -64,6 +63,12 @@ avoscloud deploy && avoslcoud publish
 
 ## 开发相关
 
+Sigle Page App 依附于微信公众号的主要入口为菜单栏的"我的饭团"链接
+
+### API接口
+
+
+
 ### 文件说明
 
 * `cloud/app.js`: 微信相关请求路由。
@@ -72,6 +77,8 @@ avoscloud deploy && avoslcoud publish
 * `cloud/weixin.js`: 微信相关签名验证等逻辑。
   * `checkSignature`: 验证签名。
   * `receiveMessage`: 接受普通消息，并回复。
-
-
+* `cloud/utils.js`: 通过wechat中间件与微信接口对接。
+    * `Init`: 创建公众号菜单
+    * `getOpenId`: 获得用户唯一openId
+    * `SignUp`: 在LeanCloud注册用户
 
