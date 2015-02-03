@@ -1,10 +1,19 @@
 body {background-color: #636465;}
 
-.ball{
+.tuan{
   float: left;
 }
 
-.ball div{
+.tuan div{
   border-radius: 50%;
+  background: #FF8040;
+  text-align: center;
+  text-shadow: 0 0 3px #000000;
+  margin: 0 auto;
   transition: width 1s, height 1s, background 1s;
+}
+
+.tuan a{
+  color: #000000;
+  text-decoration: none;
 }

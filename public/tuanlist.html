@@ -1,0 +1,10 @@
+<div>
+    <div ng-repeat="data in list" class="tuan"
+         ng-style={{data.div1}}>
+        <a href="#/tuan/{{data.id}}">
+            <div ng-style={{data.div2}} ng-click="click(data.name)">
+                {{data.name}}
+            </div>
+        </a>
+    </div>
+</div>

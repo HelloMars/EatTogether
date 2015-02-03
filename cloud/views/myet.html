@@ -3,23 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>EatTogether</title>
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
   <link rel="stylesheet" type="text/css" href="./css/eat.css">
+  <script src="https://leancloud.cn/scripts/lib/av-0.4.7.min.js"></script>
+  <script src="./lib/angular.min.js"></script>
+  <script src="./lib/angular-route.min.js"></script>
+  <script src="./lib/zepto.min.js"></script>
+  <script src="./js/eat.js"></script>
+  <script src="./js/controllers.js"></script>
 </head>
-<body ng-controller="TuanListCtrl">
+<body>
 
-<div>
-  <div ng-repeat="data in list" class="ball"
-       ng-style={{data.div1}}>
-    <div ng-style={{data.div2}}>
-      {{data.name}}
-    </div>
-  </div>
-</div>
+<div ng-view></div>
 
-<script src="https://leancloud.cn/scripts/lib/av-0.4.7.min.js"></script>
-<script src="./lib/angular.min.js"></script>
-<script src="./lib/zepto.min.js"></script>
-<script src="./js/eat.js"></script>
 </body>
 </html>
