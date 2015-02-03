@@ -40,6 +40,7 @@ var app = express();
 // App 全局配置
 app.set('views','cloud/views');   // 设置模板目录
 app.set('view engine', 'ejs');    // 设置 template 引擎
+app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser());    // 读取请求 body 的中间件
 app.use(xmlBodyParser);
 
@@ -53,7 +54,7 @@ app.get('/hello', function(req, res) {
 app.get('/myet', function(req, res) {
   utils.getOpenId(req.query.code, function(openid, accessToken){
     utils.SignUp(openid, 'pwd:'+openid);
-    res.render('hello', { message: 'Congrats, you just set up your app!' });
+    res.render('myet.html');
   });
 });
 
