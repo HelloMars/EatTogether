@@ -1,0 +1,10 @@
+body {background-color: #636465;}
+
+.ball{
+  float: left;
+}
+
+.ball div{
+  border-radius: 50%;
+  transition: width 1s, height 1s, background 1s;
+}

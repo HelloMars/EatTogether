@@ -35,6 +35,7 @@ exports.Init = function() {
 };
 
 exports.getOpenId = function(code, callback) {
+    if (!code) return;
     OAUTH.getAccessToken(code, function (err, result) {
         console.log("getOpenId code: " + code);
         var accessToken = result.data.access_token;

@@ -54,8 +54,8 @@ app.get('/hello', function(req, res) {
 app.get('/myet', function(req, res) {
   utils.getOpenId(req.query.code, function(openid, accessToken){
     utils.SignUp(openid, 'pwd:'+openid);
-    res.render('myet.html');
   });
+  res.render('myet.html');
 });
 
 app.get('/weixin', function(req, res) {
