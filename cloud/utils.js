@@ -35,7 +35,6 @@ exports.Init = function() {
 };
 
 exports.getOpenId = function(code, callback) {
-    if (!code) return;
     OAUTH.getAccessToken(code, function (err, result) {
         console.log("getOpenId code: " + code);
         var accessToken = result.data.access_token;
@@ -44,20 +43,14 @@ exports.getOpenId = function(code, callback) {
     });
 };
 
-exports.SignUp = function(username, password) {
+exports.SignUp = function(username, password, functions) {
     if (username === undefined || password === undefined) {
         console.log("Error");
+        functions.error(username, "undefined");
         return;
     }
     var user = new AV.User();
     user.set('username', username);
     user.set('password', password);
-    user.signUp(null, {
-        success: function(user) {
-            console.log("注册成功");
-        },
-        error: function(user, error) {
-            console.log("注册失败");
-        }
-    });
+    user.signUp(null, functions);
 };

@@ -2,6 +2,7 @@ var express = require('express');
 var xml2js = require('xml2js');
 var weixin = require('cloud/weixin.js');
 var exputils = require('express/node_modules/connect/lib/utils');
+var avosExpressCookieSession = require('avos-express-cookie-session');
 var utils = require('cloud/utils');
 
 // 解析微信的 xml 数据
@@ -42,7 +43,12 @@ app.set('views','cloud/views');   // 设置模板目录
 app.set('view engine', 'ejs');    // 设置 template 引擎
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser());    // 读取请求 body 的中间件
-app.use(xmlBodyParser);
+app.use(xmlBodyParser)
+// 启用 cookieParser
+app.use(express.cookieParser('__eat_together__'));
+// 使用 avos-express-cookie-session 记录登录信息到 cookie
+app.use(avosExpressCookieSession({ cookie: { maxAge: 3600000 }}));
+
 
 utils.Init();
 
@@ -52,10 +58,35 @@ app.get('/hello', function(req, res) {
 });
 
 app.get('/myet', function(req, res) {
-  utils.getOpenId(req.query.code, function(openid, accessToken){
-    utils.SignUp(openid, 'pwd:'+openid);
-  });
-  res.render('myet.html');
+  var code = req.query.code;
+  if (!code) {
+    res.render('hello', { message: 'Error!' });
+  } else if (code == 888) {
+    // 使用测试用户
+    AV.User.logIn('testid:888', 'pwd:888').then(function() {
+      //登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
+      //跳转到profile页面。
+      console.log('logIn successfully: %j', req.AV.user);
+      res.render('myet.html');
+    },function(error) {
+      //登录失败，跳转到登录页面
+      res.render('hello', { message: '登录失败!' });
+    });
+  } else {
+    // 正常流程先注册用户
+    utils.getOpenId(code, function(openid, accessToken){
+      utils.SignUp(openid, 'pwd:'+openid, {
+        success: function(user) {
+          console.log("注册成功");
+        },
+        error: function(user, error) {
+          console.log("注册失败: " + error);
+          res.render('hello', { message: '注册失败!' });
+        }
+      });
+    });
+    res.render('myet.html');
+  }
 });
 
 app.get('/tuanlist', function(req, res) {
