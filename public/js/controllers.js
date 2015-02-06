@@ -23,13 +23,14 @@ function getDesign(tuanMemberCounts) {
             'line-height' : len + 'px',
             'font-size' : fz +'px'
         }
-    }
+    };
 }
 
 
 /** 饭团列表 */
 eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
     function ($scope, $http) {
+        $scope.list = [];
         $http.get('tuanlist').success(function(tuans) {
             tuans.map(function(tuan) {
                 angular.extend(tuan, getDesign(tuan.members));
@@ -45,6 +46,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
 /** 饭团详情页 */
 eatTogetherControllers.controller('TuanDetailCtrl', ['$scope', '$routeParams', '$http',
     function ($scope, $routeParams, $http) {
+        $scope.list = [];
         $http.get('tuandetail?id='+$routeParams.tuanId).success(function(tuans) {
             tuans.map(function(tuan) {
                 angular.extend(tuan, getDesign(tuan.members));
