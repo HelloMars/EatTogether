@@ -16,11 +16,11 @@
         function($routeProvider) {
             $routeProvider.
                 when('/tuan', {
-                    templateUrl: 'tuanlist.html',
+                    templateUrl: './html/tuanlist.html',
                     controller: 'TuanListCtrl'
                 }).
                 when('/tuan/:tuanId', {
-                    templateUrl: 'tuanlist.html',
+                    templateUrl: './html/tuanlist.html',
                     controller: 'TuanDetailCtrl'
                 }).
                 otherwise({

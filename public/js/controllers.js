@@ -4,18 +4,36 @@
 
 var eatTogetherControllers = angular.module('eatTogetherControllers', []);
 
+/**
+ * 根据数值获取样式
+ * @param  {int} tuanMemberCounts
+ * @return {array}  [cssobj1, cssobj2]
+ */
+function getDesign(tuanMemberCounts) {
+    var len = tuanMemberCounts * 10 + 50;
+    var fz = tuanMemberCounts * 2 + 15;
+    return {
+        'div1' : {
+            'width' : len * 1.2 +'px',
+            'height' : len * 1.2 + 'px'
+        },
+        'div2' : {
+            'width' : len + 'px',
+            'height' : len + 'px',
+            'line-height' : len + 'px',
+            'font-size' : fz +'px'
+        }
+    }
+}
+
+
+/** 饭团列表 */
 eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
     function ($scope, $http) {
         $http.get('tuanlist').success(function(tuans) {
-            $scope.list = [];
-            tuans.forEach(function(tuan) {
-                var len = tuan.members*10+50;
-                var entry = {'id':tuan.id, 'name':tuan.name,
-                    'div1':"{'width':'"+len*1.2+"px', 'height':'"+len*1.2+"px'}",
-                    'div2':"{'width':'"+len+"px', 'height':'"+len+"px',\
-                        'vertical-align':'middle', 'line-height':'"+len+"px',\
-                        'font-size':'"+(tuan.members*2+15)+"px'}"};
-                $scope.list.push(entry);
+            tuans.map(function(tuan) {
+                angular.extend(tuan, getDesign(tuan.members));
+                $scope.list.push(tuan);
             });
         });
         $scope.click = function(name) {
@@ -24,18 +42,13 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
     }
 ]);
 
+/** 饭团详情页 */
 eatTogetherControllers.controller('TuanDetailCtrl', ['$scope', '$routeParams', '$http',
     function ($scope, $routeParams, $http) {
         $http.get('tuandetail?id='+$routeParams.tuanId).success(function(tuans) {
-            $scope.list = [];
-            tuans.forEach(function(tuan) {
-                var len = tuan.members*10+50;
-                var entry = {'id':tuan.id, 'name':tuan.name,
-                    'div1':"{'width':'"+len*1.2+"px', 'height':'"+len*1.2+"px'}",
-                    'div2':"{'width':'"+len+"px', 'height':'"+len+"px',\
-                        'vertical-align':'middle', 'line-height':'"+len+"px',\
-                        'font-size':'"+(tuan.members*2+15)+"px'}"};
-                $scope.list.push(entry);
+            tuans.map(function(tuan) {
+                angular.extend(tuan, getDesign(tuan.members));
+                $scope.list.push(tuan);
             });
         });
         $scope.click = function(name) {
