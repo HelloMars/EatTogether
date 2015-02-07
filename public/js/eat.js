@@ -16,12 +16,31 @@
         function($routeProvider) {
             $routeProvider.
                 when('/tuan', {
-                    templateUrl: 'tuanlist.html',
+                    templateUrl: './html/list.html',
                     controller: 'TuanListCtrl'
                 }).
+                when('/tuan/create', {
+                    templateUrl: './html/create.html',
+                    controller: 'TuanCreateCtrl'
+                }).
+                when('/tuan/join', {
+                    templateUrl: './html/join.html',
+                    controller: 'TuanCtrl'
+                }).
+                when('/tuan/:tuanId/members', {
+                    templateUrl: './html/tuanMembers.html',
+                    controller: 'TuanMembersCtrl'
+                }).
+                when('/tuan/:tuanId/history', {
+                    templateUrl: './html/tuanHistory.html',
+                    controller: 'TuanHistoryCtrl'
+                }).
+                when('/tuan/:tuanId/home', {
+                    templateUrl: './html/tuanIndex.html',
+                    controller: 'TuanIndexCtrl'
+                }).
                 when('/tuan/:tuanId', {
-                    templateUrl: 'tuanlist.html',
-                    controller: 'TuanDetailCtrl'
+                    redirectTo: 'tuan/:tuanId/members'
                 }).
                 otherwise({
                     redirectTo: '/tuan'
