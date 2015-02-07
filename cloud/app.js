@@ -61,9 +61,9 @@ app.get('/myet', function(req, res) {
 app.get('/tuanlist', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   var tuans = [
-    {'id':1, 'name': '一蛋', 'members': 5, 'news': 1},
-    {'id':2, 'name': '建团', 'members': 10, 'news': 0},
-    {'id':3, 'name': '入团', 'members': 10, 'news': 0}
+    {'id':1, 'name': '建团', 'members': 10, 'news': 0},
+    {'id':2, 'name': '入团', 'members': 10, 'news': 0},
+    {'id':3, 'name': '一蛋', 'members': 5, 'news': 1}
   ];
   res.jsonp(tuans);
 });
@@ -71,7 +71,7 @@ app.get('/tuanlist', function(req, res) {
 app.get('/tuandetail', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   var tuans = [];
-  if (req.query.id == 1) {
+  if (req.query.id == 3) {
     tuans = [
       {'id':1, 'name': '大蛋', 'members': 15, 'news': 0},
       {'id':2, 'name': '中蛋', 'members': 10, 'news': 0},
@@ -82,7 +82,7 @@ app.get('/tuandetail', function(req, res) {
     tuans = [
       {'id':2, 'name': '建团', 'members': 10, 'news': 0}
     ];
-  } else if (req.query.id == 3) {
+  } else if (req.query.id == 1) {
     tuans = [
       {'id':3, 'name': '入团', 'members': 10, 'news': 0}
     ];
