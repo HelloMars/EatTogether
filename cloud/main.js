@@ -8,9 +8,9 @@ AV.Cloud.define("hello", function(request, response) {
 
 AV.Cloud.define("initDB", function(request, response) {
   var tuan = new utils.Tuan();
-  tuan.set('tuanid', 1);
-  tuan.set('name', '建团');
-  tuan.set('memberids', []);
+  tuan.set('tuanid', utils.CREAT_TUAN.id);
+  tuan.set('name', utils.CREAT_TUAN.name);
+  tuan.set('memberids', [1,1,1,1,1,1,1,1,1,1]);
   tuan.set('news', 0);
   tuan.save(null, {
     success: function(tuan) {
@@ -22,9 +22,9 @@ AV.Cloud.define("initDB", function(request, response) {
   });
 
   tuan = new utils.Tuan();
-  tuan.set('tuanid', 2);
-  tuan.set('name', '入团');
-  tuan.set('memberids', []);
+  tuan.set('tuanid', utils.JOIN_TUAN.id);
+  tuan.set('name', utils.JOIN_TUAN.name);
+  tuan.set('memberids', [1,1,1,1,1,1,1,1,1,1]);
   tuan.set('news', 0);
   tuan.save(null, {
     success: function(tuan) {

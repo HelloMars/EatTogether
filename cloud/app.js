@@ -90,12 +90,15 @@ app.get('/myet', function(req, res) {
 app.get('/tuanlist', function(req, res) {
   console.log('/tuanlist: %j', req.AV.user);
   res.setHeader('Content-Type', 'application/json');
-  var tuans = [
-    {'id':1, 'name': '建团', 'members': 10, 'news': 0},
-    {'id':2, 'name': '入团', 'members': 10, 'news': 0},
-    {'id':3, 'name': '一蛋', 'members': 5, 'news': 1}
-  ];
-  res.jsonp(tuans);
+  req.AV.user.fetch().then(function(user){
+    utils.GetTuanList(user, {
+      success: function(tuans) {
+        res.jsonp(tuans);
+      }
+    });
+  }, function(error) {
+    console.log('Fetch Error: ' + JSON.stringify(error));
+  });
 });
 
 app.get('/tuandetail', function(req, res) {
