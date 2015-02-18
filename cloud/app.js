@@ -43,7 +43,7 @@ app.set('views','cloud/views');   // 设置模板目录
 app.set('view engine', 'ejs');    // 设置 template 引擎
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser());    // 读取请求 body 的中间件
-app.use(xmlBodyParser)
+app.use(xmlBodyParser);
 // 启用 cookieParser
 app.use(express.cookieParser('__eat_together__'));
 // 使用 avos-express-cookie-session 记录登录信息到 cookie
@@ -63,25 +63,23 @@ app.get('/myet', function(req, res) {
     res.render('hello', { message: 'Error!' });
   } else if (code == 888) {
     // 使用测试用户
-    AV.User.logIn('testid:888', 'pwd:888').then(function() {
-      //登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
-      //跳转到profile页面。
-      console.log('logIn successfully: %j', req.AV.user);
-      res.render('myet.html');
-    },function(error) {
-      //登录失败，跳转到登录页面
-      res.render('hello', { message: '登录失败!' });
+    utils.SignupLogin(code, 'pwd:'+code, {
+      success: function(user) {
+        res.render('myet.html');
+      },
+      error: function(user, error) {
+        res.render('hello', {message: error.message})
+      }
     });
   } else {
     // 正常流程先注册用户
-    utils.getOpenId(code, function(openid, accessToken){
-      utils.SignUp(openid, 'pwd:'+openid, {
+    utils.getOpenId(code, function(openid, accessToken) {
+      utils.SignupLogin(openid, 'pwd:'+openid, {
         success: function(user) {
-          console.log("注册成功");
+          res.render('myet.html');
         },
         error: function(user, error) {
-          console.log("注册失败: " + error);
-          res.render('hello', { message: '注册失败!' });
+          res.render('hello', {message: error.message})
         }
       });
     });
@@ -90,6 +88,7 @@ app.get('/myet', function(req, res) {
 });
 
 app.get('/tuanlist', function(req, res) {
+  console.log('/tuanlist: %j', req.AV.user);
   res.setHeader('Content-Type', 'application/json');
   var tuans = [
     {'id':1, 'name': '建团', 'members': 10, 'news': 0},
@@ -109,11 +108,22 @@ app.get('/tuandetail', function(req, res) {
       {'id':3, 'name': '小蛋', 'members': 5, 'news': 0},
       {'id':4, 'name': '大蛋', 'members': 15, 'news': 0}
     ];
-  } else if (req.query.id == 2) {
-    tuans = [
-      {'id':2, 'name': '建团', 'members': 10, 'news': 0}
-    ];
   } else if (req.query.id == 1) {
+    // 建团
+    var tuan = new utils.Tuan();
+    tuan.set('name', '新团');
+    tuan.set('memberids', [req.AV.user]);
+    tuan.set('news', 0);
+    tuan.save(null, {
+      success: function(tuan) {
+        console.log("建团成功: " + JSON.stringify(tuan));
+        tuans = [tuan];
+      },
+      error: function(tuan, error) {
+        console.log("建团失败: " + JSON.stringify(error));
+      }
+    });
+  } else if (req.query.id == 2) {
     tuans = [
       {'id':3, 'name': '入团', 'members': 10, 'news': 0}
     ];

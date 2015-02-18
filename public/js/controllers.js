@@ -49,7 +49,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
 eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', '$http',
     function ($scope, $routeParams, $http) {
         $scope.list = [];
-        $http.get('tuandetail?id='+$routeParams.tuanId).success(function(tuans) {
+        $http.get('tuandetail?id=1').success(function(tuans) {
 
         });
         $scope.click = function(name) {

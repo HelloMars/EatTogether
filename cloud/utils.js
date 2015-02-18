@@ -28,6 +28,8 @@ var MENU = {
         }]
 };
 
+exports.Tuan = AV.Object.extend("Tuan");
+
 exports.Init = function() {
     API.createMenu(MENU, function (err, res) {
         console.log("createMenu" + JSON.stringify(res));
@@ -43,14 +45,42 @@ exports.getOpenId = function(code, callback) {
     });
 };
 
-exports.SignUp = function(username, password, functions) {
+exports.SignupLogin = function(username, password, functions) {
     if (username === undefined || password === undefined) {
         console.log("Error");
-        functions.error(username, "undefined");
+        functions.error(undefined, {code: -1, message: 'undefined'});
         return;
     }
     var user = new AV.User();
     user.set('username', username);
     user.set('password', password);
-    user.signUp(null, functions);
+    user.set('tuanids', [1, 2]);
+    user.signUp(null, {
+        success: function(user) {
+            console.log("注册成功: %j", user);
+            functions.success(user);
+        },
+        error: function(user, error) {
+            if (error.code == 202) {
+                // 如果用户名已经存在，则直接登陆
+                console.log("直接登陆: " + JSON.stringify(user));
+                AV.User.logIn(user.getUsername(), 'pwd:'+user.getUsername(), {
+                    success: function(user) {
+                        // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
+                        console.log('登录成功: %j', user);
+                        functions.success(user);
+                    },
+                    error: function(user, error) {
+                        // 登录失败，非正常状态
+                        console.log("登录失败: " + JSON.stringify(error));
+                        functions.error(user, error);
+                    }
+                });
+            } else {
+                // 非正常状态
+                console.log("注册失败: " + JSON.stringify(error));
+                functions.error(user, error);
+            }
+        }
+    });
 };
