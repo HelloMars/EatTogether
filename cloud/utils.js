@@ -40,6 +40,23 @@ exports.Init = function() {
     });
 };
 
+exports.InitDB = function() {
+    AV.User.logIn('888', 'pwd:888', {
+        success: function(user) {
+            exports.CreateTuan(user, {
+                'name': exports.CREAT_TUAN.name,
+                'tuanid': exports.CREAT_TUAN.id,
+                'count': 10
+            });
+            exports.CreateTuan(user, {
+                'name': exports.JOIN_TUAN.name,
+                'tuanid': exports.JOIN_TUAN.id,
+                'count': 10
+            });
+        }
+    });
+};
+
 exports.getOpenId = function(code, callback) {
     OAUTH.getAccessToken(code, function (err, result) {
         console.log("getOpenId code: " + code);
@@ -66,7 +83,6 @@ exports.SignupLogin = function(username, password, functions) {
     query.find().then(function(results) {
         for (var i = 0; i < results.length; i++) {
             relation.add(results[i]);
-            console.log("Add tuan: " + results[i].get('tuanid'));
         }
         user.signUp(null, {
             success: function(user) {
@@ -107,7 +123,7 @@ exports.GetTuanList = function(user, functions) {
         for (var i = 0; i < results.length; i++) {
             var tuan = formatTuan(results[i]);
             tuans.push(tuan);
-            console.log("Add tuan: " + JSON.stringify(tuan));
+            console.log("Get tuan: " + JSON.stringify(tuan));
         }
         functions.success(tuans);
     }, function (error) {
@@ -116,11 +132,75 @@ exports.GetTuanList = function(user, functions) {
     });
 };
 
+// attrs = {name, tuanid, count}
+exports.CreateTuan = function(userid, attrs, options) {
+    var error;
+    options = options || {};
+
+    // 参数检查
+    if (!(attrs && attrs.name)) {
+        error = new AV.Error(
+            AV.Error.OTHER_CAUSE,
+            "无效参数");
+        if (options.error) {
+            options.error(error);
+        }
+        return AV.Promise.error(error);
+    }
+
+    var promise = new AV.Promise();
+
+    var tuan = new this.Tuan();
+    AV.Promise.as().then(function() {
+        var promise = new AV.Promise();
+        if (attrs.tuanid) {
+            var query = new AV.Query(exports.Tuan);
+            query.equalTo('tuanid', attrs.tuanid);
+            query.find().then(function() {
+                promise.reject("团已经存在");
+            }, function() {
+                tuan.set('tuanid', attrs.tuanid);
+                promise.resolve();
+            });
+        } else {
+            promise.resolve();
+        }
+        return promise;
+    }).then(function() {
+        tuan.set('name', attrs.name);
+        tuan.set('news', 0);
+        var members = [];
+        for (var i = 0; i < (attrs.count || 1); i++) {
+            members.push(userid);
+        }
+        tuan.set('members', members);
+
+        tuan.save(null, {
+            success: function (tuan) {
+                console.log("建团成功: " + JSON.stringify(tuan));
+                if (options.success) {
+                    options.success(tuan);
+                }
+                promise.resolve(tuan);
+            },
+            error: function (tuan, error) {
+                console.log("建团失败: " + JSON.stringify(error));
+                if (options.error) {
+                    options.error(error);
+                }
+                promise.reject(error);
+            }
+        });
+    });
+
+    return promise;
+};
+
 function formatTuan(tuanobj) {
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
-    tuan.members = tuanobj.get('memberids').length;
+    tuan.members = tuanobj.get('members').length;
     tuan.news = tuanobj.get('news');
     return tuan;
 }

@@ -113,20 +113,14 @@ app.get('/tuandetail', function(req, res) {
     ];
   } else if (req.query.id == 1) {
     // 建团
-    var tuan = new utils.Tuan();
-    tuan.set('name', '新团');
-    tuan.set('memberids', [req.AV.user]);
-    tuan.set('news', 0);
-    tuan.save(null, {
-      success: function(tuan) {
-        console.log("建团成功: " + JSON.stringify(tuan));
-        tuans = [tuan];
-      },
-      error: function(tuan, error) {
-        console.log("建团失败: " + JSON.stringify(error));
-      }
+    req.AV.user.fetch().then(function(user) {
+      return utils.CreateTuan(user.id, {'name': '新团'});
+    }).then(function(tuan) {
+      res.jsonp(tuan);
     });
   } else if (req.query.id == 2) {
+    // 入团
+    req.query.tuanid;
     tuans = [
       {'id':3, 'name': '入团', 'members': 10, 'news': 0}
     ];
@@ -136,8 +130,8 @@ app.get('/tuandetail', function(req, res) {
       {'id':2, 'name': '中蛋', 'members': 10, 'news': 0},
       {'id':3, 'name': '大蛋', 'members': 15, 'news': 0}
     ];
+    res.jsonp(tuans);
   }
-  res.jsonp(tuans);
 });
 
 app.get('/weixin', function(req, res) {
