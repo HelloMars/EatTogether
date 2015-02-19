@@ -25,7 +25,7 @@
                 }).
                 when('/tuan/join', {
                     templateUrl: './html/join.html',
-                    controller: 'TuanCtrl'
+                    controller: 'TuanJoinCtrl'
                 }).
                 when('/tuan/:tuanId/members', {
                     templateUrl: './html/tuanMembers.html',

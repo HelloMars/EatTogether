@@ -103,34 +103,54 @@ app.get('/tuanlist', function(req, res) {
 
 app.get('/tuandetail', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  var tuans = [];
-  if (req.query.id == 3) {
-    tuans = [
-      {'id':1, 'name': '大蛋', 'members': 15, 'news': 0},
-      {'id':2, 'name': '中蛋', 'members': 10, 'news': 0},
-      {'id':3, 'name': '小蛋', 'members': 5, 'news': 0},
-      {'id':4, 'name': '大蛋', 'members': 15, 'news': 0}
-    ];
-  } else if (req.query.id == 1) {
-    // 建团
+  if (req.query.id == 1) {
+    // 建团，并把自己加进去
     req.AV.user.fetch().then(function(user) {
-      return utils.CreateTuan(user.id, {'name': '新团'});
-    }).then(function(tuan) {
-      res.jsonp(tuan);
+      utils.CreateTuan(user.id, {'name': '新团'}).then(function(tuan) {
+        var relation = user.relation("tuans");
+        relation.add(tuan);
+        user.save().then(function () {
+          res.jsonp(utils.FormatTuanDetail(tuan));
+        }, function (error) {
+          console.log('Error: ' + JSON.stringify(error));
+        });
+      });
     });
   } else if (req.query.id == 2) {
     // 入团
-    req.query.tuanid;
-    tuans = [
-      {'id':3, 'name': '入团', 'members': 10, 'news': 0}
-    ];
-  } else {
-    tuans = [
-      {'id':1, 'name': '小蛋', 'members': 5, 'news': 0},
-      {'id':2, 'name': '中蛋', 'members': 10, 'news': 0},
-      {'id':3, 'name': '大蛋', 'members': 15, 'news': 0}
-    ];
-    res.jsonp(tuans);
+    var query1 = new AV.Query(utils.Tuan);
+    query1.equalTo('tuanid', Number(req.query.tuanid));
+    query1.find().then(function(tuans) {
+      if (tuans.length == 1) {
+        req.AV.user.fetch().then(function (user) {
+          var relation = user.relation("tuans");
+          relation.add(tuans[0]);
+          return user.save();
+        }).then(function () {
+          return utils.FormatTuanDetail(tuans[0]);
+        }).then(function (tuan) {
+          res.jsonp(tuan);
+        }, function (error) {
+          console.log('Error: ' + JSON.stringify(error));
+        });
+      } else {
+        console.log('Not Found Joined Tuan');
+        res.jsonp({});
+      }
+    });
+  } else { // 正常团详情
+    var query2 = new AV.Query(utils.Tuan);
+    query2.equalTo('tuanid', Number(req.query.id));
+    query2.find().then(function(tuans) {
+      if (tuans.length == 1) {
+        utils.FormatTuanDetail(tuans[0]).then(function (tuan) {
+          res.jsonp(tuan);
+        });
+      } else {
+        console.log('Not Found Tuan');
+        res.jsonp({});
+      }
+    });
   }
 });
 

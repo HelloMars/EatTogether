@@ -77,6 +77,8 @@ exports.SignupLogin = function(username, password, functions) {
     var relation = user.relation("tuans");
     user.set('username', username);
     user.set('password', password);
+    user.set('money', 0.0);
+    user.set('state', 0);
 
     var query = new AV.Query(this.Tuan);
     query.containedIn("tuanid", [this.CREAT_TUAN.id, this.JOIN_TUAN.id]);
@@ -156,8 +158,16 @@ exports.CreateTuan = function(userid, attrs, options) {
         if (attrs.tuanid) {
             var query = new AV.Query(exports.Tuan);
             query.equalTo('tuanid', attrs.tuanid);
-            query.find().then(function() {
-                promise.reject("团已经存在");
+            query.find().then(function(tuans) {
+                if (tuans.length == 0) {
+                    tuan.set('tuanid', attrs.tuanid);
+                    promise.resolve();
+                } else if (tuans.length == 1) {
+                    console.log("团已存在");
+                    promise.reject("团已存在");
+                } else {
+                    console.log("出现重复团");
+                }
             }, function() {
                 tuan.set('tuanid', attrs.tuanid);
                 promise.resolve();
@@ -204,3 +214,28 @@ function formatTuan(tuanobj) {
     tuan.news = tuanobj.get('news');
     return tuan;
 }
+
+exports.FormatTuanDetail = function (tuanobj) {
+    var promise = new AV.Promise();
+    var tuan = {};
+    tuan.id = tuanobj.get('tuanid');
+    tuan.name = tuanobj.get('name');
+    tuan.news = tuanobj.get('news');
+
+    var query = new AV.Query(AV.User);
+    query.containedIn("objectId", tuanobj.get('members'));
+    query.find().then(function(users) {
+        var members = [];
+        for (var i = 0; i < users.length; i++) {
+            members.push({
+                'name': users[i].getUsername(),
+                'money': users[i].get('money')
+            });
+        }
+        console.log("user: ", members);
+        tuan.members = members;
+        promise.resolve(tuan);
+    });
+
+    return promise;
+};
