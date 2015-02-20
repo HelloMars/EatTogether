@@ -73,7 +73,7 @@ app.get('/myet', function(req, res) {
     });
   } else {
     // 正常流程先注册用户
-    utils.getOpenId(code, function(openid, accessToken) {
+    utils.getOpenId(code, function(openid) {
       utils.SignupLogin(openid, 'pwd:'+openid, {
         success: function(user) {
           res.render('myet.html');

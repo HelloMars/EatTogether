@@ -59,10 +59,9 @@ exports.InitDB = function() {
 
 exports.getOpenId = function(code, callback) {
     OAUTH.getAccessToken(code, function (err, result) {
-        console.log("getOpenId code: " + code);
-        var accessToken = result.data.access_token;
+        console.log("getOpenId result: " + JSON.stringify(result));
         var openid = result.data.openid;
-        callback(openid, accessToken);
+        callback(openid);
     });
 };
 
