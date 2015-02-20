@@ -114,15 +114,20 @@ app.get('/tuandetail', function(req, res) {
       });
     });
   } else if (req.query.id == 2) {
-    // 入团
+    // 入团，除了更新自己拥有的团，还要把自己加到团里
     var query1 = new AV.Query(utils.Tuan);
     query1.equalTo('tuanid', Number(req.query.tuanid));
     query1.find().then(function(tuans) {
       if (tuans.length == 1) {
         req.AV.user.fetch().then(function (user) {
+          var userid = user.id;
+          console.log(userid + ',' + tuans[0].get('members').indexOf(userid));
+          if (tuans[0].get('members').indexOf(userid) == -1) {
+            tuans[0].get('members').push(userid);
+          }
           var relation = user.relation("tuans");
           relation.add(tuans[0]);
-          return user.save();
+          return AV.Promise.when([tuans[0].save(), user.save()]);
         }).then(function () {
           return utils.FormatTuanDetail(tuans[0]);
         }).then(function (tuan) {

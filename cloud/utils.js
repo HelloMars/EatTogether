@@ -35,9 +35,10 @@ exports.JOIN_TUAN = {'id':2, 'name': '入团'};
 exports.Tuan = AV.Object.extend("Tuan");
 
 exports.Init = function() {
-    API.createMenu(MENU, function (err, res) {
-        console.log("createMenu" + JSON.stringify(res));
-    });
+    console.log("Init");
+    //API.createMenu(MENU, function (err, res) {
+    //    console.log("createMenu" + JSON.stringify(res));
+    //});
 };
 
 exports.InitDB = function() {
