@@ -63,25 +63,19 @@ app.get('/myet', function(req, res) {
     res.render('hello', { message: 'Error!' });
   } else if (code == 888) {
     // 使用测试用户
-    utils.SignupLogin(code, 'pwd:'+code, {
-      success: function(user) {
-        res.render('myet.html');
-      },
-      error: function(user, error) {
-        res.render('hello', {message: error.message})
-      }
+    utils.SignupLogin(code, 'pwd:'+code).then(function () {
+      res.render('myet.html');
+    }, function (error) {
+      res.render('hello', {message: error.message})
     });
   } else {
     // 正常流程先注册用户
-    utils.getOpenId(code, function(openid) {
-      utils.SignupLogin(openid, 'pwd:'+openid, {
-        success: function(user) {
-          res.render('myet.html');
-        },
-        error: function(user, error) {
-          res.render('hello', {message: error.message})
-        }
-      });
+    utils.getOpenId(code).then(function (openid) {
+      return utils.SignupLogin(openid, 'pwd:'+openid);
+    }).then(function () {
+      res.render('myet.html');
+    }, function (error) {
+      res.render('hello', {message: error.message})
     });
     res.render('myet.html');
   }

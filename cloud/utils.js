@@ -57,21 +57,30 @@ exports.InitDB = function() {
     });
 };
 
-exports.getOpenId = function(code, callback) {
+exports.getOpenId = function(code) {
+    var promise = new AV.Promise();
     OAUTH.getAccessToken(code, function (err, result) {
         console.log("getOpenId result: " + JSON.stringify(result));
-        var openid = result.data.openid;
-        callback(openid);
+        if (result.errcode) {
+            promise.reject(result);
+        } else {
+            var accessToken = result.data.access_token;
+            var openid = result.data.openid;
+            promise.resolve(openid, accessToken);
+        }
     });
+    return promise;
 };
 
-exports.SignupLogin = function(username, password, functions) {
+exports.SignupLogin = function(username, password) {
     if (username === undefined || password === undefined) {
-        console.log("Error");
-        functions.error(undefined, {code: -1, message: 'undefined'});
-        return;
+        var error = new AV.Error(
+            AV.Error.OTHER_CAUSE,
+            "无效参数");
+        return AV.Promise.error(error);;
     }
 
+    var promise = new AV.Promise();
     var user = new AV.User();
     var relation = user.relation("tuans");
     user.set('username', username);
@@ -85,35 +94,33 @@ exports.SignupLogin = function(username, password, functions) {
         for (var i = 0; i < results.length; i++) {
             relation.add(results[i]);
         }
-        user.signUp(null, {
-            success: function(user) {
-                console.log("注册成功: %j", user);
-                functions.success(user);
-            },
-            error: function(user, error) {
-                if (error.code == 202) {
-                    // 如果用户名已经存在，则直接登陆
-                    console.log("直接登陆: " + JSON.stringify(user));
-                    AV.User.logIn(user.getUsername(), 'pwd:'+user.getUsername(), {
-                        success: function(user) {
-                            // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
-                            console.log('登录成功: %j', user);
-                            functions.success(user);
-                        },
-                        error: function(user, error) {
-                            // 登录失败，非正常状态
-                            console.log("登录失败: " + JSON.stringify(error));
-                            functions.error(user, error);
-                        }
-                    });
-                } else {
-                    // 非正常状态
-                    console.log("注册失败: " + JSON.stringify(error));
-                    functions.error(user, error);
+        return user.signUp(null);
+    }).then(function (user) {
+        console.log("注册成功: %j", user);
+        promise.resolve(user);
+    }, function (error) {
+        if (error.code == 202) {
+            // 如果用户名已经存在，则直接登陆
+            console.log("直接登陆: " + JSON.stringify(user));
+            AV.User.logIn(username, password, {
+                success: function(user) {
+                    // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
+                    console.log('登录成功: %j', user);
+                    promise.resolve(user);
+                },
+                error: function(user, error) {
+                    // 登录失败，非正常状态
+                    console.log("登录失败: " + JSON.stringify(error));
+                    promise.reject(user);
                 }
-            }
-        });
+            });
+        } else {
+            // 非正常状态
+            console.log("注册失败: " + JSON.stringify(error));
+            promise.reject(error);
+        }
     });
+    return promise;
 };
 
 exports.GetTuanList = function(user, functions) {
