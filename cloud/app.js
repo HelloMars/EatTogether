@@ -61,9 +61,10 @@ app.get('/myet', function(req, res) {
   var code = req.query.code;
   if (!code) {
     res.render('hello', { message: 'Error!' });
-  } else if (code == 888) {
+  } else if (code.indexOf('test_') == 0) {
     // 使用测试用户
-    utils.SignupLogin(code, 'pwd:'+code).then(function () {
+    var openid = code.substring(5);
+    utils.SignupLogin(openid, 'pwd:'+openid).then(function () {
       res.render('myet.html');
     }, function (error) {
       res.render('hello', {message: error.message})
@@ -77,12 +78,12 @@ app.get('/myet', function(req, res) {
     }, function (error) {
       res.render('hello', {message: error.message})
     });
-    res.render('myet.html');
   }
 });
 
 app.get('/tuanlist', function(req, res) {
   console.log('/tuanlist: %j', req.AV.user);
+  console.log('cookies: ' + req.headers.cookie);
   res.setHeader('Content-Type', 'application/json');
   req.AV.user.fetch().then(function(user){
     utils.GetTuanList(user, {
