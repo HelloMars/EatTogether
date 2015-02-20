@@ -110,7 +110,9 @@ app.get('/tuandetail', function(req, res) {
         var relation = user.relation("tuans");
         relation.add(tuan);
         user.save().then(function () {
-          res.jsonp(utils.FormatTuanDetail(tuan));
+          return utils.FormatTuanDetail(tuans[0]);
+        }).then(function (tuan) {
+          res.jsonp(tuan);
         }, function (error) {
           console.log('Error: ' + JSON.stringify(error));
         });
