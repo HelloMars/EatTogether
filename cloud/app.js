@@ -83,7 +83,7 @@ app.get('/myet', function(req, res) {
 
 app.get('/tuanlist', function(req, res) {
   console.log('/tuanlist: %j', req.AV.user);
-  console.log('cookies: ' + req.headers.cookie);
+  //console.log('cookies: ' + req.headers.cookie);
   res.setHeader('Content-Type', 'application/json');
   req.AV.user.fetch().then(function(user){
     utils.GetTuanList(user, {
@@ -105,7 +105,7 @@ app.get('/tuandetail', function(req, res) {
         var relation = user.relation("tuans");
         relation.add(tuan);
         user.save().then(function () {
-          return utils.FormatTuanDetail(tuans[0]);
+          return utils.FormatTuanDetail(tuan);
         }).then(function (tuan) {
           res.jsonp(tuan);
         }, function (error) {

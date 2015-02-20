@@ -132,7 +132,6 @@ exports.GetTuanList = function(user, functions) {
         for (var i = 0; i < results.length; i++) {
             var tuan = formatTuan(results[i]);
             tuans.push(tuan);
-            console.log("Get tuan: " + JSON.stringify(tuan));
         }
         functions.success(tuans);
     }, function (error) {
