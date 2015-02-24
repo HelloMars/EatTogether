@@ -7,5 +7,9 @@
     "xml2js": "^0.4.4",
     "wechat-api": "*",
     "wechat-oauth": "*"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-ruby-sass": "^1.0.0-alpha.3"
   }
 }
