@@ -1,17 +1,20 @@
-<a href="#/tuan/">返回</a>
-<ul>
-    <li><a href="#/tuan/{{tuanId}}/members">成员</a></li>
-    <li><a href="#/tuan/{{tuanId}}/home">首页</a></li>
-    <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
-</ul>
-<h1>饭团成员</h1>
-<div>
-    <div ng-repeat="data in list" class="tuan"
-         ng-style={{data.div1}}>
-        <a href="#/tuan/{{data.id}}">
-            <div ng-style={{data.div2}} ng-click="click(data.name)">
-                {{data.name}}
-            </div>
-        </a>
+<div class="s-members">
+     <div class="nav">
+        <a class="return" href="#/tuan/">&lt;</a>
+        <ul>
+            <li><a href="#/tuan/{{tuanId}}/members">成员</a></li>
+            <li><a href="#/tuan/{{tuanId}}/home">首页</a></li>
+            <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
+        </ul>
+    </div>
+    <div>
+        <div ng-repeat="data in list" class="tuan"
+             ng-style={{data.div1}}>
+            <a href="#/tuan/{{data.id}}">
+                <div ng-style={{data.div2}} ng-click="click(data.name)">
+                    {{data.name}}
+                </div>
+            </a>
+        </div>
     </div>
 </div>
