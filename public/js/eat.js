@@ -5,7 +5,8 @@
 (function(){
     var eatTogether = angular.module("EatTogether",[
         'ngRoute',
-        'eatTogetherControllers'
+        'eatTogetherControllers',
+        'tuanService'
     ]);
     eatTogether.run(function() {
         AV.initialize("vk84p7j0sizwl03zgvb3y1eg6z7klbs97hrgock7ilfascaf",

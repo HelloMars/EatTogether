@@ -227,7 +227,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
     tuan.news = tuanobj.get('news');
-
+    console.log('hhahahah, ', JSON.stringify(tuanobj));
     var query = new AV.Query(AV.User);
     query.containedIn("objectId", tuanobj.get('members'));
     query.find().then(function(users) {

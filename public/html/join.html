@@ -4,11 +4,10 @@
         <h1>入团</h1>
     </div>
     <section>
-        <input type="text" placeholder="输入团ID">
+        <input type="text" placeholder="输入团ID" ng-model="tuanId">
     </section>
     <section ng-click="startScan()" class="qrcode">
         <h1>点击扫描二维码</h1>
-        <!-- <img src="http://placehold.it/250X250" alt=""> -->
     </section>
-    <a href="javascript:;" class="btn confirm">确认</a>
+    <a href="javascript:;" ng-click="confirm()" class="btn confirm">确认</a>
 </div>

@@ -28,11 +28,12 @@ function getDesign(tuanMemberCounts) {
 
 
 /** 饭团列表 */
-eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
-    function ($scope, $http) {
+eatTogetherControllers.controller('TuanListCtrl', ['$scope', 'tuan',
+    function ($scope, tuan) {
         $scope.list = [];
-        $http.get('tuanlist').success(function(tuans) {
-            tuans.map(function(tuan) {
+
+        tuan.getAll().then(function(res) {
+            res.map(function(tuan) {
                 angular.extend(tuan, getDesign(tuan.members));
                 if (tuan.id === 1) tuan.id = 'create';
                 if (tuan.id === 2) tuan.id = 'join';
@@ -46,11 +47,11 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$http',
 ]);
 
 /** 创建饭团页 */
-eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', '$http',
-    function ($scope, $routeParams, $http) {
+eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', 'tuan',
+    function ($scope, $routeParams, tuan) {
         $scope.list = [];
-        $http.get('tuandetail?id=1').success(function(tuan) {
-
+        tuan.createTuan().then(function(res){
+            $scope.name = res.name;
         });
         $scope.click = function(name) {
             console.log(name);
@@ -59,35 +60,28 @@ eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', '
 ]);
 
 /** 加入饭团页 */
-eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', '$http',
-    function ($scope, $routeParams, $http) {
-        // 扫描二维码，获取要加入的tuanid
-        $scope.startScan = function () {
-            alert("a");
-            wx.scanQRCode({
-                needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
-                scanType: ["qrCode"], // 可以指定扫二维码还是一维码，默认二者都有
-                success: function (res) {
-                    alert(res);
-                    $('.s-join').append(JSON.sringify(res));
-                }
+eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
+
+        $scope.confirm = function () {
+            if ($scope.tuanId === '') return;
+            tuan.joinTuan($scope.tuanId).then(function (res) {
+                if (res.id ===  undefined) return;
+                $location.url('/tuan/' + res.id + '/home');
             });
         };
-        // $http.get('tuandetail?id=2&tuanid='+tuanid).success(function(tuan) {
-
-        // });
 
     }
 ]);
 
 
 /** 饭团详情页(成员列表页) */
-eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$http',
-    function ($scope, $routeParams, $http) {
+eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 'tuan',
+    function ($scope, $routeParams, tuan) {
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
-        $http.get('tuandetail?id='+$routeParams.tuanId).success(function(tuan) {
-            tuan.members.map(function(user) {
+        tuan.getTuanInfo($scope.tuanId).then(function (res) {
+            res.members.map(function(user) {
                 angular.extend(user, getDesign(user.money));
                 $scope.list.push(user);
             });
@@ -100,9 +94,14 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
 
 
 /** 饭团首页 */
-eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', '$http',
-    function ($scope, $routeParams) {
+eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan',
+    function ($scope, $routeParams, tuan) {
         $scope.tuanId = $routeParams.tuanId;
+        tuan.getTuanInfo($scope.tuanId).then(function (res) {
+            $scope.name = res.name;
+            $scope.id = res.id;
+            $scope.text = res.text;
+        });
 
         /** 二维码生成 */
         var text = 'lalalalaalall';
