@@ -62,10 +62,20 @@ eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', '
 eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', '$http',
     function ($scope, $routeParams, $http) {
         // 扫描二维码，获取要加入的tuanid
-        var tuanid = 119;
-        $http.get('tuandetail?id=2&tuanid='+tuanid).success(function(tuan) {
+        $scope.startScan = function () {
+            alert("a");
+            wx.scanQRCode({
+                needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                scanType: ["qrCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                success: function (res) {
+                    alert(res);
+                    $('.s-join').append(JSON.sringify(res));
+                }
+            });
+        };
+        // $http.get('tuandetail?id=2&tuanid='+tuanid).success(function(tuan) {
 
-        });
+        // });
 
     }
 ]);
@@ -93,6 +103,15 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
 eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', '$http',
     function ($scope, $routeParams) {
         $scope.tuanId = $routeParams.tuanId;
+
+        /** 二维码生成 */
+        var text = 'lalalalaalall';
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            width : 200,
+            height : 200
+        });
+        qrcode.makeCode(text);
+
     }
 ]);
 
