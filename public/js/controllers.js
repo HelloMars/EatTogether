@@ -72,8 +72,8 @@ eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tu
 
 
 /** 饭团详情页(成员列表页) */
-eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
+eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan',
+    function ($scope, $routeParams, $location, tuan) {
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
@@ -81,9 +81,34 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                 angular.extend(user, getDesign(user.money));
                 $scope.list.push(user);
             });
+            console.log($scope.list);
         });
+        var maidan = {
+            name : '窝买单',
+            money : 10
+        };
+        angular.extend(maidan, getDesign(maidan.money));
+        $scope.list.push(maidan);
         $scope.click = function(name) {
-            console.log(name);
+            if (name !== '窝买单') return;
+            $location.url('/tuan/' + $scope.tuanId + '/bill');
+        };
+    }
+]);
+
+/** 买单页 */
+eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan',
+    function ($scope, $routeParams, $location, tuan) {
+        $scope.tuanId = $routeParams.tuanId;
+        tuan.getTuanInfo($scope.tuanId).then(function (res) {
+            $scope.members = res.members;
+            $scope.curTotal = res.members.length;
+
+        });
+        $scope.list.push(maidan);
+        $scope.click = function(name) {
+            if (name !== '窝买单') return;
+            $location.url('/tuan/' + $scope.tuanId + '/bill');
         };
     }
 ]);

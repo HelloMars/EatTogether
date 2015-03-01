@@ -1,0 +1,22 @@
+<div class="s-bill">
+    <div class="nav">
+        <a class="return" href="#/tuan/">&lt;</a>
+        <ul>
+            <li><a href="#/tuan/{{tuanId}}/members">成员</a></li>
+            <li><a href="#/tuan/{{tuanId}}/home">首页</a></li>
+            <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
+        </ul>
+    </div>
+    <h1>今天我买单</h1>
+    <h2>聚餐团员：{{curTotal}} 人</h2>
+    <div class="members">
+        <label ng-repeat="member in members" for="">
+            <input type="radio" ng-model="member.in">
+            {{member.name}}
+        </label>
+    </div>
+    <h2>非团员：<input type="text" placeholder="0" ng-model="notMember"></h2>
+
+    <h2>{{curTotal + notMember}}人共消费：<input type="text" placeholder="0" ng-model="totalMoney"></h2>
+    <h2>人均：<span class="average">{{totalMoney/(curTotal + notMember)}}</span></h2>
+</div>

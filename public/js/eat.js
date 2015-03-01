@@ -40,6 +40,10 @@
                     templateUrl: './html/tuanIndex.html',
                     controller: 'TuanIndexCtrl'
                 }).
+                when('/tuan/:tuanId/bill', {
+                    templateUrl: './html/tuanBill.html',
+                    controller: 'TuanBillCtrl'
+                }).
                 when('/tuan/:tuanId', {
                     redirectTo: 'tuan/:tuanId/members'
                 }).

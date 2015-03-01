@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "gulp": "^3.8.11",
-    "gulp-ruby-sass": "^1.0.0-alpha.3"
+    "gulp-ruby-sass": "0.7.1"
   }
 }
