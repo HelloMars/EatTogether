@@ -292,7 +292,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
         query.find().then(function(users) {
             // TODO: 可能需要判断成员是否属于tuanid
             var promises = [];
-            _.each(users, function(user) {
+            users.forEach(function(user) {
                 var money = user.get('money');
                 user.set('money', money - avg);
                 promises.push(user.save());

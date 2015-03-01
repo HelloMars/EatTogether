@@ -10,8 +10,8 @@ var eatTogetherControllers = angular.module('eatTogetherControllers', []);
  * @return {array}  [cssobj1, cssobj2]
  */
 function getDesign(tuanMemberCounts) {
-    var len = tuanMemberCounts * 10 + 50;
-    var fz = tuanMemberCounts * 2 + 15;
+    var len = Math.abs(tuanMemberCounts) * 0.01 + 50;
+    var fz = Math.abs(tuanMemberCounts) * 0.02 + 15;
     return {
         'div1' : {
             'width' : len * 1.2 +'px',
@@ -19,8 +19,8 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len + 'px',
-            'line-height' : len + 'px',
+            'height' : len*2 + 'px',
+            // 'line-height' : len + 'px',
             'font-size' : fz +'px'
         }
     };
@@ -103,13 +103,28 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.members = res.members;
             $scope.curTotal = res.members.length;
-
+            $scope.members.forEach(function(user) {
+                user.inThis = true;
+                console.log(user);
+            });
+            $scope.change = function () {
+                var tmp = 0;
+                $scope.members.forEach(function (member) {
+                    if (member.inThis) tmp++;
+                });
+                $scope.curTotal = tmp;
+            };
+            $scope.confirm = function () {
+                var members = $scope.members.map(function (member) {
+                    return member.uid;
+                });
+                tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
+                    console.log(res);
+                    $location.url('/tuan/' + $scope.tuanId + '/members/');
+                });
+            };
         });
-        $scope.list.push(maidan);
-        $scope.click = function(name) {
-            if (name !== '窝买单') return;
-            $location.url('/tuan/' + $scope.tuanId + '/bill');
-        };
+
     }
 ]);
 
