@@ -140,6 +140,15 @@ exports.GetTuanList = function(user, functions) {
     });
 };
 
+function formatTuan(tuanobj) {
+    var tuan = {};
+    tuan.id = tuanobj.get('tuanid');
+    tuan.name = tuanobj.get('name');
+    tuan.members = tuanobj.get('members').length;
+    tuan.news = tuanobj.get('news');
+    return tuan;
+}
+
 // attrs = {name, tuanid, count}
 exports.CreateTuan = function(userid, attrs, options) {
     var error;
@@ -173,6 +182,7 @@ exports.CreateTuan = function(userid, attrs, options) {
                     promise.reject("团已存在");
                 } else {
                     console.log("出现重复团");
+                    promise.reject("出现重复团");
                 }
             }, function() {
                 tuan.set('tuanid', attrs.tuanid);
@@ -201,7 +211,7 @@ exports.CreateTuan = function(userid, attrs, options) {
             options.success(tuan);
         }
         promise.resolve(tuan);
-    }, function(tuan, error) {
+    }, function(error) {
         console.log("建团失败: " + JSON.stringify(error));
         if (options.error) {
             options.error(error);
@@ -212,14 +222,36 @@ exports.CreateTuan = function(userid, attrs, options) {
     return promise;
 };
 
-function formatTuan(tuanobj) {
-    var tuan = {};
-    tuan.id = tuanobj.get('tuanid');
-    tuan.name = tuanobj.get('name');
-    tuan.members = tuanobj.get('members').length;
-    tuan.news = tuanobj.get('news');
-    return tuan;
-}
+exports.ModifyTuan = function(tuanid, infoJson) {
+    var promise = new AV.Promise();
+
+    var query = new AV.Query(exports.Tuan);
+    query.equalTo('tuanid', tuanid);
+    query.find().then(function(tuans) {
+        if (tuans.length == 0) {
+            console.log("团不存在");
+            promise.reject("团不存在");
+        } else if (tuans.length == 1) {
+            if (infoJson.name) {
+                tuans[0].set('name', infoJson.name);
+            }
+            if (infoJson.slogan) {
+                tuans[0].set('slogan', infoJson.slogan);
+            }
+            return tuans[0].save(null)
+        } else {
+            console.log("出现重复团");
+            promise.reject("出现重复团");
+        }
+    }).then(function() {
+        console.log("修改团信息成功");
+        promise.resolve();
+    }, function(error) {
+        console.log("修改团信息失败");
+        promise.reject(error);
+    });
+    return promise;
+};
 
 exports.FormatTuanDetail = function (tuanobj) {
     var promise = new AV.Promise();
@@ -245,5 +277,33 @@ exports.FormatTuanDetail = function (tuanobj) {
         promise.resolve(tuan);
     });
 
+    return promise;
+};
+
+exports.Bill = function(tuanid, members, othersnum, price) {
+    var promise = new AV.Promise();
+
+    if (members.length > 0 && othersnum >= 0 && price >= 0) {
+        var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
+        var query = new AV.Query(AV.User);
+        query.containedIn("objectId", members);
+        query.find().then(function(users) {
+            var promises = [];
+            _.each(users, function(user) {
+                var money = user.get('money');
+                user.set('money', money - avg);
+                promises.push(user.save());
+            });
+            return AV.Promise.when(promises);
+        }).then(function() {
+            console.log("结账成功");
+            promise.resolve(avg * members.length);
+        }, function(error) {
+            console.log("结账错误: " + JSON.stringify(error));
+            promise.reject(error);
+        });
+    } else {
+        promise.reject('Invalid Parameters');
+    }
     return promise;
 };

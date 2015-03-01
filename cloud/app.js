@@ -82,8 +82,8 @@ app.get('/myet', function(req, res) {
 });
 
 app.get('/tuanlist', function(req, res) {
-  console.log('/tuanlist: %j', req.AV.user);
-  console.log('cookies: ' + req.headers.cookie);
+  console.log('tuanlist: %j', req.AV.user);
+  //console.log('cookies: ' + req.headers.cookie);
   res.setHeader('Content-Type', 'application/json');
   req.AV.user.fetch().then(function(user){
     utils.GetTuanList(user, {
@@ -161,11 +161,40 @@ app.get('/tuandetail', function(req, res) {
 });
 
 app.post('/modtuaninfo', function(req, res) {
-  console.log('modtuaninfo: ', req.body)
+  console.log('modtuaninfo: ', req.body);
+  var tuanid = Number(req.body.id);
+  if (tuanid >= 10 && req.body.info) {
+    utils.ModifyTuan(tuanid, req.body.info).then(function() {
+      res.send('Modtuaninfo Success');
+    }, function() {
+      res.send('Modtuaninfo Failed');
+    });
+  } else {
+    res.send('Invalid Parameters');
+  }
 });
 
 app.post('/bill', function(req, res) {
-  console.log('bill: ', req.body)
+  var tuanid = Number(req.body.id);
+  var othersnum = Number(req.body.othersnum);
+  var price = Number(req.body.price);
+  if (tuanid >= 10 && req.body.members && req.body.members.length > 0
+      && othersnum >= 0 && price >= 0) {
+    req.AV.user.fetch().then(function(user) {
+      utils.Bill(tuanid, req.body.members, othersnum, price).then(function(addmoney) {
+        var money = user.get('money');
+        user.set('money', money + addmoney);
+        return user.save();
+      }).then(function() {
+        res.send('Bill Success');
+      }, function() {
+        // 这里可能还需要处理失败时退还其他成员扣款的逻辑
+        res.send('Bill Failed');
+      });
+    });
+  } else {
+    res.send('Invalid Parameters');
+  }
 });
 
 app.get('/weixin', function(req, res) {

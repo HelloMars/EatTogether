@@ -47,15 +47,12 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', 'tuan',
 ]);
 
 /** 创建饭团页 */
-eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
-        $scope.list = [];
+eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
         tuan.createTuan().then(function(res){
-            $scope.name = res.name;
+            if (res.id === undefined) return;
+            $location.url('/tuan/' + res.id + '/home');
         });
-        $scope.click = function(name) {
-            console.log(name);
-        };
     }
 ]);
 
@@ -66,11 +63,10 @@ eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tu
         $scope.confirm = function () {
             if ($scope.tuanId === '') return;
             tuan.joinTuan($scope.tuanId).then(function (res) {
-                if (res.id ===  undefined) return;
+                if (res.id === undefined) return;
                 $location.url('/tuan/' + res.id + '/home');
             });
         };
-
     }
 ]);
 
