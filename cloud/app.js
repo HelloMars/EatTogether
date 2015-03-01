@@ -181,16 +181,28 @@ app.post('/bill', function(req, res) {
   if (tuanid >= 10 && req.body.members && req.body.members.length > 0
       && othersnum >= 0 && price >= 0) {
     req.AV.user.fetch().then(function(user) {
-      utils.Bill(tuanid, req.body.members, othersnum, price).then(function(addmoney) {
-        var money = user.get('money');
-        user.set('money', money + addmoney);
-        return user.save();
-      }).then(function() {
+      utils.Bill(user, tuanid, req.body.members, othersnum, price).then(function() {
         res.send('Bill Success');
       }, function() {
-        // 这里可能还需要处理失败时退还其他成员扣款的逻辑
+        // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
         res.send('Bill Failed');
       });
+    });
+  } else {
+    res.send('Invalid Parameters');
+  }
+});
+
+app.get('/tuanhistory', function(req, res) {
+  console.log('tuanhistory:', req.query);
+  var tuanid = Number(req.query.id);
+  var start = Number(req.query.start);
+  var length = Number(req.query.length);
+  if (tuanid >= 10 && start >= 0 && length >=0) {
+    utils.GetTuanHistory(tuanid, start, length).then(function(tuanHistory) {
+      res.jsonp(tuanHistory);
+    }, function() {
+      res.send('Tuanhistory Failed');
     });
   } else {
     res.send('Invalid Parameters');

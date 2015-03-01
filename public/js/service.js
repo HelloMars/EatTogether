@@ -60,8 +60,18 @@ tuanService.factory('tuan', ['$http',
         }
 
         /** 获取单个团历史 */
-        function getTuanHistory (argument) {
-            // body...
+        function getTuanHistory (id, start, length) {
+            var request = $http({
+                url: SERVER + 'tuanhistory',
+                method: 'GET',
+                params: {
+                    id : id,
+                    start: start,
+                    length: length
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
         }
 
         /** 创建团 */

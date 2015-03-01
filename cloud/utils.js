@@ -34,6 +34,8 @@ exports.JOIN_TUAN = {'id':2, 'name': '入团'};
 
 exports.Tuan = AV.Object.extend("Tuan");
 
+exports.TuanHistory = AV.Object.extend("TuanHistory");
+
 exports.Init = function() {
     console.log("Init");
     //API.createMenu(MENU, function (err, res) {
@@ -200,7 +202,7 @@ exports.CreateTuan = function(userid, attrs, options) {
             members.push(userid);
         }
         tuan.set('members', members);
-        return tuan.save(null);
+        return tuan.save();
     }).then(function(tuan) {
         // 需要重新query以获得tuanid
         var query = new AV.Query(exports.Tuan);
@@ -280,7 +282,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     return promise;
 };
 
-exports.Bill = function(tuanid, members, othersnum, price) {
+exports.Bill = function(user, tuanid, members, othersnum, price) {
     var promise = new AV.Promise();
 
     if (members.length > 0 && othersnum >= 0 && price >= 0) {
@@ -288,6 +290,7 @@ exports.Bill = function(tuanid, members, othersnum, price) {
         var query = new AV.Query(AV.User);
         query.containedIn("objectId", members);
         query.find().then(function(users) {
+            // TODO: 可能需要判断成员是否属于tuanid
             var promises = [];
             _.each(users, function(user) {
                 var money = user.get('money');
@@ -296,8 +299,22 @@ exports.Bill = function(tuanid, members, othersnum, price) {
             });
             return AV.Promise.when(promises);
         }).then(function() {
+            // 给买单者记账
+            var money = user.get('money');
+            user.set('money', money + avg * members.length);
+            return user.save();
+        }).then(function() {
+            // 生成消费记录
+            var tuanHistory = new this.TuanHistory();
+            tuanHistory.set('payer', user.id);
+            tuanHistory.set('tuanid', tuanid);
+            tuanHistory.set('members', members);
+            tuanHistory.set('othersnum', othersnum);
+            tuanHistory.set('price', price);
+            return tuanHistory.save();
+        }).then(function() {
             console.log("结账成功");
-            promise.resolve(avg * members.length);
+            promise.resolve();
         }, function(error) {
             console.log("结账错误: " + JSON.stringify(error));
             promise.reject(error);
@@ -307,3 +324,32 @@ exports.Bill = function(tuanid, members, othersnum, price) {
     }
     return promise;
 };
+
+exports.GetTuanHistory = function(tuanid, start, length) {
+    var promise = new AV.Promise();
+
+    var tuanHistory = [];
+    var query = new AV.Query(exports.TuanHistory);
+    query.equalTo('tuanid', tuanid);
+    query.descending("createdAt");
+    query.skip(start);
+    query.limit(length);
+    query.find().then(function(results) {
+        for (var i = 0; i < results.length; i++) {
+            var history = formatTuanHistory(results[i]);
+            tuanHistory.push(history);
+        }
+        promise.resolve(tuanHistory);
+    }, function (error) {
+        console.log('Query Error: ' + JSON.stringify(error));
+        promise.reject(error);
+    });
+
+    return promise;
+};
+
+function formatTuanHistory(history) {
+    return history.createdAt.toISOString().replace(/T.+/, '') + '，'
+        + history.get('tuanid') + '团' + history.get('members').length
+        + '人消费' + history.get('price');
+}
