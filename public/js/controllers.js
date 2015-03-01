@@ -10,8 +10,10 @@ var eatTogetherControllers = angular.module('eatTogetherControllers', []);
  * @return {array}  [cssobj1, cssobj2]
  */
 function getDesign(tuanMemberCounts) {
-    var len = Math.abs(tuanMemberCounts) * 0.01 + 50;
-    var fz = Math.abs(tuanMemberCounts) * 0.02 + 15;
+    // var len = Math.abs(tuanMemberCounts) * 0.01 + 50;
+    // var fz = Math.abs(tuanMemberCounts) * 0.02 + 15;
+    var len = 100;
+    var fz = 20;
     return {
         'div1' : {
             'width' : len * 1.2 +'px',
@@ -19,8 +21,8 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len*2 + 'px',
-            // 'line-height' : len + 'px',
+            'height' : len + 'px',
+            'line-height' : fz + 'px',
             'font-size' : fz +'px'
         }
     };
