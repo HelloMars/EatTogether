@@ -271,10 +271,9 @@ exports.FormatTuanDetail = function (tuanobj) {
             members.push({
                 'uid': users[i].id,
                 'name': users[i].getUsername(),
-                'money': users[i].get('money')
+                'money': formatFloat(users[i].get('money'))
             });
         }
-        console.log("user: ", members);
         tuan.members = members;
         promise.resolve(tuan);
     });
@@ -305,13 +304,18 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
             return user.save();
         }).then(function() {
             // 生成消费记录
-            var tuanHistory = new this.TuanHistory();
-            tuanHistory.set('payer', user.id);
-            tuanHistory.set('tuanid', tuanid);
+            var tuanHistory = new exports.TuanHistory();
+            tuanHistory.set('payer', user);
             tuanHistory.set('members', members);
             tuanHistory.set('othersnum', othersnum);
             tuanHistory.set('price', price);
-            return tuanHistory.save();
+
+            var query = new AV.Query(exports.Tuan);
+            query.equalTo('tuanid', tuanid);
+            return query.first().then(function(tuan) {
+                tuanHistory.set('tuan', tuan);
+                return tuanHistory.save();
+            });
         }).then(function() {
             console.log("结账成功");
             promise.resolve();
@@ -329,12 +333,16 @@ exports.GetTuanHistory = function(tuanid, start, length) {
     var promise = new AV.Promise();
 
     var tuanHistory = [];
+    var innerQuery = new AV.Query(exports.Tuan);
+    innerQuery.equalTo('tuanid', tuanid);
     var query = new AV.Query(exports.TuanHistory);
-    query.equalTo('tuanid', tuanid);
+    query.matchesQuery('tuan', innerQuery);
     query.descending("createdAt");
     query.skip(start);
     query.limit(length);
+    query.include(['tuan.name']);
     query.find().then(function(results) {
+        console.log('Query: ' + JSON.stringify(results));
         for (var i = 0; i < results.length; i++) {
             var history = formatTuanHistory(results[i]);
             tuanHistory.push(history);
@@ -350,6 +358,10 @@ exports.GetTuanHistory = function(tuanid, start, length) {
 
 function formatTuanHistory(history) {
     return history.createdAt.toISOString().replace(/T.+/, '') + '，'
-        + history.get('tuanid') + '团' + history.get('members').length
-        + '人消费' + history.get('price');
+        + history.get('tuan').get('name') + '团' + history.get('members').length
+        + '人消费' + formatFloat(history.get('price'));
+}
+
+function formatFloat(float) {
+    return Math.round(float*100)/100;
 }
