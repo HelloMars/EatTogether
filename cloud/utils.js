@@ -190,23 +190,23 @@ exports.CreateTuan = function(userid, attrs, options) {
             members.push(userid);
         }
         tuan.set('members', members);
-
-        tuan.save(null, {
-            success: function (tuan) {
-                console.log("建团成功: " + JSON.stringify(tuan));
-                if (options.success) {
-                    options.success(tuan);
-                }
-                promise.resolve(tuan);
-            },
-            error: function (tuan, error) {
-                console.log("建团失败: " + JSON.stringify(error));
-                if (options.error) {
-                    options.error(error);
-                }
-                promise.reject(error);
-            }
-        });
+        return tuan.save(null);
+    }).then(function(tuan) {
+        // 需要重新query以获得tuanid
+        var query = new AV.Query(exports.Tuan);
+        return query.get(tuan.id);
+    }).then(function(tuan) {
+        console.log("建团成功: " + JSON.stringify(tuan));
+        if (options.success) {
+            options.success(tuan);
+        }
+        promise.resolve(tuan);
+    }, function(tuan, error) {
+        console.log("建团失败: " + JSON.stringify(error));
+        if (options.error) {
+            options.error(error);
+        }
+        promise.reject(error);
     });
 
     return promise;
@@ -227,13 +227,15 @@ exports.FormatTuanDetail = function (tuanobj) {
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
     tuan.news = tuanobj.get('news');
-    console.log('hhahahah, ', JSON.stringify(tuanobj));
+    tuan.slogan = tuanobj.get('slogan');
+
     var query = new AV.Query(AV.User);
     query.containedIn("objectId", tuanobj.get('members'));
     query.find().then(function(users) {
         var members = [];
         for (var i = 0; i < users.length; i++) {
             members.push({
+                'uid': users[i].id,
                 'name': users[i].getUsername(),
                 'money': users[i].get('money')
             });

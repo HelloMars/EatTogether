@@ -17,8 +17,9 @@ tuanService.factory('tuan', ['$http',
 
             joinTuan : joinTuan,
 
-            modTuanInfo : modTuanInfo
+            modTuanInfo : modTuanInfo,
 
+            bill: bill
         };
 
         /**
@@ -83,9 +84,33 @@ tuanService.factory('tuan', ['$http',
         }
 
         /** 修改团信息 */
-        function modTuanInfo (jsonString) {
-            //
+        function modTuanInfo (id, jsonObj) {
+            var request = $http({
+                url: SERVER + 'modtuaninfo',
+                method: 'POST',
+                data: {
+                    id : id,
+                    info : jsonObj
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
         }
 
+        /** 买单 */
+        function bill (id, members, othersnum, price) {
+            var request = $http({
+                url: SERVER + 'bill',
+                method: 'POST',
+                data: {
+                    id : id,
+                    members : members,
+                    othersnum : othersnum,
+                    price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
     }
 ]);

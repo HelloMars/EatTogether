@@ -83,7 +83,7 @@ app.get('/myet', function(req, res) {
 
 app.get('/tuanlist', function(req, res) {
   console.log('/tuanlist: %j', req.AV.user);
-  //console.log('cookies: ' + req.headers.cookie);
+  console.log('cookies: ' + req.headers.cookie);
   res.setHeader('Content-Type', 'application/json');
   req.AV.user.fetch().then(function(user){
     utils.GetTuanList(user, {
@@ -114,32 +114,36 @@ app.get('/tuandetail', function(req, res) {
       });
     });
   } else if (req.query.id == 2) {
-    // 入团，除了更新自己拥有的团，还要把自己加到团里
-    var query1 = new AV.Query(utils.Tuan);
-    query1.equalTo('tuanid', Number(req.query.tuanid));
-    query1.find().then(function(tuans) {
-      if (tuans.length == 1) {
-        req.AV.user.fetch().then(function (user) {
-          var userid = user.id;
-          console.log(userid + ',' + tuans[0].get('members').indexOf(userid));
-          if (tuans[0].get('members').indexOf(userid) == -1) {
-            tuans[0].get('members').push(userid);
-          }
-          var relation = user.relation("tuans");
-          relation.add(tuans[0]);
-          return AV.Promise.when([tuans[0].save(), user.save()]);
-        }).then(function () {
-          return utils.FormatTuanDetail(tuans[0]);
-        }).then(function (tuan) {
-          res.jsonp(tuan);
-        }, function (error) {
-          console.log('Error: ' + JSON.stringify(error));
-        });
-      } else {
-        console.log('Not Found Joined Tuan');
-        res.jsonp({});
-      }
-    });
+    if (req.query.tuanid < 10) {
+      res.jsonp({});
+    } else {
+      // 入团，除了更新自己拥有的团，还要把自己加到团里
+      var query1 = new AV.Query(utils.Tuan);
+      query1.equalTo('tuanid', Number(req.query.tuanid));
+      query1.find().then(function (tuans) {
+        if (tuans.length == 1) {
+          req.AV.user.fetch().then(function (user) {
+            var userid = user.id;
+            console.log(userid + ',' + tuans[0].get('members').indexOf(userid));
+            if (tuans[0].get('members').indexOf(userid) == -1) {
+              tuans[0].get('members').push(userid);
+            }
+            var relation = user.relation("tuans");
+            relation.add(tuans[0]);
+            return AV.Promise.when([tuans[0].save(), user.save()]);
+          }).then(function () {
+            return utils.FormatTuanDetail(tuans[0]);
+          }).then(function (tuan) {
+            res.jsonp(tuan);
+          }, function (error) {
+            console.log('Error: ' + JSON.stringify(error));
+          });
+        } else {
+          console.log('Not Found Joined Tuan');
+          res.jsonp({});
+        }
+      });
+    }
   } else { // 正常团详情
     var query2 = new AV.Query(utils.Tuan);
     query2.equalTo('tuanid', Number(req.query.id));
@@ -154,6 +158,14 @@ app.get('/tuandetail', function(req, res) {
       }
     });
   }
+});
+
+app.post('/modtuaninfo', function(req, res) {
+  console.log('modtuaninfo: ', req.body)
+});
+
+app.post('/bill', function(req, res) {
+  console.log('bill: ', req.body)
 });
 
 app.get('/weixin', function(req, res) {
