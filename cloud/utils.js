@@ -36,6 +36,8 @@ exports.Tuan = AV.Object.extend("Tuan");
 
 exports.TuanHistory = AV.Object.extend("TuanHistory");
 
+exports.Account = AV.Object.extend("Account");
+
 exports.Init = function() {
     console.log("Init");
     //API.createMenu(MENU, function (err, res) {
@@ -87,11 +89,12 @@ exports.SignupLogin = function(username, password) {
     var user = new AV.User();
     var relation = user.relation("tuans");
     user.set('username', username);
+    user.set('nickname', username.substring(username.length-4));
     user.set('password', password);
     user.set('money', 0.0);
     user.set('state', 0);
 
-    var query = new AV.Query(this.Tuan);
+    var query = new AV.Query(exports.Tuan);
     query.containedIn("tuanid", [this.CREAT_TUAN.id, this.JOIN_TUAN.id]);
     query.find().then(function(results) {
         for (var i = 0; i < results.length; i++) {
@@ -126,27 +129,30 @@ exports.SignupLogin = function(username, password) {
     return promise;
 };
 
-exports.GetTuanList = function(user, functions) {
-    var relation = user.relation("tuans");
-    relation.targetClassName = 'Tuan';
-    var tuans = [];
-    relation.query().find().then(function(results){
+/** 获取用户对应的团信息 */
+exports.GetTuanList = function(user) {
+    var promise = new AV.Promise();
+
+    var query = new AV.Query(exports.Account);
+    query.equalTo('user', user);
+    query.include('tuan');
+    query.find().then(function(results) {
+        var tuans = [];
         for (var i = 0; i < results.length; i++) {
-            var tuan = formatTuan(results[i]);
+            var tuan = formatTuan(results[i].get('tuan'));
             tuans.push(tuan);
         }
-        functions.success(tuans);
-    }, function (error) {
-        console.log('Query Error: ' + JSON.stringify(error));
-        functions.error(error);
+        promise.resolve(tuans);
     });
+
+    return promise;
 };
 
 function formatTuan(tuanobj) {
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
-    tuan.members = tuanobj.get('members').length;
+    tuan.members = tuanobj.get('members');
     tuan.news = tuanobj.get('news');
     return tuan;
 }
@@ -169,7 +175,7 @@ exports.CreateTuan = function(userid, attrs, options) {
 
     var promise = new AV.Promise();
 
-    var tuan = new this.Tuan();
+    var tuan = new exports.Tuan();
     AV.Promise.as().then(function() {
         var promise = new AV.Promise();
         if (attrs.tuanid) {
@@ -186,9 +192,6 @@ exports.CreateTuan = function(userid, attrs, options) {
                     console.log("出现重复团");
                     promise.reject("出现重复团");
                 }
-            }, function() {
-                tuan.set('tuanid', attrs.tuanid);
-                promise.resolve();
             });
         } else {
             promise.resolve();
@@ -197,11 +200,7 @@ exports.CreateTuan = function(userid, attrs, options) {
     }).then(function() {
         tuan.set('name', attrs.name);
         tuan.set('news', 0);
-        var members = [];
-        for (var i = 0; i < (attrs.count || 1); i++) {
-            members.push(userid);
-        }
-        tuan.set('members', members);
+        tuan.set('members', (attrs.count || 0));
         return tuan.save();
     }).then(function(tuan) {
         // 需要重新query以获得tuanid
@@ -219,6 +218,32 @@ exports.CreateTuan = function(userid, attrs, options) {
             options.error(error);
         }
         promise.reject(error);
+    });
+
+    return promise;
+};
+
+// 创建一条Account
+exports.CreateAccount = function(user, tuan) {
+    // 先查询避免重复
+    var promise = new AV.Promise();
+
+    var query = new AV.Query(exports.Account);
+    query.equalTo('user', user);
+    query.equalTo('tuan', tuan);
+    query.find().then(function(results) {
+        if (results.length == 0) {
+            var account = new exports.Account();
+            tuan.increment('members');
+            account.set('user', user);
+            account.set('tuan', tuan);
+            // TODO: 应该会同时save tuan
+            account.save();
+            promise.resolve(tuan);
+        } else {
+            console.log('已经有Account了');
+            promise.reject('已经有Account了');
+        }
     });
 
     return promise;
@@ -263,15 +288,17 @@ exports.FormatTuanDetail = function (tuanobj) {
     tuan.news = tuanobj.get('news');
     tuan.slogan = tuanobj.get('slogan');
 
-    var query = new AV.Query(AV.User);
-    query.containedIn("objectId", tuanobj.get('members'));
-    query.find().then(function(users) {
+    var query = new AV.Query(exports.Account);
+    query.equalTo('tuan', tuanobj);
+    query.include('user');
+    query.find().then(function(results) {
         var members = [];
-        for (var i = 0; i < users.length; i++) {
+        for (var i = 0; i < results.length; i++) {
+            var user = results[i].get('user');
             members.push({
-                'uid': users[i].id,
-                'name': users[i].getUsername(),
-                'money': formatFloat(users[i].get('money'))
+                'uid': user.id,
+                'name': user.get('nickname'),
+                'money': formatFloat(results[i].get('money'))
             });
         }
         tuan.members = members;
