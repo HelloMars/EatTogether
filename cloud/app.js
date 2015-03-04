@@ -81,12 +81,23 @@ app.get('/myet', function(req, res) {
 });
 
 app.get('/tuanlist', function(req, res) {
-    console.log('tuanlist: %j', req.AV.user);
     //console.log('cookies: ' + req.headers.cookie);
     res.setHeader('Content-Type', 'application/json');
     req.AV.user.fetch().then(function(user){
         return utils.GetTuanList(user);
     }).then(function(tuans) {
+        tuans.push({
+            'id': 1,
+            'name': '建团',
+            'members': 10,
+            'news': 0
+        });
+        tuans.push({
+            'id': 2,
+            'name': '入团',
+            'members': 10,
+            'news': 0
+        });
         res.jsonp(tuans);
     }, function(error) {
         console.log('TuanList Error: ' + JSON.stringify(error));
@@ -95,12 +106,12 @@ app.get('/tuanlist', function(req, res) {
 
 app.get('/createtuan', function(req, res) {
     // 建团，并创建一条Account
-    console.log('createtuan: %j', req.AV.user);
     req.AV.user.fetch().then(function(user) {
-        utils.CreateTuan(user.id, {'name': '新团'}).then(function(tuan) {
-            utils.CreateAccount(user, tuan);
-            return utils.FormatTuanDetail(tuan);
-        }).then(function (tuan) {
+        utils.CreateTuan({'name': '新团'}).then(function(tuan) {
+            return utils.CreateAccount(user, tuan).then(function() {
+                return utils.FormatTuanDetail(tuan);
+            });
+        }).then(function(tuan) {
             res.jsonp(tuan);
         }, function (error) {
             console.log('CreateTuan Error: ' + JSON.stringify(error));
@@ -109,26 +120,25 @@ app.get('/createtuan', function(req, res) {
 });
 
 app.get('/jointuan', function(req, res) {
-    console.log('jointuan: %j', req.AV.user);
-    if (req.query.tuanid >= 10) {
+    if (req.query.id >= 10) {
         // 入团(生成一条Account)，并更新Tuan.members数
         var query = new AV.Query(utils.Tuan);
-        query.equalTo('tuanid', Number(req.query.tuanid));
+        query.equalTo('tuanid', Number(req.query.id));
         query.find().then(function (tuans) {
             if (tuans.length == 1) {
-                req.AV.user.fetch().then(function (user) {
+                return req.AV.user.fetch().then(function (user) {
                     return utils.CreateAccount(user, tuans[0]);
-                }).then(function (tuan) {
-                    return utils.FormatTuanDetail(tuan);
-                }).then(function (tuan) {
-                    res.jsonp(tuan);
-                }, function (error) {
-                    console.log('JoinTuan Error: ' + JSON.stringify(error));
+                }).then(function() {
+                    return utils.FormatTuanDetail(tuans[0]);
                 });
             } else {
                 console.log('Not Found Joined Tuan');
                 res.jsonp({});
             }
+        }).then(function(tuan) {
+            res.jsonp(tuan);
+        }, function (error) {
+            console.log('JoinTuan Error: ' + JSON.stringify(error));
         });
     } else {
         res.send('Invalid Parameters');

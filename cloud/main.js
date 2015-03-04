@@ -7,13 +7,13 @@ AV.Cloud.define("hello", function(request, response) {
 });
 
 AV.Cloud.define("initDB", function(request, response) {
-  utils.CreateTuan('1', {
+  utils.CreateTuan({
     'name': utils.CREAT_TUAN.name,
     'tuanid': utils.CREAT_TUAN.id,
     'count': 10
   });
 
-  utils.CreateTuan('1', {
+  utils.CreateTuan({
     'name': utils.JOIN_TUAN.name,
     'tuanid': utils.JOIN_TUAN.id,
     'count': 10

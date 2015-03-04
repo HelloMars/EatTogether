@@ -76,17 +76,22 @@ tuanService.factory('tuan', ['$http',
 
         /** 创建团 */
         function createTuan () {
-            return getTuanInfo(1);
+            var request = $http({
+                url: SERVER + 'createtuan',
+                method: 'GET',
+                params: {}
+            });
+
+            return (request.then(handleSuccess, handleError));
         }
 
         /** 入团 */
         function joinTuan (id) {
             var request = $http({
-                url: SERVER + 'tuandetail',
+                url: SERVER + 'jointuan',
                 method: 'GET',
                 params: {
-                    id : 2,
-                    tuanid : id
+                    id : id
                 }
             });
 

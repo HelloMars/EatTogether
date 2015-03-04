@@ -87,21 +87,12 @@ exports.SignupLogin = function(username, password) {
 
     var promise = new AV.Promise();
     var user = new AV.User();
-    var relation = user.relation("tuans");
     user.set('username', username);
     user.set('nickname', username.substring(username.length-4));
     user.set('password', password);
-    user.set('money', 0.0);
     user.set('state', 0);
 
-    var query = new AV.Query(exports.Tuan);
-    query.containedIn("tuanid", [this.CREAT_TUAN.id, this.JOIN_TUAN.id]);
-    query.find().then(function(results) {
-        for (var i = 0; i < results.length; i++) {
-            relation.add(results[i]);
-        }
-        return user.signUp(null);
-    }).then(function (user) {
+    user.signUp().then(function (user) {
         console.log("注册成功: %j", user);
         promise.resolve(user);
     }, function (error) {
@@ -158,7 +149,7 @@ function formatTuan(tuanobj) {
 }
 
 // attrs = {name, tuanid, count}
-exports.CreateTuan = function(userid, attrs, options) {
+exports.CreateTuan = function(attrs, options) {
     var error;
     options = options || {};
 
@@ -201,6 +192,7 @@ exports.CreateTuan = function(userid, attrs, options) {
         tuan.set('name', attrs.name);
         tuan.set('news', 0);
         tuan.set('members', (attrs.count || 0));
+        tuan.set('slogan', 'xxx');
         return tuan.save();
     }).then(function(tuan) {
         // 需要重新query以获得tuanid
@@ -237,13 +229,18 @@ exports.CreateAccount = function(user, tuan) {
             tuan.increment('members');
             account.set('user', user);
             account.set('tuan', tuan);
+            account.set('money', 0);
             // TODO: 应该会同时save tuan
-            account.save();
-            promise.resolve(tuan);
+            return account.save();
         } else {
             console.log('已经有Account了');
-            promise.reject('已经有Account了');
+            // 直接resolve会出错？
+            return AV.Promise.as(results[0]);
         }
+    }).then(function(account) {
+        promise.resolve(account);
+    }, function(error) {
+        promise.reject(error);
     });
 
     return promise;
@@ -314,21 +311,22 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
     if (members.length > 0 && othersnum >= 0 && price >= 0) {
         var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
 
-        var query = new AV.Query(utils.Tuan);
+        var query = new AV.Query(exports.Tuan);
         query.equalTo('tuanid', tuanid);
         query.find().then(function(tuans) {
             if (tuans.length == 1) {
                 return AV.Promise.as(tuans[0]);
             } else {
-                console.log('Not Found Tuan');
-                promise.reject('Not Found Tuan');
+                return AV.Promise.error('Not Found Tuan');
             }
         }).then(function(tuan) {
             // 嵌套查询
             var userQuery = new AV.Query(AV.User);
             userQuery.containedIn("objectId", members);
             var accountQuery = new AV.Query(exports.Account);
-            accountQuery.matchesKeyInQuery('tuan', tuan, userQuery);
+            // 不知道为啥matchesKeyInQuery发生错误
+            accountQuery.equalTo('tuan', tuan);
+            accountQuery.matchesQuery('user', userQuery);
             accountQuery.find().then(function(results) {
                 // 给团成员记账
                 var promises = [];
@@ -339,25 +337,36 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 }
                 return AV.Promise.when(promises);
             }).then(function() {
-                // 给买单者记账
+                // query买单者
                 var query2 = new AV.Query(exports.Account);
                 query2.equalTo('user', user);
                 query2.equalTo('tuan', tuan);
                 return query2.find();
             }).then(function(accounts) {
+                // 给买单者记账
                 if (accounts.length == 1) {
                     var money = accounts[0].get('money');
                     accounts[0].set('money', money + avg * members.length);
                     return accounts[0].save();
                 } else {
-                    console.log('Not Found Account');
-                    promise.reject('Not Found Account');
+                    return AV.Promise.error('Not Found Account');
                 }
             }).then(function() {
+                // 生成消费记录
+                var tuanHistory = new exports.TuanHistory();
+                tuanHistory.set('payer', user);
+                tuanHistory.set('tuan', tuan);
+                // TODO: 可能是个relation
+                tuanHistory.set('members', members);
+                tuanHistory.set('othersnum', othersnum);
+                tuanHistory.set('price', price);
+                return tuanHistory.save();
+            }).then(function() {
+                console.log("结账成功");
                 promise.resolve();
             }, function(error) {
                 // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
-                console.log('Bill Error');
+                console.log("结账错误: " + JSON.stringify(error));
                 promise.reject(error);
             });
         });
