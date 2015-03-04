@@ -181,7 +181,6 @@ app.post('/bill', function(req, res) {
             utils.Bill(user, tuanid, req.body.members, othersnum, price).then(function() {
                 res.send('Bill Success');
             }, function() {
-                // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
                 res.send('Bill Failed');
             });
         });
