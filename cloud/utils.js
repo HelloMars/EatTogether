@@ -45,23 +45,6 @@ exports.Init = function() {
     //});
 };
 
-exports.InitDB = function() {
-    AV.User.logIn('888', 'pwd:888', {
-        success: function(user) {
-            exports.CreateTuan(user, {
-                'name': exports.CREAT_TUAN.name,
-                'tuanid': exports.CREAT_TUAN.id,
-                'count': 10
-            });
-            exports.CreateTuan(user, {
-                'name': exports.JOIN_TUAN.name,
-                'tuanid': exports.JOIN_TUAN.id,
-                'count': 10
-            });
-        }
-    });
-};
-
 exports.getOpenId = function(code) {
     var promise = new AV.Promise();
     OAUTH.getAccessToken(code, function (err, result) {
