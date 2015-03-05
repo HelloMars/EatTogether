@@ -28,7 +28,7 @@ var MENU = {
         }]
 };
 
-exports.SERVER = 'http://eat.avosapps.com/'; // 'http://127.0.0.1:3000/';
+exports.SERVER = 'http://127.0.0.1:3000/'; //'http://eat.avosapps.com/';
 
 exports.CREAT_TUAN = {'id':1, 'name': '建团'};
 
@@ -263,7 +263,6 @@ exports.DeleteAccount = function(user, tuan) {
         } else {
             return AV.Promise.error('Account Results Error');
         }
-        return AV.Object.destroyAll(results);
     }).then(function(ret) {
         if (ret.code == 0) {
             // 退团成功
@@ -473,24 +472,30 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
             }
         };
         var templateId = 'veOn3HUdpIs9X0Ad-3sgpdfJWC1I-7aPZ2YAmj0lzh8';
-        var openid = toUser.get('username');
+        var openid = 'oUgQgt29VhAPB59qvib78KMFZw1I'; //toUser.get('username');
         // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
         var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
         var topcolor = '#FF0000'; // 顶部颜色
         console.log('Send Template Message, Verified url=' + url);
         API.sendTemplate(openid, templateId, url, topcolor, data, function(err, data, res) {
+            var ret = {};
             if (err) {
-                promise.reject(err);
+                ret.code = -1;
+                ret.message = '您的销账请求无法发送给 ' + toUser.get('nickname') + '，请尝试其他团员！';
+                console.log('SendTemplate Error %j', err);
             } else {
-                console.log('sendTemplate: ' + data + '; ' + res);
-                promise.resolve();
+                ret.code = 0;
+                ret.message = '您的销账请求已经发送给 ' + toUser.get('nickname') + '，请联系他确认销账！';
+                console.log('SendTemplate Success: %j, %j', data, res);
             }
+            promise.resolve(ret);
         });
     });
 
     return promise;
 };
 
+// 确认销账，把fromUser的账户信息划分到toUser，并删除一条Account
 exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
 };
 

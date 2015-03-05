@@ -252,8 +252,8 @@ app.get('/requestWriteOff', function(req, res) {
             return query.get(req.query.uid).then(function(toUser) {
                 return utils.RequestWriteOff(fromUser, toUser, Number(req.query.tuanid));
             });
-        }).then(function() {
-            res.jsonp({});
+        }).then(function(ret) {
+            res.jsonp(ret);
         }, function (error) {
             console.log('Request WriteOff Error: ' + JSON.stringify(error));
             res.send('Request WriteOff Error');

@@ -3,10 +3,9 @@ var tuanService = angular.module('tuanService', []);
 tuanService.factory('tuan', ['$http',
     function($http) {
 
-        var SERVER = 'http://eat.avosapps.com/'; // 'http://127.0.0.1:3000/';
+        var SERVER = 'http://127.0.0.1:3000/'; //'http://eat.avosapps.com/';
 
         var ec = encodeURIComponent;
-
 
         return {
             getAll : getAll,
