@@ -105,6 +105,23 @@ app.get('/tuanlist', function(req, res) {
     });
 });
 
+app.get('/tuanhistory', function(req, res) {
+    console.log('tuanhistory:', req.query);
+    var tuanid = Number(req.query.id);
+    var start = Number(req.query.start);
+    var length = Number(req.query.length);
+    if (tuanid >= 10 && start >= 0 && length >=0) {
+        utils.GetTuanHistory(tuanid, start, length).then(function(tuanHistory) {
+            res.jsonp(tuanHistory);
+        }, function(error) {
+            console.log('TuanHistory Error: ' + JSON.stringify(error));
+            res.send('TuanHistory Error');
+        });
+    } else {
+        res.send('Invalid Parameters');
+    }
+});
+
 app.get('/createtuan', function(req, res) {
     // 建团，并创建一条Account
     req.AV.user.fetch().then(function(user) {
@@ -228,17 +245,36 @@ app.post('/bill', function(req, res) {
     }
 });
 
-app.get('/tuanhistory', function(req, res) {
-    console.log('tuanhistory:', req.query);
-    var tuanid = Number(req.query.id);
-    var start = Number(req.query.start);
-    var length = Number(req.query.length);
-    if (tuanid >= 10 && start >= 0 && length >=0) {
-        utils.GetTuanHistory(tuanid, start, length).then(function(tuanHistory) {
-            res.jsonp(tuanHistory);
-        }, function(error) {
-            console.log('TuanHistory Error: ' + JSON.stringify(error));
-            res.send('TuanHistory Error');
+app.get('/requestWriteOff', function(req, res) {
+    if (req.query.uid) {
+        req.AV.user.fetch().then(function(fromUser) {
+            var query = new AV.Query(AV.User);
+            return query.get(req.query.uid).then(function(toUser) {
+                return utils.RequestWriteOff(fromUser, toUser, Number(req.query.tuanid));
+            });
+        }).then(function() {
+            res.jsonp({});
+        }, function (error) {
+            console.log('Request WriteOff Error: ' + JSON.stringify(error));
+            res.send('Request WriteOff Error');
+        });
+    } else {
+        res.send('Invalid Parameters');
+    }
+});
+
+app.get('/verifyWriteOff', function(req, res) {
+    if (req.query.uid) {
+        req.AV.user.fetch().then(function(toUser) {
+            var query = new AV.Query(AV.User);
+            return query.get(req.query.uid).then(function(fromUser) {
+                return utils.VerifyWriteOff(fromUser, toUser, Number(req.query.tuanid));
+            });
+        }).then(function() {
+            res.jsonp({});
+        }, function (error) {
+            console.log('Verify WriteOff Error: ' + JSON.stringify(error));
+            res.send('Verify WriteOff Error');
         });
     } else {
         res.send('Invalid Parameters');

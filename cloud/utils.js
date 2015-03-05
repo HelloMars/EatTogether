@@ -28,6 +28,8 @@ var MENU = {
         }]
 };
 
+exports.SERVER = 'http://127.0.0.1:3000/';
+
 exports.CREAT_TUAN = {'id':1, 'name': '建团'};
 
 exports.JOIN_TUAN = {'id':2, 'name': '入团'};
@@ -442,6 +444,55 @@ function formatTuanHistory(history) {
         + history.get('tuan').get('name') + '团' + history.get('members').length
         + '人消费' + formatFloat(history.get('price'));
 }
+
+// 请求销账，发送模板信息给toUser
+exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
+    var promise = new AV.Promise();
+
+    var query = new AV.Query(exports.Tuan);
+    query.equalTo('tuanid', tuanid);
+    query.find().then(function(tuans) {
+        if (tuans.length == 1) {
+            return AV.Promise.as(tuans[0]);
+        } else {
+            return AV.Promise.error('Tuan Results Error');
+        }
+    }).then(function(tuan) {
+        var data = {
+            fromName: {
+                "value": fromUser.get('nickname'),
+                "color": "#173177"
+            },
+            toName: {
+                "value": toUser.get('nickname'),
+                "color": "#173177"
+            },
+            tuanName: {
+                "value": tuan.get('name'),
+                "color": "#173177"
+            }
+        };
+        var templateId = 'veOn3HUdpIs9X0Ad-3sgpdfJWC1I-7aPZ2YAmj0lzh8';
+        var openid = toUser.get('username');
+        // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
+        var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
+        var topcolor = '#FF0000'; // 顶部颜色
+        console.log('Send Template Message, Verified url=' + url);
+        API.sendTemplate(openid, templateId, url, topcolor, data, function(err, data, res) {
+            if (err) {
+                promise.reject(err);
+            } else {
+                console.log('sendTemplate: ' + data + '; ' + res);
+                promise.resolve();
+            }
+        });
+    });
+
+    return promise;
+};
+
+exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
+};
 
 function formatFloat(float) {
     return Math.round(float*100)/100;

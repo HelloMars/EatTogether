@@ -21,7 +21,11 @@ tuanService.factory('tuan', ['$http',
 
             modTuanInfo : modTuanInfo,
 
-            bill: bill
+            bill: bill,
+
+            requestWriteOff: requestWriteOff,
+
+            verifyWriteOff: verifyWriteOff
         };
 
         /**
@@ -142,5 +146,35 @@ tuanService.factory('tuan', ['$http',
 
             return (request.then(handleSuccess, handleError));
         }
+
+        /** 请求销账 (请求与tuanid里的uid销账) */
+        function requestWriteOff (tuanid, uid) {
+            var request = $http({
+                url: SERVER + 'requestWriteOff',
+                method: 'GET',
+                params: {
+                    tuanid : tuanid,
+                    uid : uid
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+
+        /** 确认销账 (确认与tuanid里的uid销账) */
+        function verifyWriteOff (tuanid, uid) {
+            var request = $http({
+                url: SERVER + 'verifyWriteOff',
+                method: 'GET',
+                params: {
+                    tuanid : tuanid,
+                    uid : uid
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
     }
 ]);
