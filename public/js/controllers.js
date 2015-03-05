@@ -136,8 +136,8 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
 
 
 /** 饭团首页 */
-eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
+eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
         $scope.tuanId = $routeParams.tuanId;
         $scope.loaded = false;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
@@ -160,6 +160,13 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
                 name : $scope.name,
                 slogan : $scope.slogan
             });
+        };
+
+        $scope.quit = function () {
+            tuan.quit($scope.tuanId).then(function (res) {
+                $location.url('/tuan/');
+            });
+
         };
 
     }
