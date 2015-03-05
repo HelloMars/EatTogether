@@ -237,12 +237,43 @@ exports.DeleteAccount = function(user, tuan) {
     query.equalTo('user', user);
     query.equalTo('tuan', tuan);
     query.find().then(function(results) {
+        if (results.length == 1) {
+            var ret = {};
+            ret.code = -1;
+            var money = formatFloat(results[0].get('money'));
+            if (money > 10) {
+                // 清除账户余额再退团
+                ret.message = '您在该团还有较多结余(' + money + ')，请销账后再退团';
+                return AV.Promise.as(ret);
+            } else if (money < -10) {
+                // 清除账户余额再退团
+                ret.message = '您在该团还有较多欠款(' + money + ')，请销账后再退团';
+                return AV.Promise.as(ret);
+            } else {
+                // 直接退团
+                ret.code = 0;
+                ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
+                return results[0].destroy().then(function() {
+                    // TODO: 需要分摊给其他团员
+                    return AV.Promise.as(ret);
+                });
+            }
+        } else {
+            return AV.Promise.error('Account Results Error');
+        }
         return AV.Object.destroyAll(results);
-    }).then(function() {
-        tuan.increment('members', -1);
-        return tuan.save();
-    }).then(function() {
-        promise.resolve();
+    }).then(function(ret) {
+        if (ret.code == 0) {
+            // 退团成功
+            tuan.increment('members', -1);
+            return tuan.save().then(function() {
+                return AV.Promise.as(ret);
+            });
+        } else {
+            return AV.Promise.as(ret);
+        }
+    }).then(function(ret) {
+        promise.resolve(ret);
     }, function(error) {
         promise.reject(error);
     });

@@ -160,9 +160,9 @@ app.get('/quittuan', function(req, res) {
             } else {
                 return AV.Promise.error('Tuan Results Error');
             }
-        }).then(function() {
-            console.log('QuitTuan %s Success', req.query.id);
-            res.send('QuitTuan Success');
+        }).then(function(ret) {
+            console.log(req.query.id + ': ' + ret.message);
+            res.jsonp(ret);
         }, function (error) {
             console.log('QuitTuan Error: ' + JSON.stringify(error));
             res.send('QuitTuan Error');
