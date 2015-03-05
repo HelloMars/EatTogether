@@ -7,16 +7,19 @@
             <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
         </ul>
     </div>
-    <label for="name">
-        饭团名：
-        <input type="text" value="{{name}}" placeholder="(二蛋团）随机生成的可重复团名">
-    </label>
-    <label for="id">
-        饭团ID：
-        <input type="text"  value="{{id}}" placeholder="xxx(系统生成的唯一ID)">
-    </label>
-    <div id="qrcode" class="qrcode"></div>
-    <label for="broadcast">
-        <textarea name="broadcast"  value="{{text}}"  id="" cols="30" rows="10">口号：xxx (类似于群公告栏，可以随便填写一定长度文字。建团时系统可以配合团名随机打出一些有意思的口号。)</textarea>
-    </label>
+    <div ng-show="loaded">
+        <label for="name">
+            饭团名：
+            <input type="text" value="{{name}}" ng-blur="save()" ng-model="name" placeholder="(二蛋团）随机生成的可重复团名">
+        </label>
+        <label for="id">
+            饭团ID：
+            <input type="text" disabled="disabled" value="{{id}}" placeholder="xxx(系统生成的唯一ID)">
+        </label>
+        <div id="qrcode" class="qrcode"></div>
+        <label for="broadcast">
+            <textarea name="broadcast" ng-blur="save()" ng-model="slogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
+        </label>
+
+    </div>
 </div>

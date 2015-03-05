@@ -7,5 +7,9 @@
             <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
         </ul>
     </div>
-    <h1>饭团历史</h1>
+    <ul>
+        <li ng-repeat="history in histories">
+        {{history}}
+        </li>
+    </ul>
 </div>
