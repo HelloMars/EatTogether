@@ -101,21 +101,23 @@ app.get('/tuanlist', function(req, res) {
         res.jsonp(tuans);
     }, function(error) {
         console.log('TuanList Error: ' + JSON.stringify(error));
+        res.send('TuanList Error');
     });
 });
 
 app.get('/createtuan', function(req, res) {
     // 建团，并创建一条Account
     req.AV.user.fetch().then(function(user) {
-        utils.CreateTuan({'name': '新团'}).then(function(tuan) {
+        return utils.CreateTuan({'name': '新团'}).then(function(tuan) {
             return utils.CreateAccount(user, tuan).then(function() {
                 return utils.FormatTuanDetail(tuan);
             });
-        }).then(function(tuan) {
-            res.jsonp(tuan);
-        }, function (error) {
-            console.log('CreateTuan Error: ' + JSON.stringify(error));
         });
+    }).then(function(tuan) {
+        res.jsonp(tuan);
+    }, function (error) {
+        console.log('CreatTuan Error: ' + JSON.stringify(error));
+        res.send('CreatTuan Error');
     });
 });
 
@@ -127,18 +129,43 @@ app.get('/jointuan', function(req, res) {
         query.find().then(function (tuans) {
             if (tuans.length == 1) {
                 return req.AV.user.fetch().then(function (user) {
-                    return utils.CreateAccount(user, tuans[0]);
-                }).then(function() {
-                    return utils.FormatTuanDetail(tuans[0]);
+                    return utils.CreateAccount(user, tuans[0]).then(function () {
+                        return utils.FormatTuanDetail(tuans[0]);
+                    });
                 });
             } else {
-                console.log('Not Found Joined Tuan');
-                res.jsonp({});
+                return AV.Promise.error('Tuan Results Error');
             }
         }).then(function(tuan) {
             res.jsonp(tuan);
         }, function (error) {
             console.log('JoinTuan Error: ' + JSON.stringify(error));
+            res.send('JoinTuan Error');
+        });
+    } else {
+        res.send('Invalid Parameters');
+    }
+});
+
+app.get('/quittuan', function(req, res) {
+    if (req.query.id >= 10) {
+        // 退团(删除Account)，并更新Tuan.members数
+        var query = new AV.Query(utils.Tuan);
+        query.equalTo('tuanid', Number(req.query.id));
+        query.find().then(function (tuans) {
+            if (tuans.length == 1) {
+                return req.AV.user.fetch().then(function(user) {
+                    return utils.DeleteAccount(user, tuans[0]);
+                });
+            } else {
+                return AV.Promise.error('Tuan Results Error');
+            }
+        }).then(function() {
+            console.log('QuitTuan %s Success', req.query.id);
+            res.send('QuitTuan Success');
+        }, function (error) {
+            console.log('QuitTuan Error: ' + JSON.stringify(error));
+            res.send('QuitTuan Error');
         });
     } else {
         res.send('Invalid Parameters');
@@ -154,13 +181,13 @@ app.get('/tuandetail', function(req, res) {
             if (tuans.length == 1) {
                 return utils.FormatTuanDetail(tuans[0]);
             } else {
-                console.log('Not Found Tuan');
-                res.jsonp({});
+                return AV.Promise.error('Tuan Results Error');
             }
         }).then(function (tuan) {
             res.jsonp(tuan);
         }, function (error) {
             console.log('TuanDetail Error: ' + JSON.stringify(error));
+            res.send('TuanDetail Error');
         });
     } else {
         res.send('Invalid Parameters');
@@ -173,8 +200,9 @@ app.post('/modtuaninfo', function(req, res) {
     if (tuanid >= 10 && req.body.info) {
         utils.ModifyTuan(tuanid, req.body.info).then(function() {
             res.send('Modtuaninfo Success');
-        }, function() {
-            res.send('Modtuaninfo Failed');
+        }, function(error) {
+            console.log('Modtuaninfo Error: ' + JSON.stringify(error));
+            res.send('Modtuaninfo Error');
         });
     } else {
         res.send('Invalid Parameters');
@@ -190,8 +218,9 @@ app.post('/bill', function(req, res) {
         req.AV.user.fetch().then(function(user) {
             utils.Bill(user, tuanid, req.body.members, othersnum, price).then(function() {
                 res.send('Bill Success');
-            }, function() {
-                res.send('Bill Failed');
+            }, function(error) {
+                console.log('Bill Error: ' + JSON.stringify(error));
+                res.send('Bill Error');
             });
         });
     } else {
@@ -207,8 +236,9 @@ app.get('/tuanhistory', function(req, res) {
     if (tuanid >= 10 && start >= 0 && length >=0) {
         utils.GetTuanHistory(tuanid, start, length).then(function(tuanHistory) {
             res.jsonp(tuanHistory);
-        }, function() {
-            res.send('Tuanhistory Failed');
+        }, function(error) {
+            console.log('TuanHistory Error: ' + JSON.stringify(error));
+            res.send('TuanHistory Error');
         });
     } else {
         res.send('Invalid Parameters');

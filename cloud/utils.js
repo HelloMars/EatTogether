@@ -213,7 +213,6 @@ exports.CreateAccount = function(user, tuan) {
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
-            // TODO: 应该会同时save tuan
             return account.save();
         } else {
             console.log('已经有Account了');
@@ -222,6 +221,28 @@ exports.CreateAccount = function(user, tuan) {
         }
     }).then(function(account) {
         promise.resolve(account);
+    }, function(error) {
+        promise.reject(error);
+    });
+
+    return promise;
+};
+
+// 删除一条Account
+exports.DeleteAccount = function(user, tuan) {
+    // 先查询避免重复
+    var promise = new AV.Promise();
+
+    var query = new AV.Query(exports.Account);
+    query.equalTo('user', user);
+    query.equalTo('tuan', tuan);
+    query.find().then(function(results) {
+        return AV.Object.destroyAll(results);
+    }).then(function() {
+        tuan.increment('members', -1);
+        return tuan.save();
+    }).then(function() {
+        promise.resolve();
     }, function(error) {
         promise.reject(error);
     });
@@ -314,8 +335,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 // 给团成员记账
                 var promises = [];
                 for (var i = 0; i < results.length; i++) {
-                    var money = results[i].get('money');
-                    results[i].set('money', money - avg);
+                    results[i].increment('money', -avg);
                     promises.push(results[i].save());
                 }
                 return AV.Promise.when(promises);
@@ -328,8 +348,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
             }).then(function(accounts) {
                 // 给买单者记账
                 if (accounts.length == 1) {
-                    var money = accounts[0].get('money');
-                    accounts[0].set('money', money + avg * members.length);
+                    accounts[0].increment('money', avg*members.length);
                     return accounts[0].save();
                 } else {
                     return AV.Promise.error('Not Found Account');

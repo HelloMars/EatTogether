@@ -17,6 +17,8 @@ tuanService.factory('tuan', ['$http',
 
             joinTuan : joinTuan,
 
+            quitTuan : quitTuan,
+
             modTuanInfo : modTuanInfo,
 
             bill: bill
@@ -89,6 +91,19 @@ tuanService.factory('tuan', ['$http',
         function joinTuan (id) {
             var request = $http({
                 url: SERVER + 'jointuan',
+                method: 'GET',
+                params: {
+                    id : id
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 退团 */
+        function quitTuan (id) {
+            var request = $http({
+                url: SERVER + 'quittuan',
                 method: 'GET',
                 params: {
                     id : id
