@@ -14,7 +14,7 @@ var MENU = {
         {
             "type":"view",
             "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/myet', '0', 'snsapi_base')
+            "url": OAUTH.getAuthorizeURL(exports.SERVER + 'myet', '0', 'snsapi_base')
         },
         {
             "name":"菜单",
@@ -28,7 +28,7 @@ var MENU = {
         }]
 };
 
-exports.SERVER = 'http://127.0.0.1:3000/';
+exports.SERVER = 'http://eat.avosapps.com/'; // 'http://127.0.0.1:3000/';
 
 exports.CREAT_TUAN = {'id':1, 'name': '建团'};
 
