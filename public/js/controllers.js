@@ -21,8 +21,8 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len + 'px',
-            'line-height' : fz + 'px',
+            'height' : len/2 + 'px',
+            'padding' : len/4 + 'px 0px',
             'font-size' : fz +'px'
         }
     };
@@ -163,8 +163,9 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
         };
 
         $scope.quit = function () {
-            tuan.quit($scope.tuanId).then(function (res) {
-                $location.url('/tuan/');
+            tuan.quitTuan($scope.tuanId).then(function (res) {
+                alert(res.message);
+                if (res.code !== -1) $location.url('/tuan/');
             });
 
         };
