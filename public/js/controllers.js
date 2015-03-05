@@ -21,8 +21,8 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len + 'px',
-            'line-height' : fz + 'px',
+            'height' : len/2 + 'px',
+            'padding' : len/4 + 'px 0px',
             'font-size' : fz +'px'
         }
     };
@@ -83,14 +83,14 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                 angular.extend(user, getDesign(user.money));
                 $scope.list.push(user);
             });
-            console.log($scope.list);
+            $scope.list.unshift(maidan);
+
         });
         var maidan = {
             name : '窝买单',
             money : 10
         };
         angular.extend(maidan, getDesign(maidan.money));
-        $scope.list.push(maidan);
         $scope.click = function(name) {
             if (name !== '窝买单') return;
             $location.url('/tuan/' + $scope.tuanId + '/bill');
@@ -105,16 +105,20 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.members = res.members;
             $scope.curTotal = res.members.length;
+            $scope.notMember = 0;
+            $scope.numberErr = false;
+
             $scope.members.forEach(function(user) {
                 user.inThis = true;
                 console.log(user);
             });
-            $scope.change = function () {
+            $scope.changeMember = function () {
                 var tmp = 0;
                 $scope.members.forEach(function (member) {
                     if (member.inThis) tmp++;
                 });
                 $scope.curTotal = tmp;
+                $scope.average = totalMoney/(curTotal + notMember);
             };
             $scope.confirm = function () {
                 var members = $scope.members.map(function (member) {
@@ -132,13 +136,15 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
 
 
 /** 饭团首页 */
-eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
+eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
         $scope.tuanId = $routeParams.tuanId;
+        $scope.loaded = false;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.name = res.name;
             $scope.id = res.id;
-            $scope.text = res.text;
+            $scope.slogan = res.slogan;
+            $scope.loaded = true;
         });
 
         /** 二维码生成 */
@@ -149,13 +155,32 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
         });
         qrcode.makeCode(text);
 
+        $scope.save = function () {
+            tuan.modTuanInfo($scope.id, {
+                name : $scope.name,
+                slogan : $scope.slogan
+            });
+        };
+
+        $scope.quit = function () {
+            tuan.quitTuan($scope.tuanId).then(function (res) {
+                alert(res.message);
+                if (res.code !== -1) $location.url('/tuan/');
+            });
+
+        };
+
     }
 ]);
 
 /** 饭团历史 */
-eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', '$http',
-    function ($scope, $routeParams) {
+eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan',
+    function ($scope, $routeParams, tuan) {
         $scope.tuanId = $routeParams.tuanId;
+        tuan.getTuanHistory($scope.tuanId, 0, 100)
+        .then(function (res) {
+            $scope.histories = res;
+        });
     }
 
 ]);
