@@ -2,6 +2,8 @@
 body {
   background-color: #636465;
   margin: 0; }
+  body p {
+    margin: 0; }
 
 .tuan {
   float: left; }

@@ -2,7 +2,7 @@
  * Created by Meng on 2015/2/4.
  */
 
-var eatTogetherControllers = angular.module('eatTogetherControllers', []);
+var eatTogetherControllers = angular.module('eatTogetherControllers', ['ui.bootstrap']);
 
 /**
  * 根据数值获取样式
@@ -21,7 +21,7 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len/2 + 'px',
+            'height' : len + 'px',
             'padding' : len/4 + 'px 0px',
             'font-size' : fz +'px'
         }
@@ -74,8 +74,8 @@ eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tu
 
 
 /** 饭团详情页(成员列表页) */
-eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan',
-    function ($scope, $routeParams, $location, tuan) {
+eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan', '$modal',
+    function ($scope, $routeParams, $location, tuan, $modal) {
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
@@ -92,11 +92,35 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         };
         angular.extend(maidan, getDesign(maidan.money));
         $scope.click = function(name) {
-            if (name !== '窝买单') return;
-            $location.url('/tuan/' + $scope.tuanId + '/bill');
+            if (name === '窝买单') {
+                $location.url('/tuan/' + $scope.tuanId + '/bill');
+            } else {
+                var modalInstance = $modal.open({
+                  templateUrl: './html/modal.html',
+                  controller: 'modalCtrl',
+                  resolve: { }
+                });
+
+            }
         };
+
     }
 ]);
+
+
+/** 销账确认modal */
+eatTogetherControllers.controller('modalCtrl', [ '$scope', '$modalInstance', function ($scope, $modalInstance) {
+
+  $scope.ok = function () {
+    $modalInstance.close();
+  };
+
+  $scope.cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+}]);
+
+
 
 /** 买单页 */
 eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan',
@@ -118,7 +142,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                     if (member.inThis) tmp++;
                 });
                 $scope.curTotal = tmp;
-                $scope.average = totalMoney/(curTotal + notMember);
+                $scope.average = $scope.totalMoney/( $scope.curTotal +  $scope.notMember);
             };
             $scope.confirm = function () {
                 var members = $scope.members.map(function (member) {

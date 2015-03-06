@@ -49,4 +49,8 @@
     display: inline-block;
     border: 2px solid #d7d7d7; }
 
+.s-history .history li {
+  margin: 10px auto;
+  font-size: 16px; }
+
 /*# sourceMappingURL=tuan.css.map */
