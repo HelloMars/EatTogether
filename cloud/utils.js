@@ -82,7 +82,7 @@ exports.Subscribe = function(openid) {
     }, function(error) {
         if (error.code == 202) {
             console.log("用户已存在: %s", openid);
-            return AV.Promise.as();
+            return modifyUserState(openid, 1);
         } else {
             // 非正常状态
             console.log("注册失败: " + JSON.stringify(error));
