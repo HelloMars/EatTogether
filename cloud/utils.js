@@ -254,10 +254,15 @@ exports.CreateAccount = function(user, tuan) {
             account.set('money', 0);
             account.set('state', 0);
             return account.save();
-        } else {
-            console.log('已经有Account了');
-            // 直接resolve会出错？
+        } else if (results.length == 1) {
+            var state = results[0].get('state');
+            if (state == -1) {
+                results[0].set('state', 0);
+                results[0].save();
+            }
             return AV.Promise.as(results[0]);
+        } else {
+            return AV.Promise.error('Account Results Error');
         }
     }).then(function(account) {
         promise.resolve(account);
