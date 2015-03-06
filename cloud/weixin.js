@@ -1,6 +1,7 @@
 var crypto = require('crypto');
 var config = require('cloud/config/weixin.js');
 var debug = require('debug')('AV:weixin');
+var utils = require('cloud/utils');
 
 exports.exec = function(params, cb) {
     if (params.signature) {
@@ -46,7 +47,7 @@ var receiveMessage = function(msg, cb) {
         var fromUserId = msg.xml.FromUserName + '';
         switch (event) {
             case 'subscribe':
-                if (msg.xml.EventKey) {
+                if (msg.xml.Ticket) {
                     // qrscene
                 } else {
                     // 主动关注微信账号
