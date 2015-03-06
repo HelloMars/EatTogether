@@ -6,6 +6,8 @@ var WechatOAuth = require('wechat-oauth');
 
 var APPID = 'wx215f75c4627af14a';
 var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
+var TEMPLATEID1 = 'MCbV1foI13HSHg86rP8VirQTxpOBWock_PDtetKFxeA';
+var TEMPLATEID2 = '3jKcuGO8M0Oq3HsBBV-tz2j7OHito5rWFNZR25B5Qe0';
 
 var API = new WechatAPI(APPID, APPSECRET);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
@@ -527,15 +529,13 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
                 "color": "#173177"
             }
         };
-        var templateId = 'veOn3HUdpIs9X0Ad-3sgpdfJWC1I-7aPZ2YAmj0lzh8';
         var username = toUser.get('username');
         // 测试账号的信息推送到oUgQgt29VhAPB59qvib78KMFZw1I
         var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
         // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
         var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
         var topcolor = '#FF0000'; // 顶部颜色
-        console.log('Send Template Message, Verified url=' + url);
-        API.sendTemplate(openid, templateId, url, topcolor, data, function(err, data, res) {
+        API.sendTemplate(openid, TEMPLATEID2, url, topcolor, data, function(err, data, res) {
             if (err) {
                 ret.code = -1;
                 ret.message = '您的销账请求无法发送给 ' + toUser.get('nickname') + '，请尝试其他团员！';
@@ -552,7 +552,7 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     return promise;
 };
 
-// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团）
+// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团），发模板消息给fromUser
 exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
     var promise = new AV.Promise();
 
@@ -585,6 +585,25 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
             return AV.Promise.error('Account Results Error');
         }
     }).then(function() {
+        var data = {
+            fromName: {
+                "value": fromUser.get('nickname'),
+                "color": "#173177"
+            },
+            toName: {
+                "value": toUser.get('nickname'),
+                "color": "#173177"
+            },
+            tuanName: {
+                "value": tuan.get('name'),
+                "color": "#173177"
+            }
+        };
+        var username = toUser.get('username');
+        var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+        var topcolor = '#FF0000'; // 顶部颜色
+        API.sendTemplate(openid, TEMPLATEID1, null, topcolor, data, function(err, data, res){});
+
         ret.code = 0;
         ret.message = '您已经和 ' + fromUser.get('nickname') + ' 销账 ' + money;
         promise.resolve(ret);
