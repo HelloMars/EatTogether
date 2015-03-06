@@ -253,6 +253,7 @@ app.post('/bill', function(req, res) {
     }
 });
 
+/*
 app.get('/requestWriteOff', function(req, res) {
     if (req.query.uid) {
         req.AV.user.fetch().then(function(fromUser) {
@@ -288,6 +289,7 @@ app.get('/verifyWriteOff', function(req, res) {
         res.send('Invalid Parameters');
     }
 });
+*/
 
 app.get('/weixin', function(req, res) {
     console.log('weixin req:', req.query);

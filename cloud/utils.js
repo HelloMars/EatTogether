@@ -518,6 +518,7 @@ function formatTuanHistory(history) {
         + '人消费' + formatFloat(history.get('price'));
 }
 
+/*
 // 请求销账，发送模板消息2给toUser
 exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     var promise = new AV.Promise();
@@ -619,6 +620,7 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
 
     return promise;
 };
+*/
 
 function formatFloat(float) {
     return float.toFixed(2);
