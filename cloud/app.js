@@ -26,11 +26,11 @@ var xmlBodyParser = function (req, res, next) {
     req.on('end', function(){
         xml2js.parseString(buf, function(err, json) {
             if (err) {
-                    err.status = 400;
-                    next(err);
+                err.status = 400;
+                next(err);
             } else {
-                    req.body = json;
-                    next();
+                req.body = json;
+                next();
             }
         });
     });
@@ -39,7 +39,13 @@ var xmlBodyParser = function (req, res, next) {
 var app = express();
 
 // App 全局配置
-app.set('views','cloud/views'); // 设置模板目录
+if (__local) {
+    app.set('views', 'cloud/views');
+} else if(__production) {
+    app.set('views', 'cloud/views');
+} else {
+    app.set('views', 'cloud/dev_views');
+}
 app.set('view engine', 'ejs'); // 设置 template 引擎
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser()); // 读取请求 body 的中间件
@@ -270,8 +276,8 @@ app.get('/verifyWriteOff', function(req, res) {
             return query.get(req.query.uid).then(function(fromUser) {
                 return utils.VerifyWriteOff(fromUser, toUser, Number(req.query.tuanid));
             });
-        }).then(function() {
-            res.jsonp({});
+        }).then(function(ret) {
+            res.jsonp(ret);
         }, function (error) {
             console.log('Verify WriteOff Error: ' + JSON.stringify(error));
             res.send('Verify WriteOff Error');

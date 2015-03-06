@@ -14,7 +14,7 @@ var MENU = {
         {
             "type":"view",
             "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL(exports.SERVER + 'myet', '0', 'snsapi_base')
+            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
         },
         {
             "name":"菜单",
@@ -23,12 +23,26 @@ var MENU = {
                     "type":"click",
                     "name":"赞一下我们",
                     "key":"V001_UP"
+                },
+                {
+                    "type":"view",
+                    "name":"测试环境",
+                    "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
                 }
             ]
         }]
 };
 
-exports.SERVER = 'http://127.0.0.1:3000/'; //'http://eat.avosapps.com/';
+if (__local) {
+    // 当前环境为「开发环境」，是由命令行工具启动的
+    exports.SERVER = 'http://127.0.0.1:3000/';
+} else if(__production) {
+    // 当前环境为「生产环境」，是线上正式运行的环境
+    exports.SERVER = 'http://eat.avosapps.com/';
+} else {
+    // 当前环境为「测试环境」，云代码方法通过 HTTP 头部 X-AVOSCloud-Application-Production:0 来访问；webHosting 通过 dev.xxx.avosapps.com 域名来访问
+    exports.SERVER = 'http://dev.eat.avosapps.com/';
+}
 
 exports.CREAT_TUAN = {'id':1, 'name': '建团'};
 
@@ -67,7 +81,7 @@ exports.SignupLogin = function(username, password) {
         var error = new AV.Error(
             AV.Error.OTHER_CAUSE,
             "无效参数");
-        return AV.Promise.error(error);;
+        return AV.Promise.error(error);
     }
 
     var promise = new AV.Promise();
@@ -111,6 +125,7 @@ exports.GetTuanList = function(user) {
 
     var query = new AV.Query(exports.Account);
     query.equalTo('user', user);
+    query.notEqualTo('state', -1);
     query.include('tuan');
     query.find().then(function(results) {
         var tuans = [];
@@ -215,6 +230,7 @@ exports.CreateAccount = function(user, tuan) {
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
+            account.set('state', 0);
             return account.save();
         } else {
             console.log('已经有Account了');
@@ -255,8 +271,9 @@ exports.DeleteAccount = function(user, tuan) {
                 // 直接退团
                 ret.code = 0;
                 ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
-                return results[0].destroy().then(function() {
-                    // TODO: 需要分摊给其他团员
+                // 只标记不删除
+                results[0].set('state', -1);
+                return results[0].save().then(function() {
                     return AV.Promise.as(ret);
                 });
             }
@@ -323,6 +340,7 @@ exports.FormatTuanDetail = function (tuanobj) {
 
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuanobj);
+    query.notEqualTo('state', -1);
     query.include('user');
     query.find().then(function(results) {
         var members = [];
@@ -362,6 +380,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
             var accountQuery = new AV.Query(exports.Account);
             // 不知道为啥matchesKeyInQuery发生错误
             accountQuery.equalTo('tuan', tuan);
+            accountQuery.notEqualTo('state', -1);
             accountQuery.matchesQuery('user', userQuery);
             accountQuery.find().then(function(results) {
                 // 给团成员记账
@@ -448,6 +467,13 @@ function formatTuanHistory(history) {
 exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     var promise = new AV.Promise();
 
+    var ret = {};
+    if (fromUser.id == toUser.id) {
+        ret.code = -1;
+        ret.message = '不能和自己销账';
+        promise.resolve(ret);
+    }
+
     var query = new AV.Query(exports.Tuan);
     query.equalTo('tuanid', tuanid);
     query.find().then(function(tuans) {
@@ -472,13 +498,14 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
             }
         };
         var templateId = 'veOn3HUdpIs9X0Ad-3sgpdfJWC1I-7aPZ2YAmj0lzh8';
-        var openid = 'oUgQgt29VhAPB59qvib78KMFZw1I'; //toUser.get('username');
+        var username = toUser.get('username');
+        // 测试账号的信息推送到oUgQgt29VhAPB59qvib78KMFZw1I
+        var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
         // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
         var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
         var topcolor = '#FF0000'; // 顶部颜色
         console.log('Send Template Message, Verified url=' + url);
         API.sendTemplate(openid, templateId, url, topcolor, data, function(err, data, res) {
-            var ret = {};
             if (err) {
                 ret.code = -1;
                 ret.message = '您的销账请求无法发送给 ' + toUser.get('nickname') + '，请尝试其他团员！';
@@ -495,8 +522,48 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     return promise;
 };
 
-// 确认销账，把fromUser的账户信息划分到toUser，并删除一条Account
+// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团）
 exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
+    var promise = new AV.Promise();
+
+    if (fromUser.id == toUser.id) {
+        ret.code = -1;
+        ret.message = '不能和自己销账';
+        promise.resolve(ret);
+    }
+
+    // 嵌套查询
+    var money = 0;
+    var tuanQuery = new AV.Query(exports.Tuan);
+    tuanQuery.equalTo("tuanid", tuanid);
+    var accountQuery = new AV.Query(exports.Account);
+    accountQuery.containedIn('user', [fromUser, toUser]);
+    accountQuery.include(['user.id']);
+    accountQuery.matchesQuery('tuan', tuanQuery);
+    accountQuery.find().then(function(accounts) {
+        if (accounts.length == 2) {
+            var fromIdx = 0, toIdx = 1;
+            if (accounts[0].get('user').id == toUser.id) {
+                fromIdx = 1;
+                toIdx = 0;
+            }
+            money = accounts[fromIdx].get('money');
+            accounts[toIdx].increment('money', money);
+            accounts[fromIdx].set('money', 0);
+            return AV.Promise.when([accounts[0].save(), accounts[1].save()]);
+        } else {
+            return AV.Promise.error('Account Results Error');
+        }
+    }).then(function() {
+        ret.code = 0;
+        ret.message = '您已经和 ' + fromUser.get('nickname') + ' 销账 ' + money;
+        promise.resolve(ret);
+    }, function(error) {
+        console.log('Verify WriteOff Error: ' + JSON.stringify(error));
+        promise.reject(error);
+    });
+
+    return promise;
 };
 
 function formatFloat(float) {
