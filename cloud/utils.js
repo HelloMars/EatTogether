@@ -8,6 +8,9 @@ var APPID = 'wx215f75c4627af14a';
 var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 var TEMPLATEID1 = 'MCbV1foI13HSHg86rP8VirQTxpOBWock_PDtetKFxeA';
 var TEMPLATEID2 = '3jKcuGO8M0Oq3HsBBV-tz2j7OHito5rWFNZR25B5Qe0';
+var TEMPLATEID3 = 'FnoaAEDvD7VnV61eVmrwdVY0EmYEIfLCLoFvSBBrCwU';
+var TEMPLATEID4 = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
+var TEMPLATEID5 = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
 var API = new WechatAPI(APPID, APPSECRET);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
@@ -245,29 +248,43 @@ exports.CreateAccount = function(user, tuan) {
     var promise = new AV.Promise();
 
     var query = new AV.Query(exports.Account);
-    query.equalTo('user', user);
     query.equalTo('tuan', tuan);
+    query.notEqualTo('state', -1);
+    query.include(['user.id']);
     query.find().then(function(results) {
-        if (results.length == 0) {
+        var finduser = null;
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].get('user').id == user.id) {
+                finduser = results[i];
+                break;
+            }
+        }
+        if (finduser) {
+            var state = finduser.get('state');
+            if (state == -1) {
+                // 之前退出的团，重新加入
+                tuan.increment('members');
+                finduser.set('tuan', tuan);
+                finduser.set('state', 0);
+                finduser.save();
+                // 给所有团员发template4
+                for (var j = 0; j < results.length; j++) {
+                    sendTemplate5(user, results[j], tuan);
+                }
+            }
+            return AV.Promise.as(finduser);
+        } else {
             var account = new exports.Account();
             tuan.increment('members');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
-            return account.save();
-        } else if (results.length == 1) {
-            var state = results[0].get('state');
-            if (state == -1) {
-                // 之前退出的团，重新加入
-                tuan.increment('members');
-                results[0].set('tuan', tuan);
-                results[0].set('state', 0);
-                results[0].save();
+            // 给所有团员发template4
+            for (var k = 0; k < results.length; k++) {
+                sendTemplate5(user, results[k], tuan);
             }
-            return AV.Promise.as(results[0]);
-        } else {
-            return AV.Promise.error('Account Results Error');
+            return account.save();
         }
     }).then(function(account) {
         promise.resolve(account);
@@ -284,13 +301,21 @@ exports.DeleteAccount = function(user, tuan) {
     var promise = new AV.Promise();
 
     var query = new AV.Query(exports.Account);
-    query.equalTo('user', user);
     query.equalTo('tuan', tuan);
+    query.notEqualTo('state', -1);
+    query.include(['user.id']);
     query.find().then(function(results) {
-        if (results.length == 1) {
+        var finduser = null;
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].get('user').id == user.id) {
+                finduser = results[i];
+                break;
+            }
+        }
+        if (finduser) {
             var ret = {};
             ret.code = -1;
-            var money = formatFloat(results[0].get('money'));
+            var money = formatFloat(finduser.get('money'));
             if (money > 10) {
                 // 清除账户余额再退团
                 ret.message = '您在该团还有较多结余(' + money + ')，请销账后再退团';
@@ -304,10 +329,13 @@ exports.DeleteAccount = function(user, tuan) {
                 ret.code = 0;
                 ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
                 // 只标记不删除
-                results[0].set('state', -1);
-                return results[0].save().then(function() {
-                    return AV.Promise.as(ret);
-                });
+                finduser.set('state', -1);
+                finduser.save();
+                // 给所有团员发template5
+                for (var j = 0; j < results.length; j++) {
+                    sendTemplate5(user, results[j], tuan);
+                }
+                return AV.Promise.as(ret);
             }
         } else {
             return AV.Promise.error('Account Results Error');
@@ -420,6 +448,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 for (var i = 0; i < results.length; i++) {
                     results[i].increment('money', -avg);
                     promises.push(results[i].save());
+                    sendTemplate3(user, results[i], tuan, price, members.length + othersnum, avg, results[i].get('money'));
                 }
                 return AV.Promise.when(promises);
             }).then(function() {
@@ -495,7 +524,7 @@ function formatTuanHistory(history) {
         + '人消费' + formatFloat(history.get('price'));
 }
 
-// 请求销账，发送模板信息给toUser
+// 请求销账，发送模板消息2给toUser
 exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     var promise = new AV.Promise();
 
@@ -552,7 +581,7 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
     return promise;
 };
 
-// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团），发模板消息给fromUser
+// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团），发模板消息1给fromUser
 exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
     var promise = new AV.Promise();
 
@@ -585,25 +614,7 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
             return AV.Promise.error('Account Results Error');
         }
     }).then(function() {
-        var data = {
-            fromName: {
-                "value": fromUser.get('nickname'),
-                "color": "#173177"
-            },
-            toName: {
-                "value": toUser.get('nickname'),
-                "color": "#173177"
-            },
-            tuanName: {
-                "value": tuan.get('name'),
-                "color": "#173177"
-            }
-        };
-        var username = toUser.get('username');
-        var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-        var topcolor = '#FF0000'; // 顶部颜色
-        API.sendTemplate(openid, TEMPLATEID1, null, topcolor, data, function(err, data, res){});
-
+        sendTemplate1(fromUser, toUser, tuan);
         ret.code = 0;
         ret.message = '您已经和 ' + fromUser.get('nickname') + ' 销账 ' + money;
         promise.resolve(ret);
@@ -617,4 +628,136 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
 
 function formatFloat(float) {
     return Math.round(float*100)/100;
+}
+
+function sendTemplate1(fromUser, toUser, tuan) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    // url 跳转到 tuanHistory
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPLATEID1, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTemplate3(fromUser, toUser, tuan, money, number, avg, remain) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        },
+        money: {
+            "value": money,
+            "color": "#173177"
+        },
+        number: {
+            "value": number,
+            "color": "#173177"
+        },
+        avg: {
+            "value": avg,
+            "color": "#173177"
+        },
+        remain: {
+            "value": remain,
+            "color": "#173177"
+        },
+        message: {
+            "value": remain > 10 ? '，可以坐等大家请吃饭咯' : '，快去请大家吃饭吧',
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    // url 跳转到 tuanHistory
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPLATEID3, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTemplate4(fromUser, toUser, tuan) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    // url 跳转到 tuanHistory
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPLATEID4, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTemplate5(fromUser, toUser, tuan) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    // url 跳转到 tuanHistory
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPLATEID5, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
 }
