@@ -21,10 +21,6 @@
                     templateUrl: './html/list.html',
                     controller: 'TuanListCtrl'
                 }).
-                when('/tuan/create', {
-                    templateUrl: './html/tuanIndex.html',
-                    controller: 'TuanCreateCtrl'
-                }).
                 when('/tuan/join', {
                     templateUrl: './html/join.html',
                     controller: 'TuanJoinCtrl'

@@ -30,20 +30,29 @@ function getDesign(tuanMemberCounts) {
 
 
 /** 饭团列表 */
-eatTogetherControllers.controller('TuanListCtrl', ['$scope', 'tuan',
-    function ($scope, tuan) {
+eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan',
+    function ($scope, $location, tuan) {
         $scope.list = [];
 
         tuan.getAll().then(function(res) {
             res.map(function(tuan) {
                 angular.extend(tuan, getDesign(tuan.members));
-                if (tuan.id === 1) tuan.id = 'create';
-                if (tuan.id === 2) tuan.id = 'join';
                 $scope.list.push(tuan);
             });
         });
-        $scope.click = function(name) {
-            console.log(name);
+        $scope.click = function(id) {
+            if (id === 1) {
+                // 建团
+                tuan.createTuan().then(function(res){
+                    if (res.id === undefined) return;
+                    $location.url('/tuan/' + res.id + '/home');
+                });
+            } else if (id === 2) {
+                // 入团
+                $location.url('/tuan/join/');
+            } else {
+                $location.url('/tuan/' + id + '/home');
+            }
         };
     }
 ]);
