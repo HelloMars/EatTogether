@@ -621,7 +621,7 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
 };
 
 function formatFloat(float) {
-    return Math.round(float*100)/100;
+    return float.toFixed(2);
 }
 
 function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
@@ -639,7 +639,7 @@ function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
             "color": "#173177"
         },
         money: {
-            "value": money,
+            "value": formatFloat(money),
             "color": "#173177"
         },
         number: {
