@@ -250,7 +250,7 @@ exports.CreateAccount = function(user, tuan) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
     query.notEqualTo('state', -1);
-    query.include(['user.id']);
+    query.include('user');
     query.find().then(function(results) {
         var finduser = null;
         for (var i = 0; i < results.length; i++) {
@@ -269,7 +269,7 @@ exports.CreateAccount = function(user, tuan) {
                 finduser.save();
                 // 给所有团员发template4
                 for (var j = 0; j < results.length; j++) {
-                    sendTemplate5(user, results[j], tuan);
+                    sendTemplate4(user, results[j].get('user'), tuan);
                 }
             }
             return AV.Promise.as(finduser);
@@ -282,7 +282,7 @@ exports.CreateAccount = function(user, tuan) {
             account.set('state', 0);
             // 给所有团员发template4
             for (var k = 0; k < results.length; k++) {
-                sendTemplate5(user, results[k], tuan);
+                sendTemplate4(user, results[k].get('user'), tuan);
             }
             return account.save();
         }
@@ -303,7 +303,7 @@ exports.DeleteAccount = function(user, tuan) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
     query.notEqualTo('state', -1);
-    query.include(['user.id']);
+    query.include('user');
     query.find().then(function(results) {
         var finduser = null;
         for (var i = 0; i < results.length; i++) {
@@ -333,7 +333,7 @@ exports.DeleteAccount = function(user, tuan) {
                 finduser.save();
                 // 给所有团员发template5
                 for (var j = 0; j < results.length; j++) {
-                    sendTemplate5(user, results[j], tuan);
+                    sendTemplate5(user, results[j].get('user'), tuan);
                 }
                 return AV.Promise.as(ret);
             }
@@ -721,6 +721,7 @@ function sendTemplate4(fromUser, toUser, tuan) {
             "color": "#173177"
         }
     };
+    console.log("xxx:%j", toUser);
     var username = toUser.get('username');
     var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
     // url 跳转到 tuanHistory
