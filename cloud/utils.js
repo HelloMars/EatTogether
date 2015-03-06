@@ -257,6 +257,9 @@ exports.CreateAccount = function(user, tuan) {
         } else if (results.length == 1) {
             var state = results[0].get('state');
             if (state == -1) {
+                // 之前退出的团，重新加入
+                tuan.increment('members');
+                results[0].set('tuan', tuan);
                 results[0].set('state', 0);
                 results[0].save();
             }
