@@ -6,11 +6,11 @@ var WechatOAuth = require('wechat-oauth');
 
 var APPID = 'wx215f75c4627af14a';
 var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
-var TEMPLATEID1 = 'MCbV1foI13HSHg86rP8VirQTxpOBWock_PDtetKFxeA';
-var TEMPLATEID2 = '3jKcuGO8M0Oq3HsBBV-tz2j7OHito5rWFNZR25B5Qe0';
-var TEMPLATEID3 = 'FnoaAEDvD7VnV61eVmrwdVY0EmYEIfLCLoFvSBBrCwU';
-var TEMPLATEID4 = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
-var TEMPLATEID5 = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
+var TEMPID_VERIFY = 'MCbV1foI13HSHg86rP8VirQTxpOBWock_PDtetKFxeA';
+var TEMPID_REQUEST = '8KSD3co2eNCjZG6qYgZLlOs6m63QahS5Bk04vxC_JsU';
+var TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
+var TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
+var TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
 var API = new WechatAPI(APPID, APPSECRET);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
@@ -269,7 +269,7 @@ exports.CreateAccount = function(user, tuan) {
                 finduser.save();
                 // 给所有团员发template4
                 for (var j = 0; j < results.length; j++) {
-                    sendTemplate4(user, results[j].get('user'), tuan);
+                    sendTemplate(TEMPID_JOIN, user, results[j].get('user'), tuan);
                 }
             }
             return AV.Promise.as(finduser);
@@ -280,9 +280,9 @@ exports.CreateAccount = function(user, tuan) {
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
-            // 给所有团员发template4
+            // 给所有团员发消息
             for (var k = 0; k < results.length; k++) {
-                sendTemplate4(user, results[k].get('user'), tuan);
+                sendTemplate(TEMPID_JOIN, user, results[k].get('user'), tuan);
             }
             return account.save();
         }
@@ -331,9 +331,9 @@ exports.DeleteAccount = function(user, tuan) {
                 // 只标记不删除
                 finduser.set('state', -1);
                 finduser.save();
-                // 给所有团员发template5
+                // 给所有团员发消息
                 for (var j = 0; j < results.length; j++) {
-                    sendTemplate5(user, results[j].get('user'), tuan);
+                    sendTemplate(TEMPID_QUIT, user, results[j].get('user'), tuan);
                 }
                 return AV.Promise.as(ret);
             }
@@ -441,6 +441,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
             // 不知道为啥matchesKeyInQuery发生错误
             accountQuery.equalTo('tuan', tuan);
             accountQuery.notEqualTo('state', -1);
+            accountQuery.include('user');
             accountQuery.matchesQuery('user', userQuery);
             accountQuery.find().then(function(results) {
                 // 给团成员记账
@@ -448,7 +449,7 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 for (var i = 0; i < results.length; i++) {
                     results[i].increment('money', -avg);
                     promises.push(results[i].save());
-                    sendTemplate3(user, results[i], tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                    sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
                 }
                 return AV.Promise.when(promises);
             }).then(function() {
@@ -564,7 +565,7 @@ exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
         // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
         var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
         var topcolor = '#FF0000'; // 顶部颜色
-        API.sendTemplate(openid, TEMPLATEID2, url, topcolor, data, function(err, data, res) {
+        API.sendTemplate(openid, TEMPID_REQUEST, url, topcolor, data, function(err, data, res) {
             if (err) {
                 ret.code = -1;
                 ret.message = '您的销账请求无法发送给 ' + toUser.get('nickname') + '，请尝试其他团员！';
@@ -614,7 +615,7 @@ exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
             return AV.Promise.error('Account Results Error');
         }
     }).then(function() {
-        sendTemplate1(fromUser, toUser, tuan);
+        sendTemplate(TEMPID_VERIFY, fromUser, toUser, tuan);
         ret.code = 0;
         ret.message = '您已经和 ' + fromUser.get('nickname') + ' 销账 ' + money;
         promise.resolve(ret);
@@ -630,35 +631,7 @@ function formatFloat(float) {
     return Math.round(float*100)/100;
 }
 
-function sendTemplate1(fromUser, toUser, tuan) {
-    var data = {
-        fromName: {
-            "value": fromUser.get('nickname'),
-            "color": "#173177"
-        },
-        toName: {
-            "value": toUser.get('nickname'),
-            "color": "#173177"
-        },
-        tuanName: {
-            "value": tuan.get('name'),
-            "color": "#173177"
-        }
-    };
-    var username = toUser.get('username');
-    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-    // url 跳转到 tuanHistory
-    var topcolor = '#FF0000'; // 顶部颜色
-    API.sendTemplate(openid, TEMPLATEID1, null, topcolor, data, function(err, data, res) {
-        if (err) {
-            console.log('SendTemplate Error %j', err);
-        } else {
-            console.log('SendTemplate Success: %j, %j', data, res);
-        }
-    });
-}
-
-function sendTemplate3(fromUser, toUser, tuan, money, number, avg, remain) {
+function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
     var data = {
         fromName: {
             "value": fromUser.get('nickname'),
@@ -681,23 +654,22 @@ function sendTemplate3(fromUser, toUser, tuan, money, number, avg, remain) {
             "color": "#173177"
         },
         avg: {
-            "value": avg,
+            "value": formatFloat(avg),
             "color": "#173177"
         },
         remain: {
-            "value": remain,
+            "value": formatFloat(remain),
             "color": "#173177"
         },
         message: {
             "value": remain > 10 ? '，可以坐等大家请吃饭咯' : '，快去请大家吃饭吧',
-            "color": "#173177"
+            "color": "#000000"
         }
     };
     var username = toUser.get('username');
     var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-    // url 跳转到 tuanHistory
     var topcolor = '#FF0000'; // 顶部颜色
-    API.sendTemplate(openid, TEMPLATEID3, null, topcolor, data, function(err, data, res) {
+    API.sendTemplate(openid, TEMPID_BILL, null, topcolor, data, function(err, data, res) {
         if (err) {
             console.log('SendTemplate Error %j', err);
         } else {
@@ -706,36 +678,7 @@ function sendTemplate3(fromUser, toUser, tuan, money, number, avg, remain) {
     });
 }
 
-function sendTemplate4(fromUser, toUser, tuan) {
-    var data = {
-        fromName: {
-            "value": fromUser.get('nickname'),
-            "color": "#173177"
-        },
-        toName: {
-            "value": toUser.get('nickname'),
-            "color": "#173177"
-        },
-        tuanName: {
-            "value": tuan.get('name'),
-            "color": "#173177"
-        }
-    };
-    console.log("xxx:%j", toUser);
-    var username = toUser.get('username');
-    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-    // url 跳转到 tuanHistory
-    var topcolor = '#FF0000'; // 顶部颜色
-    API.sendTemplate(openid, TEMPLATEID4, null, topcolor, data, function(err, data, res) {
-        if (err) {
-            console.log('SendTemplate Error %j', err);
-        } else {
-            console.log('SendTemplate Success: %j, %j', data, res);
-        }
-    });
-}
-
-function sendTemplate5(fromUser, toUser, tuan) {
+function sendTemplate(tempId, fromUser, toUser, tuan) {
     var data = {
         fromName: {
             "value": fromUser.get('nickname'),
@@ -752,9 +695,8 @@ function sendTemplate5(fromUser, toUser, tuan) {
     };
     var username = toUser.get('username');
     var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-    // url 跳转到 tuanHistory
     var topcolor = '#FF0000'; // 顶部颜色
-    API.sendTemplate(openid, TEMPLATEID5, null, topcolor, data, function(err, data, res) {
+    API.sendTemplate(openid, tempId, null, topcolor, data, function(err, data, res) {
         if (err) {
             console.log('SendTemplate Error %j', err);
         } else {
