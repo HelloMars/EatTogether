@@ -69,15 +69,17 @@ app.get('/myet', function(req, res) {
     } else if (code.indexOf('test_') == 0) {
         // 使用测试用户
         var openid = code.substring(5);
-        utils.SignupLogin(openid, 'pwd:'+openid).then(function () {
+        utils.Subscribe(openid).then(function() {
+            return utils.Login(openid, 'pwd:'+openid);
+        }).then(function() {
             res.render('myet.html');
         }, function (error) {
             res.render('hello', {message: error.message})
         });
     } else {
-        // 正常流程先注册用户
+        // 正常流程登陆用户
         utils.getOpenId(code).then(function (openid) {
-            return utils.SignupLogin(openid, 'pwd:'+openid);
+            return utils.Login(openid, 'pwd:'+openid);
         }).then(function () {
             res.render('myet.html');
         }, function (error) {

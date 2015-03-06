@@ -23,11 +23,6 @@ var MENU = {
                     "type":"click",
                     "name":"赞一下我们",
                     "key":"V001_UP"
-                },
-                {
-                    "type":"view",
-                    "name":"测试环境",
-                    "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
                 }
             ]
         }]
@@ -79,7 +74,38 @@ exports.getOpenId = function(code) {
     return promise;
 };
 
-exports.SignupLogin = function(username, password) {
+// 订阅公众号
+exports.Subscribe = function(openid) {
+    return Signup(openid, 'pwd:'+openid, 1).then(function(user) {
+        console.log("注册成功: %j", user);
+        return AV.Promise.as(user);
+    }, function(error) {
+        if (error.code == 202) {
+            console.log("用户已存在: %s", openid);
+            return AV.Promise.as();
+        } else {
+            // 非正常状态
+            console.log("注册失败: " + JSON.stringify(error));
+            promise.reject(error);
+        }
+    });
+};
+
+// 取消订阅
+exports.UnSubscribe = function(openid) {
+    return modifyUserState(openid, -1);
+};
+
+function modifyUserState(openid, flag) {
+    var query = new AV.Query(AV.User);
+    query.equalTo('username', openid);
+    return query.first().then(function(user) {
+        user.set('state', flag);
+        return user.save();
+    });
+}
+
+function Signup(username, password, flag) {
     if (username === undefined || password === undefined) {
         var error = new AV.Error(
             AV.Error.OTHER_CAUSE,
@@ -87,38 +113,31 @@ exports.SignupLogin = function(username, password) {
         return AV.Promise.error(error);
     }
 
-    var promise = new AV.Promise();
     var user = new AV.User();
     user.set('username', username);
     user.set('nickname', username.substring(username.length-4));
     user.set('password', password);
-    user.set('state', 0);
+    user.set('state', flag);
 
-    user.signUp().then(function (user) {
-        console.log("注册成功: %j", user);
-        promise.resolve(user);
-    }, function (error) {
-        if (error.code == 202) {
-            // 如果用户名已经存在，则直接登陆
-            console.log("直接登陆: " + JSON.stringify(user));
-            AV.User.logIn(username, password, {
-                success: function(user) {
-                    // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
-                    console.log('登录成功: %j', user);
-                    promise.resolve(user);
-                },
-                error: function(user, error) {
-                    // 登录失败，非正常状态
-                    console.log("登录失败: " + JSON.stringify(error));
-                    promise.reject(user);
-                }
-            });
-        } else {
-            // 非正常状态
-            console.log("注册失败: " + JSON.stringify(error));
-            promise.reject(error);
+    return user.signUp();
+}
+
+exports.Login = function(username, password) {
+    var promise = new AV.Promise();
+
+    AV.User.logIn(username, password, {
+        success: function(user) {
+            // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
+            console.log('登录成功: %j', user);
+            promise.resolve(user);
+        },
+        error: function(user, error) {
+            // 登录失败，非正常状态
+            console.log("登录失败: " + JSON.stringify(error));
+            promise.reject(user);
         }
     });
+
     return promise;
 };
 
