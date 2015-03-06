@@ -249,41 +249,41 @@ exports.CreateAccount = function(user, tuan) {
 
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
-    query.notEqualTo('state', -1);
     query.include('user');
     query.find().then(function(results) {
-        var finduser = null;
+        var found = null;
         for (var i = 0; i < results.length; i++) {
             if (results[i].get('user').id == user.id) {
-                finduser = results[i];
+                found = results[i];
                 break;
             }
         }
-        if (finduser) {
-            var state = finduser.get('state');
+        if (found) {
+            var state = found.get('state');
             if (state == -1) {
+                // 给所有团员发消息
+                for (var j = 0; j < results.length; j++) {
+                    if (results[i].get('state') != -1) {
+                        sendTemplate(TEMPID_JOIN, user, results[j].get('user'), tuan);
+                    }
+                }
                 // 之前退出的团，重新加入
                 tuan.increment('members');
-                finduser.set('tuan', tuan);
-                finduser.set('state', 0);
-                finduser.save();
-                // 给所有团员发template4
-                for (var j = 0; j < results.length; j++) {
-                    sendTemplate(TEMPID_JOIN, user, results[j].get('user'), tuan);
-                }
+                found.set('tuan', tuan);
+                found.set('state', 0);
             }
-            return AV.Promise.as(finduser);
+            return found.save();
         } else {
+            // 给所有团员发消息
+            for (var k = 0; k < results.length; k++) {
+                sendTemplate(TEMPID_JOIN, user, results[k].get('user'), tuan);
+            }
             var account = new exports.Account();
             tuan.increment('members');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
-            // 给所有团员发消息
-            for (var k = 0; k < results.length; k++) {
-                sendTemplate(TEMPID_JOIN, user, results[k].get('user'), tuan);
-            }
             return account.save();
         }
     }).then(function(account) {
@@ -305,17 +305,17 @@ exports.DeleteAccount = function(user, tuan) {
     query.notEqualTo('state', -1);
     query.include('user');
     query.find().then(function(results) {
-        var finduser = null;
+        var found = null;
         for (var i = 0; i < results.length; i++) {
             if (results[i].get('user').id == user.id) {
-                finduser = results[i];
+                found = results[i];
                 break;
             }
         }
-        if (finduser) {
+        if (found) {
             var ret = {};
             ret.code = -1;
-            var money = formatFloat(finduser.get('money'));
+            var money = formatFloat(found.get('money'));
             if (money > 10) {
                 // 清除账户余额再退团
                 ret.message = '您在该团还有较多结余(' + money + ')，请销账后再退团';
@@ -329,11 +329,13 @@ exports.DeleteAccount = function(user, tuan) {
                 ret.code = 0;
                 ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
                 // 只标记不删除
-                finduser.set('state', -1);
-                finduser.save();
+                found.set('state', -1);
+                found.save();
                 // 给所有团员发消息
                 for (var j = 0; j < results.length; j++) {
-                    sendTemplate(TEMPID_QUIT, user, results[j].get('user'), tuan);
+                    if (results[j].get('user').id != user.id) {
+                        sendTemplate(TEMPID_QUIT, user, results[j].get('user'), tuan);
+                    }
                 }
                 return AV.Promise.as(ret);
             }
@@ -447,25 +449,16 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 // 给团成员记账
                 var promises = [];
                 for (var i = 0; i < results.length; i++) {
-                    results[i].increment('money', -avg);
+                    if (results[i].get('user').id == user.id) {
+                        // 给买单者记账
+                        results[i].increment('money', avg*(members.length-1));
+                    } else {
+                        results[i].increment('money', -avg);
+                        sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                    }
                     promises.push(results[i].save());
-                    sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
                 }
                 return AV.Promise.when(promises);
-            }).then(function() {
-                // query买单者
-                var query2 = new AV.Query(exports.Account);
-                query2.equalTo('user', user);
-                query2.equalTo('tuan', tuan);
-                return query2.find();
-            }).then(function(accounts) {
-                // 给买单者记账
-                if (accounts.length == 1) {
-                    accounts[0].increment('money', avg*members.length);
-                    return accounts[0].save();
-                } else {
-                    return AV.Promise.error('Not Found Account');
-                }
             }).then(function() {
                 // 生成消费记录
                 var tuanHistory = new exports.TuanHistory();
