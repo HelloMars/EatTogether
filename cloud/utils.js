@@ -108,7 +108,10 @@ exports.getUserTuanObj = function(requser, tuanid) {
             query.equalTo('tuan', tuan);
             query.find().then(function(accounts) {
                 if (accounts.length == 0) {
-                    promise.resolve({'user':user, 'tuan':tuan});
+                    promise.resolve({
+                        'user':user, 'tuan':tuan,
+                        'isin': false
+                    });
                 } else if (accounts.length == 1) {
                     promise.resolve({
                         'user':user, 'tuan':tuan,

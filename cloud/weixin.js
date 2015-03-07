@@ -53,10 +53,16 @@ var receiveMessage = function(msg, cb) {
                     var tuanid = Number(eventkey.substring(8));
                     utils.Subscribe(fromUserId).then(function(user) {
                         return utils.getUserTuanObj(user, tuanid).then(function(result) {
-                            if (result.tuan && !result.isin) {
-                                content = '您已成功激活饭团APP，并加入第一个饭团('
-                                    + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
-                                return utils.JoinTuan(result.user, result.tuan, result.account);
+                            if (result.tuan) {
+                                if (result.isin) {
+                                    content = '您之前已经加入饭团('
+                                        + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                                    return AV.Promise.as();
+                                } else {
+                                    content = '您已成功激活饭团APP，并加入第一个饭团('
+                                        + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                                    return utils.JoinTuan(result.user, result.tuan, result.account);
+                                }
                             } else {
                                 return AV.Promise.error('Illegal');
                             }
@@ -92,10 +98,16 @@ var receiveMessage = function(msg, cb) {
                 query.equalTo('username', fromUserId);
                 query.first().then(function(user) {
                     return utils.getUserTuanObj(user, eventkey).then(function(result) {
-                        if (result.tuan && !result.isin) {
-                            content = '您已成功激活饭团APP，并加入第一个饭团('
-                                + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
-                            return utils.JoinTuan(result.user, result.tuan, result.account);
+                        if (result.tuan) {
+                            if (result.isin) {
+                                content = '您已经处于饭团('
+                                    + result.tuan.get('name') + ')中，快点击 \"我的饭团\" 体验吧:)';
+                                return AV.Promise.as();
+                            } else {
+                                content = '您已成功加入饭团('
+                                    + result.tuan.get('name') + ')，快来点击 \"我的饭团\" 体验吧:)';
+                                return utils.JoinTuan(result.user, result.tuan, result.account);
+                            }
                         } else {
                             return AV.Promise.error('Illegal');
                         }
