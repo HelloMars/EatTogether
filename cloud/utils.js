@@ -429,31 +429,36 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
 
         var query = new AV.Query(exports.Tuan);
         query.equalTo('tuanid', tuanid);
-        query.find().then(function(tuans) {
-            if (tuans.length == 1) {
-                return AV.Promise.as(tuans[0]);
-            } else {
-                return AV.Promise.error('Not Found Tuan');
-            }
-        }).then(function(tuan) {
-            // 嵌套查询
-            var userQuery = new AV.Query(AV.User);
-            userQuery.containedIn("objectId", members);
+        query.first().then(function(tuan) {
+            // 给买单者记账
             var accountQuery = new AV.Query(exports.Account);
-            // 不知道为啥matchesKeyInQuery发生错误
             accountQuery.equalTo('tuan', tuan);
+            accountQuery.equalTo('user', user);
             accountQuery.notEqualTo('state', -1);
-            accountQuery.include('user');
-            accountQuery.matchesQuery('user', userQuery);
-            accountQuery.find().then(function(results) {
+            return accountQuery.first().then(function(account) {
+                if (account) {
+                    account.increment('money', avg * (members.length - 1));
+                    return account.save();
+                } else {
+                    return AV.Promise.error('买单者不在该团中');
+                }
+            }).then(function() {
+                // 嵌套查询
+                var userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", members);
+                var accountQuery = new AV.Query(exports.Account);
+                accountQuery.equalTo('tuan', tuan);
+                accountQuery.notEqualTo('state', -1);
+                accountQuery.include('user');
+                accountQuery.matchesQuery('user', userQuery);
+                return accountQuery.find();
+            }).then(function(results) {
                 // 给团成员记账
                 var promises = [];
                 for (var i = 0; i < results.length; i++) {
-                    if (results[i].get('user').id == user.id) {
-                        // 给买单者记账
-                        results[i].increment('money', avg*(members.length-1));
-                    } else {
-                        results[i].increment('money', -avg);
+                    results[i].increment('money', -avg);
+                    if (results[i].get('user').id != user.id) {
+                        // 给其他成员发送模板消息
                         sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
                     }
                     promises.push(results[i].save());
@@ -469,17 +474,14 @@ exports.Bill = function(user, tuanid, members, othersnum, price) {
                 tuanHistory.set('othersnum', othersnum);
                 tuanHistory.set('price', price);
                 return tuanHistory.save();
-            }).then(function() {
-                console.log("结账成功");
-                promise.resolve();
-            }, function(error) {
-                // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
-                console.log("结账错误: " + JSON.stringify(error));
-                promise.reject(error);
             });
+        }).then(function() {
+            promise.resolve();
+        }, function(error) {
+            // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
+            promise.reject(error);
         });
     } else {
-        console.log('Invalid Parameters');
         promise.reject('Invalid Parameters');
     }
     return promise;
