@@ -10,7 +10,11 @@ var TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
 var TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
 var TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
+var APPID_JS = 'wx5296f7011ca92045';
+var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
+
 var API = new WechatAPI(APPID, APPSECRET);
+var API_JS = new WechatAPI(APPID_JS, APPSECRET_JS);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
 var MENU = {
     "button":[
@@ -107,7 +111,7 @@ exports.getJsConfig = function(url) {
         url: url
     };
     console.log('Get Js Config of ' + url);
-    API.getJsConfig(param, function(err, result) {
+    API_JS.getJsConfig(param, function(err, result) {
         if (err) {
             promise.reject('getJsConfig Error');
         } else {
