@@ -2,7 +2,7 @@
  * Created by Meng on 2015/2/4.
  */
 
-var eatTogetherControllers = angular.module('eatTogetherControllers', ['ui.bootstrap']);
+var eatTogetherControllers = angular.module('eatTogetherControllers', []);
 
 /**
  * 根据数值获取样式
@@ -21,7 +21,7 @@ function getDesign(tuanMemberCounts) {
         },
         'div2' : {
             'width' : len + 'px',
-            'height' : len + 'px',
+            'height' : len/2 + 'px',
             'padding' : len/4 + 'px 0px',
             'font-size' : fz +'px'
         }
@@ -83,8 +83,8 @@ eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tu
 
 
 /** 饭团详情页(成员列表页) */
-eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan', '$modal',
-    function ($scope, $routeParams, $location, tuan, $modal) {
+eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan',
+    function ($scope, $routeParams, $location, tuan) {
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
@@ -103,31 +103,11 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         $scope.click = function(name) {
             if (name === '窝买单') {
                 $location.url('/tuan/' + $scope.tuanId + '/bill');
-            } else {
-                var modalInstance = $modal.open({
-                  templateUrl: './html/modal.html',
-                  controller: 'modalCtrl',
-                  resolve: { }
-                });
-
             }
         };
 
     }
 ]);
-
-
-/** 销账确认modal */
-eatTogetherControllers.controller('modalCtrl', [ '$scope', '$modalInstance', function ($scope, $modalInstance) {
-
-  $scope.ok = function () {
-    $modalInstance.close();
-  };
-
-  $scope.cancel = function () {
-    $modalInstance.dismiss('cancel');
-  };
-}]);
 
 
 
@@ -154,7 +134,9 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 $scope.average = $scope.totalMoney/( $scope.curTotal +  $scope.notMember);
             };
             $scope.confirm = function () {
-                var members = $scope.members.map(function (member) {
+                var members = $scope.members.filter(function (member) {
+                    return member.inThis;
+                }).map(function (member) {
                     return member.uid;
                 });
                 tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
