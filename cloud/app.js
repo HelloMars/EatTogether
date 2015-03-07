@@ -90,6 +90,7 @@ app.get('/myet', function(req, res) {
 
 app.get('/tuanlist', function(req, res) {
     //console.log('cookies: ' + req.headers.cookie);
+    console.log('user: %j', req.AV.user);
     req.AV.user.fetch().then(function(user){
         return utils.GetTuanList(user);
     }).then(function(tuans) {

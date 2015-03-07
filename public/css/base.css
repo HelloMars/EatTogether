@@ -104,5 +104,8 @@ label {
   border-radius: 4px;
   color: #fff;
   text-decoration: none; }
-
+.s-join img,.s-index img{
+    width: 200px;
+    height: 200px;
+}
 /*# sourceMappingURL=base.css.map */

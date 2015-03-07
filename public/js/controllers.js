@@ -158,17 +158,10 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.name = res.name;
             $scope.id = res.id;
+            $scope.qrcode = res.qrcode;
             $scope.slogan = res.slogan;
             $scope.loaded = true;
         });
-
-        /** 二维码生成 */
-        var text = 'lalalalaalall';
-        var qrcode = new QRCode(document.getElementById("qrcode"), {
-            width : 200,
-            height : 200
-        });
-        qrcode.makeCode(text);
 
         $scope.save = function () {
             tuan.modTuanInfo($scope.id, {

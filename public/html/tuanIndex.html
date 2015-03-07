@@ -16,7 +16,9 @@
             饭团ID：
             <input type="text" disabled="disabled" value="{{id}}" placeholder="xxx(系统生成的唯一ID)">
         </label>
-        <div id="qrcode" class="qrcode"></div>
+        <div id="qrcode" class="qrcode">
+            <img src="{{qrcode}}" alt=""/>
+        </div>
         <label for="broadcast">
             <textarea name="broadcast" ng-blur="save()" ng-model="slogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
         </label>

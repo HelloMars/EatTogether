@@ -48,7 +48,25 @@ var receiveMessage = function(msg, cb) {
         switch (event) {
             case 'subscribe':
                 if (msg.xml.Ticket) {
-                    // qrscene
+                    // 扫码关注(eventkey以qrscene_开头)，需要入团
+                    synch = false;
+                    var tuanid = Number(eventkey.substring(8));
+                    utils.Subscribe(fromUserId).then(function(user) {
+                        return utils.getUserTuanObj(user, tuanid).then(function (result) {
+                            if (result.tuan && !result.isin) {
+                                result.xml.Content = '您已成功激活饭团APP，并加入第一个饭团('
+                                    + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                                return utils.JoinTuan(result.user, result.tuan, result.account);
+                            } else {
+                                return AV.Promise.error('Illegal');
+                            }
+                        });
+                    }).then(function() {
+                        cb(null, result);
+                    }, function() {
+                        result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
+                        cb(null, result);
+                    });
                 } else {
                     // 主动关注微信账号
                     synch = false;
@@ -65,6 +83,26 @@ var receiveMessage = function(msg, cb) {
                 utils.UnSubscribe(fromUserId);
                 break;
             case 'SCAN':
+                // 扫码入团
+                synch = false;
+                var query = new AV.Query(AV.User);
+                query.equalTo('username', fromUserId);
+                query.first().then(function(user) {
+                    return utils.getUserTuanObj(user, eventkey).then(function (result) {
+                        if (result.tuan && !result.isin) {
+                            result.xml.Content = '您已成功激活饭团APP，并加入第一个饭团('
+                            + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                            return utils.JoinTuan(result.user, result.tuan, result.account);
+                        } else {
+                            return AV.Promise.error('Illegal');
+                        }
+                    });
+                }).then(function() {
+                    cb(null, result);
+                }, function() {
+                    result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
+                    cb(null, result);
+                });
                 break;
             case 'CLICK':
                 switch (eventkey) {
