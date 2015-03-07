@@ -411,7 +411,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     query.equalTo('tuan', tuanobj);
     query.notEqualTo('state', -1);
     query.include('user');
-    return AV.Promise.when(query.find(), getQRCode(tuan.id)).then(function(results, url) {
+    return AV.Promise.when(query.find(), getQRCode(tuan.id)).then(function(results, qrcode) {
         var members = [];
         for (var i = 0; i < results.length; i++) {
             var user = results[i].get('user');
@@ -422,7 +422,8 @@ exports.FormatTuanDetail = function (tuanobj) {
             });
         }
         tuan.members = members;
-        tuan.qrcode = url;
+        tuan.qrcode = qrcode[0];
+        tuan.shareUrl = qrcode[1];
         return AV.Promise.as(tuan);
     });
 };
@@ -434,7 +435,7 @@ function getQRCode(tuanid) {
             promise.reject('getQRCode Error');
         } else {
             console.log('getQRCode Success: %j', result);
-            promise.resolve(API.showQRCodeURL(result.ticket));
+            promise.resolve([API.showQRCodeURL(result.ticket), result.url]);
         }
     });
     return promise;
