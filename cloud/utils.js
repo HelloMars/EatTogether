@@ -71,10 +71,57 @@ exports.getOpenId = function(code) {
         if (result.errcode) {
             promise.reject(result);
         } else {
-            var accessToken = result.data.access_token;
             var openid = result.data.openid;
-            promise.resolve(openid, accessToken);
+            promise.resolve(openid);
         }
+    });
+    return promise;
+};
+
+exports.getTuanObj = function(tuanid) {
+    var promise = new AV.Promise();
+
+    var id = Number(tuanid);
+    if (id >= 10) {
+        var query = new AV.Query(exports.Tuan);
+        query.equalTo('tuanid', id);
+        query.find().then(function(tuans) {
+            if (tuans.length == 0) {
+                promise.resolve(null);
+            } else if (tuans.length == 1) {
+                promise.resolve(tuans[0]);
+            } else {
+                promise.reject('Tuan Results Error');
+            }
+        });
+    } else {
+        promise.reject('Invalid Parameters');
+    }
+    return promise;
+};
+
+exports.getUserTuanObj = function(requser, tuanid) {
+    var promise = new AV.Promise();
+
+    requser.fetch().then(function(user) {
+        exports.getTuanObj(tuanid).then(function(tuan) {
+            var query = new AV.Query(exports.Account);
+            query.equalTo('user', user);
+            query.equalTo('tuan', tuan);
+            query.find().then(function(accounts) {
+                if (accounts.length == 0) {
+                    promise.resolve({'user':user, 'tuan':tuan});
+                } else if (accounts.length == 1) {
+                    promise.resolve({
+                        'user':user, 'tuan':tuan,
+                        'account':accounts[0],
+                        'isin':(accounts[0].get('state') != -1)
+                    });
+                } else {
+                    promise.reject('Account Results Error');
+                }
+            });
+        })
     });
     return promise;
 };
@@ -175,147 +222,81 @@ function formatTuan(tuanobj) {
     return tuan;
 }
 
-// attrs = {name, tuanid, count}
-exports.CreateTuan = function(attrs, options) {
-    var error;
-    options = options || {};
-
+exports.CreateTuan = function(attrs) {
     // 参数检查
     if (!(attrs && attrs.name)) {
-        error = new AV.Error(
+        var error = new AV.Error(
             AV.Error.OTHER_CAUSE,
             "无效参数");
-        if (options.error) {
-            options.error(error);
-        }
         return AV.Promise.error(error);
     }
 
     var promise = new AV.Promise();
 
     var tuan = new exports.Tuan();
-    AV.Promise.as().then(function() {
-        var promise = new AV.Promise();
-        if (attrs.tuanid) {
-            var query = new AV.Query(exports.Tuan);
-            query.equalTo('tuanid', attrs.tuanid);
-            query.find().then(function(tuans) {
-                if (tuans.length == 0) {
-                    tuan.set('tuanid', attrs.tuanid);
-                    promise.resolve();
-                } else if (tuans.length == 1) {
-                    console.log("团已存在");
-                    promise.reject("团已存在");
-                } else {
-                    console.log("出现重复团");
-                    promise.reject("出现重复团");
-                }
-            });
-        } else {
-            promise.resolve();
-        }
-        return promise;
-    }).then(function() {
-        tuan.set('name', attrs.name);
-        tuan.set('news', 0);
-        tuan.set('members', (attrs.count || 0));
-        tuan.set('slogan', 'xxx');
-        return tuan.save();
-    }).then(function(tuan) {
+    tuan.set('name', attrs.name);
+    tuan.set('news', 0);
+    tuan.set('members', 0);
+    tuan.set('slogan', '给一个响亮的团口号吧！');
+    tuan.save().then(function(tuan) {
         // 需要重新query以获得tuanid
         var query = new AV.Query(exports.Tuan);
         return query.get(tuan.id);
     }).then(function(tuan) {
         console.log("建团成功: " + JSON.stringify(tuan));
-        if (options.success) {
-            options.success(tuan);
-        }
         promise.resolve(tuan);
     }, function(error) {
         console.log("建团失败: " + JSON.stringify(error));
-        if (options.error) {
-            options.error(error);
-        }
         promise.reject(error);
     });
 
     return promise;
 };
 
-// 创建一条Account
-exports.CreateAccount = function(user, tuan) {
-    // 先查询避免重复
-    var promise = new AV.Promise();
-
+// 创建一条Account或激活原来的Account
+exports.JoinTuan = function(user, tuan, account) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
+    query.notEqualTo('state', -1);
     query.include('user');
-    query.find().then(function(results) {
-        var found = null;
-        for (var i = 0; i < results.length; i++) {
-            if (results[i].get('user').id == user.id) {
-                found = results[i];
-                break;
-            }
-        }
-        if (found) {
-            var state = found.get('state');
-            if (state == -1) {
+    return query.find().then(function(results) {
+        if (account) {
+            if (account.get('state') == -1) {
                 // 给所有团员发消息
-                for (var j = 0; j < results.length; j++) {
-                    if (results[i].get('state') != -1) {
-                        sendTemplate(TEMPID_JOIN, user, results[j].get('user'), tuan);
-                    }
+                for (var i = 0; i < results.length; i++) {
+                    sendTemplate(TEMPID_JOIN, user, results[i].get('user'), tuan);
                 }
-                // 之前退出的团，重新加入
                 tuan.increment('members');
-                found.set('tuan', tuan);
-                found.set('state', 0);
+                account.set('tuan', tuan);
+                account.set('state', 0);
             }
-            return found.save();
         } else {
             // 给所有团员发消息
             for (var k = 0; k < results.length; k++) {
                 sendTemplate(TEMPID_JOIN, user, results[k].get('user'), tuan);
             }
-            var account = new exports.Account();
+            account = new exports.Account();
             tuan.increment('members');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
-            return account.save();
         }
-    }).then(function(account) {
-        promise.resolve(account);
-    }, function(error) {
-        promise.reject(error);
+        return account.save();
     });
-
-    return promise;
 };
 
-// 删除一条Account
-exports.DeleteAccount = function(user, tuan) {
-    // 先查询避免重复
-    var promise = new AV.Promise();
-
+// 关闭一条Account
+exports.DisableAccount = function(user, tuan, account) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
     query.notEqualTo('state', -1);
     query.include('user');
-    query.find().then(function(results) {
-        var found = null;
-        for (var i = 0; i < results.length; i++) {
-            if (results[i].get('user').id == user.id) {
-                found = results[i];
-                break;
-            }
-        }
-        if (found) {
+    return query.find().then(function(results) {
+        if (account) {
             var ret = {};
             ret.code = -1;
-            var money = formatFloat(found.get('money'));
+            var money = formatFloat(account.get('money'));
             if (money > 10) {
                 // 清除账户余额再退团
                 ret.message = '您在该团还有较多结余(' + money + ')，请销账后再退团';
@@ -325,75 +306,40 @@ exports.DeleteAccount = function(user, tuan) {
                 ret.message = '您在该团还有较多欠款(' + money + ')，请销账后再退团';
                 return AV.Promise.as(ret);
             } else {
-                // 直接退团
-                ret.code = 0;
-                ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
-                // 只标记不删除
-                found.set('state', -1);
-                found.save();
-                // 给所有团员发消息
-                for (var j = 0; j < results.length; j++) {
-                    if (results[j].get('user').id != user.id) {
-                        sendTemplate(TEMPID_QUIT, user, results[j].get('user'), tuan);
+                // 直接退团，给所有团员发消息
+                for (var i = 0; i < results.length; j++) {
+                    if (results[i].get('user').id != user.id) {
+                        // 给其他成员发送模板消息
+                        sendTemplate(TEMPID_QUIT, user, results[i].get('user'), tuan);
                     }
                 }
-                return AV.Promise.as(ret);
+                ret.code = 0;
+                ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
+                tuan.increment('members', -1);
+                // 只标记不删除
+                account.set('state', -1);
+                account.set('tuan', tuan);
+                return account.save().then(function() {
+                    return AV.Promise.as(ret);
+                });
             }
         } else {
-            return AV.Promise.error('Account Results Error');
+            return AV.Promise.error('Invalid Parameters');
         }
-    }).then(function(ret) {
-        if (ret.code == 0) {
-            // 退团成功
-            tuan.increment('members', -1);
-            return tuan.save().then(function() {
-                return AV.Promise.as(ret);
-            });
-        } else {
-            return AV.Promise.as(ret);
-        }
-    }).then(function(ret) {
-        promise.resolve(ret);
-    }, function(error) {
-        promise.reject(error);
     });
-
-    return promise;
 };
 
-exports.ModifyTuan = function(tuanid, infoJson) {
-    var promise = new AV.Promise();
-
-    var query = new AV.Query(exports.Tuan);
-    query.equalTo('tuanid', tuanid);
-    query.find().then(function(tuans) {
-        if (tuans.length == 0) {
-            console.log("团不存在");
-            promise.reject("团不存在");
-        } else if (tuans.length == 1) {
-            if (infoJson.name) {
-                tuans[0].set('name', infoJson.name);
-            }
-            if (infoJson.slogan) {
-                tuans[0].set('slogan', infoJson.slogan);
-            }
-            return tuans[0].save(null)
-        } else {
-            console.log("出现重复团");
-            promise.reject("出现重复团");
-        }
-    }).then(function() {
-        console.log("修改团信息成功");
-        promise.resolve();
-    }, function(error) {
-        console.log("修改团信息失败");
-        promise.reject(error);
-    });
-    return promise;
+exports.ModifyTuan = function(tuan, infoJson) {
+    if (infoJson && infoJson.name) {
+        tuan.set('name', infoJson.name);
+    }
+    if (infoJson && infoJson.slogan) {
+        tuan.set('slogan', infoJson.slogan);
+    }
+    return tuan.save()
 };
 
 exports.FormatTuanDetail = function (tuanobj) {
-    var promise = new AV.Promise();
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
@@ -404,7 +350,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     query.equalTo('tuan', tuanobj);
     query.notEqualTo('state', -1);
     query.include('user');
-    query.find().then(function(results) {
+    return query.find().then(function(results) {
         var members = [];
         for (var i = 0; i < results.length; i++) {
             var user = results[i].get('user');
@@ -415,76 +361,55 @@ exports.FormatTuanDetail = function (tuanobj) {
             });
         }
         tuan.members = members;
-        promise.resolve(tuan);
+        return AV.Promise.as(tuan);
     });
-
-    return promise;
 };
 
-exports.Bill = function(user, tuanid, members, othersnum, price) {
-    var promise = new AV.Promise();
-
-    if (members.length > 0 && othersnum >= 0 && price >= 0) {
+/** 买单
+ * 1. 给买单者记账(验证买单者是否属于该团)
+ * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
+ */
+exports.Bill = function(user, tuan, account, members, othersnum, price) {
+    if (members && members.length > 0 && othersnum >= 0 && price >= 0) {
         var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
 
-        var query = new AV.Query(exports.Tuan);
-        query.equalTo('tuanid', tuanid);
-        query.first().then(function(tuan) {
+        // 嵌套查询
+        var userQuery = new AV.Query(AV.User);
+        userQuery.containedIn("objectId", members);
+        var query = new AV.Query(exports.Account);
+        query.equalTo('tuan', tuan);
+        query.notEqualTo('state', -1);
+        query.include('user');
+        query.matchesQuery('user', userQuery);
+        return query.find().then(function(results) {
+            // 给团成员记账
+            var promises = [];
+            for (var i = 0; i < results.length; i++) {
+                results[i].increment('money', -avg);
+                if (results[i].get('user').id != user.id) {
+                    // 给其他成员发送模板消息
+                    sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                }
+                promises.push(results[i].save());
+            }
             // 给买单者记账
-            var accountQuery = new AV.Query(exports.Account);
-            accountQuery.equalTo('tuan', tuan);
-            accountQuery.equalTo('user', user);
-            accountQuery.notEqualTo('state', -1);
-            return accountQuery.first().then(function(account) {
-                if (account) {
-                    account.increment('money', avg * (members.length - 1));
-                    return account.save();
-                } else {
-                    return AV.Promise.error('买单者不在该团中');
-                }
-            }).then(function() {
-                // 嵌套查询
-                var userQuery = new AV.Query(AV.User);
-                userQuery.containedIn("objectId", members);
-                var accountQuery = new AV.Query(exports.Account);
-                accountQuery.equalTo('tuan', tuan);
-                accountQuery.notEqualTo('state', -1);
-                accountQuery.include('user');
-                accountQuery.matchesQuery('user', userQuery);
-                return accountQuery.find();
-            }).then(function(results) {
-                // 给团成员记账
-                var promises = [];
-                for (var i = 0; i < results.length; i++) {
-                    results[i].increment('money', -avg);
-                    if (results[i].get('user').id != user.id) {
-                        // 给其他成员发送模板消息
-                        sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
-                    }
-                    promises.push(results[i].save());
-                }
-                return AV.Promise.when(promises);
-            }).then(function() {
-                // 生成消费记录
-                var tuanHistory = new exports.TuanHistory();
-                tuanHistory.set('payer', user);
-                tuanHistory.set('tuan', tuan);
-                // TODO: 可能是个relation
-                tuanHistory.set('members', members);
-                tuanHistory.set('othersnum', othersnum);
-                tuanHistory.set('price', price);
-                return tuanHistory.save();
-            });
+            account.increment('money', avg * members.length);
+            promises.push(account.save());
+            return AV.Promise.when(promises);
         }).then(function() {
-            promise.resolve();
-        }, function(error) {
-            // TODO: 这里可能还需要处理失败时退还其他成员扣款的逻辑
-            promise.reject(error);
+            // 生成消费记录
+            var tuanHistory = new exports.TuanHistory();
+            tuanHistory.set('payer', user);
+            tuanHistory.set('tuan', tuan);
+            // TODO: 可能是个relation
+            tuanHistory.set('members', members);
+            tuanHistory.set('othersnum', othersnum);
+            tuanHistory.set('price', price);
+            return tuanHistory.save();
         });
     } else {
-        promise.reject('Invalid Parameters');
+        return AV.Promise.error('Invalid Parameters');
     }
-    return promise;
 };
 
 exports.GetTuanHistory = function(tuanid, start, length) {

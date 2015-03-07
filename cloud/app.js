@@ -78,7 +78,7 @@ app.get('/myet', function(req, res) {
         });
     } else {
         // 正常流程登陆用户
-        utils.getOpenId(code).then(function (openid) {
+        utils.getOpenId(code).then(function(openid) {
             return utils.Login(openid, 'pwd:'+openid);
         }).then(function () {
             res.render('myet.html');
@@ -90,7 +90,6 @@ app.get('/myet', function(req, res) {
 
 app.get('/tuanlist', function(req, res) {
     //console.log('cookies: ' + req.headers.cookie);
-    res.setHeader('Content-Type', 'application/json');
     req.AV.user.fetch().then(function(user){
         return utils.GetTuanList(user);
     }).then(function(tuans) {
@@ -114,7 +113,6 @@ app.get('/tuanlist', function(req, res) {
 });
 
 app.get('/tuanhistory', function(req, res) {
-    console.log('tuanhistory:', req.query);
     var tuanid = Number(req.query.id);
     var start = Number(req.query.start);
     var length = Number(req.query.length);
@@ -130,11 +128,11 @@ app.get('/tuanhistory', function(req, res) {
     }
 });
 
+// 建团并入团
 app.get('/createtuan', function(req, res) {
-    // 建团，并创建一条Account
     req.AV.user.fetch().then(function(user) {
         return utils.CreateTuan({'name': '新团'}).then(function(tuan) {
-            return utils.CreateAccount(user, tuan).then(function() {
+            return utils.JoinTuan(user, tuan, null).then(function() {
                 return utils.FormatTuanDetail(tuan);
             });
         });
@@ -146,111 +144,85 @@ app.get('/createtuan', function(req, res) {
     });
 });
 
+// 入团
 app.get('/jointuan', function(req, res) {
-    if (req.query.id >= 10) {
-        // 入团(生成一条Account)，并更新Tuan.members数
-        var query = new AV.Query(utils.Tuan);
-        query.equalTo('tuanid', Number(req.query.id));
-        query.find().then(function (tuans) {
-            if (tuans.length == 1) {
-                return req.AV.user.fetch().then(function (user) {
-                    return utils.CreateAccount(user, tuans[0]).then(function () {
-                        return utils.FormatTuanDetail(tuans[0]);
-                    });
-                });
-            } else {
-                return AV.Promise.error('Tuan Results Error');
-            }
-        }).then(function(tuan) {
-            res.jsonp(tuan);
-        }, function (error) {
-            console.log('JoinTuan Error: ' + JSON.stringify(error));
-            res.send('JoinTuan Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && !result.isin) {
+            return utils.JoinTuan(result.user, result.tuan, result.account).then(function() {
+                return utils.FormatTuanDetail(result.tuan);
+            });
+        } else {
+            return AV.Promise.reject('Illegal');
+        }
+    }).then(function(tuan) {
+        res.jsonp(tuan);
+    }, function(error) {
+        console.log('JoinTuan Error: ' + JSON.stringify(error));
+        res.send('JoinTuan Error');
+    });
 });
 
+// 退团
 app.get('/quittuan', function(req, res) {
-    if (req.query.id >= 10) {
-        // 退团(删除Account)，并更新Tuan.members数
-        var query = new AV.Query(utils.Tuan);
-        query.equalTo('tuanid', Number(req.query.id));
-        query.find().then(function (tuans) {
-            if (tuans.length == 1) {
-                return req.AV.user.fetch().then(function(user) {
-                    return utils.DeleteAccount(user, tuans[0]);
-                });
-            } else {
-                return AV.Promise.error('Tuan Results Error');
-            }
-        }).then(function(ret) {
-            console.log(req.query.id + ': ' + ret.message);
-            res.jsonp(ret);
-        }, function (error) {
-            console.log('QuitTuan Error: ' + JSON.stringify(error));
-            res.send('QuitTuan Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.DisableAccount(result.user, result.tuan, result.account);
+        } else {
+            return AV.Promise.reject('Illegal');
+        }
+    }).then(function(ret) {
+        res.jsonp(ret);
+    }, function(error) {
+        console.log('QuitTuan Error: ' + JSON.stringify(error));
+        res.send('QuitTuan Error');
+    });
 });
 
 app.get('/tuandetail', function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    if (req.query.id >= 10) {
-        var query = new AV.Query(utils.Tuan);
-        query.equalTo('tuanid', Number(req.query.id));
-        query.find().then(function(tuans) {
-            if (tuans.length == 1) {
-                return utils.FormatTuanDetail(tuans[0]);
-            } else {
-                return AV.Promise.error('Tuan Results Error');
-            }
-        }).then(function (tuan) {
-            res.jsonp(tuan);
-        }, function (error) {
-            console.log('TuanDetail Error: ' + JSON.stringify(error));
-            res.send('TuanDetail Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.FormatTuanDetail(result.tuan);
+        } else {
+            return AV.Promise.reject('Illegal');
+        }
+    }).then(function(tuan) {
+        res.jsonp(tuan);
+    }, function(error) {
+        console.log('TuanDetail Error: ' + JSON.stringify(error));
+        res.send('TuanDetail Error');
+    });
 });
 
 app.post('/modtuaninfo', function(req, res) {
-    console.log('modtuaninfo: ', req.body);
-    var tuanid = Number(req.body.id);
-    if (tuanid >= 10 && req.body.info) {
-        utils.ModifyTuan(tuanid, req.body.info).then(function() {
-            res.send('Modtuaninfo Success');
-        }, function(error) {
-            console.log('Modtuaninfo Error: ' + JSON.stringify(error));
-            res.send('Modtuaninfo Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.ModifyTuan(result.tuan, req.body.info);
+        } else {
+            return AV.Promise.reject('Illegal');
+        }
+    }).then(function() {
+        res.send('Modify Tuaninfo Success');
+    }, function(error) {
+        console.log('Modify Tuaninfo Error: ' + JSON.stringify(error));
+        res.send('Modify Tuaninfo Error');
+    });
 });
 
 app.post('/bill', function(req, res) {
-    var tuanid = Number(req.body.id);
     var othersnum = Number(req.body.othersnum);
     var price = Number(req.body.price);
-    if (tuanid >= 10 && req.body.members && req.body.members.length > 0
-            && othersnum >= 0 && price >= 0) {
-        req.AV.user.fetch().then(function(user) {
-            utils.Bill(user, tuanid, req.body.members, othersnum, price).then(function() {
-                res.send('Bill Success');
-            }, function(error) {
-                console.log('Bill Error: ' + JSON.stringify(error));
-                res.send('Bill Error');
-            });
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.Bill(result.user, result.tuan, result.account, req.body.members, othersnum, price);
+        } else {
+            return AV.Promise.reject('Illegal');
+        }
+    }).then(function() {
+        res.send('Bill Success');
+    }, function(error) {
+        console.log('Bill Error: ' + JSON.stringify(error));
+        res.send('Bill Error');
+    });
 });
 
 /*
