@@ -52,9 +52,9 @@ var receiveMessage = function(msg, cb) {
                     synch = false;
                     var tuanid = Number(eventkey.substring(8));
                     utils.Subscribe(fromUserId).then(function(user) {
-                        return utils.getUserTuanObj(user, tuanid).then(function (result) {
+                        return utils.getUserTuanObj(user, tuanid).then(function(result) {
                             if (result.tuan && !result.isin) {
-                                result.xml.Content = '您已成功激活饭团APP，并加入第一个饭团('
+                                content = '您已成功激活饭团APP，并加入第一个饭团('
                                     + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
                                 return utils.JoinTuan(result.user, result.tuan, result.account);
                             } else {
@@ -62,6 +62,7 @@ var receiveMessage = function(msg, cb) {
                             }
                         });
                     }).then(function() {
+                        result.xml.Content = content;
                         cb(null, result);
                     }, function(error) {
                         console.log('扫码关注失败: ' + JSON.stringify(error));
@@ -90,16 +91,17 @@ var receiveMessage = function(msg, cb) {
                 var query = new AV.Query(AV.User);
                 query.equalTo('username', fromUserId);
                 query.first().then(function(user) {
-                    return utils.getUserTuanObj(user, eventkey).then(function (result) {
+                    return utils.getUserTuanObj(user, eventkey).then(function(result) {
                         if (result.tuan && !result.isin) {
-                            result.xml.Content = '您已成功激活饭团APP，并加入第一个饭团('
-                            + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                            content = '您已成功激活饭团APP，并加入第一个饭团('
+                                + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
                             return utils.JoinTuan(result.user, result.tuan, result.account);
                         } else {
                             return AV.Promise.error('Illegal');
                         }
                     });
                 }).then(function() {
+                    result.xml.Content = content;
                     cb(null, result);
                 }, function() {
                     console.log('扫码入团失败: ' + JSON.stringify(error));
