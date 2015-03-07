@@ -152,7 +152,7 @@ app.get('/jointuan', function(req, res) {
                 return utils.FormatTuanDetail(result.tuan);
             });
         } else {
-            return AV.Promise.reject('Illegal');
+            return AV.Promise.error('Illegal');
         }
     }).then(function(tuan) {
         res.jsonp(tuan);
@@ -168,7 +168,7 @@ app.get('/quittuan', function(req, res) {
         if (result.tuan && result.isin) {
             return utils.DisableAccount(result.user, result.tuan, result.account);
         } else {
-            return AV.Promise.reject('Illegal');
+            return AV.Promise.error('Illegal');
         }
     }).then(function(ret) {
         res.jsonp(ret);
@@ -183,7 +183,7 @@ app.get('/tuandetail', function(req, res) {
         if (result.tuan && result.isin) {
             return utils.FormatTuanDetail(result.tuan);
         } else {
-            return AV.Promise.reject('Illegal');
+            return AV.Promise.error('Illegal');
         }
     }).then(function(tuan) {
         res.jsonp(tuan);
@@ -198,7 +198,7 @@ app.post('/modtuaninfo', function(req, res) {
         if (result.tuan && result.isin) {
             return utils.ModifyTuan(result.tuan, req.body.info);
         } else {
-            return AV.Promise.reject('Illegal');
+            return AV.Promise.error('Illegal');
         }
     }).then(function() {
         res.send('Modify Tuaninfo Success');
@@ -215,7 +215,7 @@ app.post('/bill', function(req, res) {
         if (result.tuan && result.isin) {
             return utils.Bill(result.user, result.tuan, result.account, req.body.members, othersnum, price);
         } else {
-            return AV.Promise.reject('Illegal');
+            return AV.Promise.error('Illegal');
         }
     }).then(function() {
         res.send('Bill Success');
