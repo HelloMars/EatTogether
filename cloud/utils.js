@@ -6,8 +6,6 @@ var WechatOAuth = require('wechat-oauth');
 
 var APPID = 'wx215f75c4627af14a';
 var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
-var TEMPID_VERIFY = 'MCbV1foI13HSHg86rP8VirQTxpOBWock_PDtetKFxeA';
-var TEMPID_REQUEST = '8KSD3co2eNCjZG6qYgZLlOs6m63QahS5Bk04vxC_JsU';
 var TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
 var TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
 var TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
@@ -350,7 +348,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     query.equalTo('tuan', tuanobj);
     query.notEqualTo('state', -1);
     query.include('user');
-    return query.find().then(function(results) {
+    return AV.Promise.when(query.find(), getQRCode(tuan.id)).then(function(results, url) {
         var members = [];
         for (var i = 0; i < results.length; i++) {
             var user = results[i].get('user');
@@ -361,9 +359,23 @@ exports.FormatTuanDetail = function (tuanobj) {
             });
         }
         tuan.members = members;
+        tuan.qrcode = url;
         return AV.Promise.as(tuan);
     });
 };
+
+function getQRCode(tuanid) {
+    var promise = new AV.Promise();
+    API.createTmpQRCode(Number(tuanid), 1800, function(err, result) {
+        if (err) {
+            promise.reject('getQRCode Error');
+        } else {
+            console.log('getQRCode Success: %j', result);
+            promise.resolve(API.showQRCodeURL(result.ticket));
+        }
+    });
+    return promise;
+}
 
 /** 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
