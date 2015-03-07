@@ -63,7 +63,8 @@ var receiveMessage = function(msg, cb) {
                         });
                     }).then(function() {
                         cb(null, result);
-                    }, function() {
+                    }, function(error) {
+                        console.log('扫码关注失败: ' + JSON.stringify(error));
                         result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
                         cb(null, result);
                     });
@@ -73,7 +74,8 @@ var receiveMessage = function(msg, cb) {
                     utils.Subscribe(fromUserId).then(function() {
                         result.xml.Content = '您已成功激活饭团APP，尝试点击 \"我的饭团\" 快来体验吧:)';
                         cb(null, result);
-                    }, function() {
+                    }, function(error) {
+                        console.log('主动关注失败: ' + JSON.stringify(error));
                         result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
                         cb(null, result);
                     });
@@ -100,6 +102,7 @@ var receiveMessage = function(msg, cb) {
                 }).then(function() {
                     cb(null, result);
                 }, function() {
+                    console.log('扫码入团失败: ' + JSON.stringify(error));
                     result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
                     cb(null, result);
                 });
