@@ -307,7 +307,7 @@ exports.DisableAccount = function(user, tuan, account) {
                 return AV.Promise.as(ret);
             } else {
                 // 直接退团，给所有团员发消息
-                for (var i = 0; i < results.length; j++) {
+                for (var i = 0; i < results.length; i++) {
                     if (results[i].get('user').id != user.id) {
                         // 给其他成员发送模板消息
                         sendTemplate(TEMPID_QUIT, user, results[i].get('user'), tuan);
