@@ -9,10 +9,18 @@
         'tuanService',
         'tuanFilters'
     ]);
-    eatTogether.run(function() {
-        AV.initialize("vk84p7j0sizwl03zgvb3y1eg6z7klbs97hrgock7ilfascaf",
-            "pxbvfffu8uli2tcld6sg9pgfouoq1fbse6l4bf0xt1ukaqrq");
-    });
+    eatTogether.run(['tuan', function(tuan) {
+            AV.initialize("vk84p7j0sizwl03zgvb3y1eg6z7klbs97hrgock7ilfascaf",
+                "pxbvfffu8uli2tcld6sg9pgfouoq1fbse6l4bf0xt1ukaqrq");
+            tuan.getJsConfig().then(function (res) {
+                wx.config(angular.extend(res, {
+                    debug: true
+                }));
+                wx.ready(function (res) {
+                });
+            });
+        }]);
+
 
     eatTogether.config(['$routeProvider',
         function($routeProvider) {
