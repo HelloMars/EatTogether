@@ -100,12 +100,6 @@ app.get('/tuanlist', function(req, res) {
             'members': 10,
             'news': 0
         });
-        tuans.push({
-            'id': 2,
-            'name': '入团',
-            'members': 10,
-            'news': 0
-        });
         res.jsonp(tuans);
     }, function(error) {
         console.log('TuanList Error: ' + JSON.stringify(error));
@@ -223,6 +217,15 @@ app.post('/bill', function(req, res) {
     }, function(error) {
         console.log('Bill Error: ' + JSON.stringify(error));
         res.send('Bill Error');
+    });
+});
+
+app.get('/jsconfig', function(req, res) {
+    utils.getJsConfig(req.headers.referer).then(function(config) {
+        res.jsonp(config);
+    }, function(error) {
+        console.log('JsConfig Error: ' + JSON.stringify(error));
+        res.send('JsConfig Error');
     });
 });
 

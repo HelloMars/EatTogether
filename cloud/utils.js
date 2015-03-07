@@ -31,6 +31,43 @@ var MENU = {
         }]
 };
 
+var JSAPILIST = [
+    'checkJsApi',
+    'onMenuShareTimeline',
+    'onMenuShareAppMessage',
+    'onMenuShareQQ',
+    'onMenuShareWeibo',
+    'hideMenuItems',
+    'showMenuItems',
+    'hideAllNonBaseMenuItem',
+    'showAllNonBaseMenuItem',
+    'translateVoice',
+    'startRecord',
+    'stopRecord',
+    'onRecordEnd',
+    'playVoice',
+    'pauseVoice',
+    'stopVoice',
+    'uploadVoice',
+    'downloadVoice',
+    'chooseImage',
+    'previewImage',
+    'uploadImage',
+    'downloadImage',
+    'getNetworkType',
+    'openLocation',
+    'getLocation',
+    'hideOptionMenu',
+    'showOptionMenu',
+    'closeWindow',
+    'scanQRCode',
+    'chooseWXPay',
+    'openProductSpecificView',
+    'addCard',
+    'chooseCard',
+    'openCard'
+];
+
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
@@ -62,9 +99,28 @@ exports.Init = function() {
     //});
 };
 
+exports.getJsConfig = function(url) {
+    var promise = new AV.Promise();
+    var param = {
+        debug: false,
+        jsApiList: JSAPILIST,
+        url: url
+    };
+    console.log('Get Js Config of ' + url);
+    API.getJsConfig(param, function(err, result) {
+        if (err) {
+            promise.reject('getJsConfig Error');
+        } else {
+            console.log('getJsConfig Success: %j', result);
+            promise.resolve(result);
+        }
+    });
+    return promise;
+};
+
 exports.getOpenId = function(code) {
     var promise = new AV.Promise();
-    OAUTH.getAccessToken(code, function (err, result) {
+    OAUTH.getAccessToken(code, function(err, result) {
         console.log("getOpenId result: " + JSON.stringify(result));
         if (result.errcode) {
             promise.reject(result);

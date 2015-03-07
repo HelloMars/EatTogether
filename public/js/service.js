@@ -24,7 +24,9 @@ tuanService.factory('tuan', ['$http',
 
             requestWriteOff: requestWriteOff,
 
-            verifyWriteOff: verifyWriteOff
+            verifyWriteOff: verifyWriteOff,
+
+            getJsConfig: getJsConfig
         };
 
         /**
@@ -170,6 +172,17 @@ tuanService.factory('tuan', ['$http',
                     tuanid : tuanid,
                     uid : uid
                 }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 获取 JS Config */
+        function getJsConfig () {
+            var request = $http({
+                url: SERVER + 'jsconfig',
+                method: 'GET',
+                params: {}
             });
 
             return (request.then(handleSuccess, handleError));

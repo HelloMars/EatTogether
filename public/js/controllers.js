@@ -51,7 +51,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
                 // 入团
                 $location.url('/tuan/join/');
             } else {
-                $location.url('/tuan/' + id + '/home');
+                $location.url('/tuan/' + id + '/members');
             }
         };
     }
