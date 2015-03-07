@@ -16,7 +16,7 @@
                 wx.config(angular.extend(res, {
                     debug: true
                 }));
-                wx.ready(function (res) {
+                wx.ready(function () {
                 });
             });
         }]);
