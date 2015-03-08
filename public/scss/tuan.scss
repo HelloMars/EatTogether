@@ -54,7 +54,7 @@ $width:270px;
             font-size: 1em;
             line-height: 2;
             width:80%;
-            max-height: 200px;
+            max-height: 100px;
         }
     }
 
@@ -63,6 +63,9 @@ $width:270px;
         height:200px;
         display: inline-block;
         border:2px solid #d7d7d7;
+        img{
+            width: 200px;
+        }
     }
 }
 .s-history{

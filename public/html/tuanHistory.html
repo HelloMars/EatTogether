@@ -1,15 +1,15 @@
 <div class="s-history">
-    <div class="nav">
-        <a class="return" href="#/tuan/">&lt;</a>
-        <ul>
-            <li><a href="#/tuan/{{tuanId}}/members">成员</a></li>
-            <li><a href="#/tuan/{{tuanId}}/home">首页</a></li>
-            <li><a href="#/tuan/{{tuanId}}/history">历史</a></li>
-        </ul>
-    </div>
-    <ul class="history">
-        <li ng-repeat="history in histories">
-        {{history}}
+    <ng-include src="'./html/nav.html'"></ng-include>
+    <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
+    <ul ng-show="loaded" class="history">
+        <li ng-switch="history.type" ng-repeat="history in histories">
+            <div ng-switch-when="10">
+                <span class="time">{{history.date}}</span>
+                <span class="who">{{history.data.username}}</span> 为
+                <span class="members-count">{{history.data.members.length}}</span>人付钱
+                <span class="money">{{history.data.money}}</span> 元
+            </div>
+            <div ng-switch-default>...</div>
         </li>
     </ul>
 </div>
