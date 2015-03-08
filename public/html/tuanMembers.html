@@ -1,10 +1,10 @@
 <div class="s-members">
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
-    <div ng-show="loaded">
+    <div class="members" ng-show="loaded">
         <div ng-repeat="member in list" class="member" ng-style="member.avatarBg">
             <p ng-style="member.moneyBgc">{{member.money}}</p>
         </div>
-        <a href="javascript:;"   ng-click="bill()" class="btn">买单</a>
+        <a href="javascript:;"   ng-click="bill()" class="circle-btn">买单</a>
     </div>
 </div>

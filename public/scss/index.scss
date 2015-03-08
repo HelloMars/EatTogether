@@ -1,0 +1,25 @@
+@import "conf.scss";
+
+.tuan{
+  display: inline-block;
+}
+
+.tuan div{
+  border-radius: 50%;
+  background: $btnBgc;
+  text-align: center;
+  text-shadow: 0 0 3px darken($textC, 2%);
+  margin: 0 auto;
+  transition: width 1s, height 1s, background 1s;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.tuan a{
+  color: $hTextC;
+  text-decoration: none;
+}
+label{
+  display: block;
+}
+

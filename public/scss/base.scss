@@ -1,180 +1,130 @@
-$bgc : #636465;
-$btnBgc : #FF8040;
 
 
-body {
-    background-color: $bgc;
-    margin:0;
-    p,ul,li{
-      margin: 0;
-      padding: 0;
-    }
-}
+$bgc : #dddddd;
+$btnBgc : #348903;
+$textC : #fff;
+$hTextC : #959595;
+$textAreaBg : #dddddd;
 
-.tuan{
-  float: left;
-}
 
-.tuan div{
-  border-radius: 50%;
-  background: #FF8040;
+@import "conf.scss";
+@import "reset.scss";
+@import "components.scss";
+@import "index.scss";
+
+
+.loading{
+  line-height: 300px;
   text-align: center;
-  text-shadow: 0 0 3px #000000;
-  margin: 0 auto;
-  transition: width 1s, height 1s, background 1s;
-
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
-.tuan a{
-  color: #000000;
-  text-decoration: none;
-}
-
-
-label{
-  display: block;
-}
-.clear{
-  clear: both;
-}
-
-
-
-/** components */
-.btn{
-      display: block;
-      width: 100px;
-      text-align: center;
-      height: 40px;
-      line-height: 40px;
-      margin: 0 auto;
-      background-color: $btnBgc;
-      border-radius: 4px;
-      color: #fff;
-      text-decoration: none;
-}
-.nav{
-    .return{
-        display: inline-block;
-        font-size: 30px;
-        color: #fff;
-        text-decoration: none;
-        position: absolute;
-        left:10px;
-    }
-    h1{
-      margin: 0;
-      background: $btnBgc;
-      height: 40px;
-      line-height: 40px;
-      font-size: 20px;
-      font-weight: normal;
-      text-align: center;
-      color: #fff;
-    }
-    ul{
-      width: 100%;
-      height: 40px;
-      line-height: 40px;
-      background-color: #636465;
-      position: fixed;
-      bottom:0;
-      text-align: center;
-        li{
-            text-align: center;
-            display: inline-block;
-            width:25%;
-            font-size: 16px;
-            background-color: $btnBgc;
-            float:left;
-            a{
-                text-decoration: none;
-                color: #fff;
-                width:100%;
-            }
-            &.cur{
-              background: red;
-            }
-        }
-    }
-}
-/** 创团 */
-.s-create{
-  label{
-      display: block;
-  }
-}
-
-/** 入团 */
-.s-join{
-
-    section{
-        width: 80%;
-        margin: 1em auto;
-        text-align: center;
-    }
-    input{
-        width: 250px;
-        height: 40px;
-        line-height: 40px;
-        font-size: 15px;
-        border-radius: 4px;
-        padding: 0 1em;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .btn{
-        display: block;
-        width: 100px;
-        text-align: center;
-        height: 40px;
-        line-height: 40px;
-        margin: 0 auto;
-        background-color: #FF8040;
-        border-radius: 4px;
-        color: #fff;
-        text-decoration: none;
-    }
-}
 
 .s-members{
     text-align: justify;
-    .member{
-        display: inline-block;
-        margin: 0 10px;
-        width: 80px;
-        height: 80px;
-        background-size: 100%;
-        border-radius: 40px;
-        position: relative;
-        overflow: hidden;
-        img{
-          max-width: 100%;
-        }
-        p{
-          position: absolute;
-          bottom: 5px;
-          left: 10px;
-          width: 100%;
-          text-align: center;
-          height: 20px;
-          line-height: 20px;
-          -webkit-transform: rotate(-22deg);
-          transform: rotate(-22deg);
-          font-size: 14px;
+    .members{
+        padding: 30px;
+        .member{
+            display: inline-block;
+            margin: 0 10px;
+            width: 80px;
+            height: 80px;
+            background-size: 100%;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            img{
+              max-width: 100%;
+            }
+            p{
+              position: absolute;
+              bottom: 5px;
+              left: 10px;
+              width: 100%;
+              text-align: center;
+              height: 20px;
+              line-height: 20px;
+              -webkit-transform: rotate(-22deg);
+              transform: rotate(-22deg);
+              font-size: 14px;
+            }
         }
     }
 }
 
-.s-index{
-  .qrcode{
-    img{
-      width: 200px;
+
+$width:270px;
+
+.s-create{
+    text-align: center;
+
+    label {
+        display: inline-block;
+        margin: 10px auto;
+        text-align:center;
+        width:$width;
+        background:$textAreaBg;
+        border-radius: 10px;
+        line-height: 2;
+        font-size: 1em;
+        input{
+            border:none;
+            background: $textAreaBg;
+        }
+        textarea{
+            border:none;
+            background: $textAreaBg;
+            resize: none;
+            font-size: 1em;
+            line-height: 2;
+            width:$width;
+            max-height: 200px;
+        }
     }
-  }
+
 }
-.loading{
-  line-height: 300px;
+
+.s-index{
+    text-align: center;
+
+    label {
+        display: inline-block;
+        margin: 10px auto;
+        text-align:center;
+        width:$width;
+        background:$textAreaBg;
+        border-radius: 10px;
+        line-height: 2;
+        font-size: 1em;
+        input{
+            border:none;
+            background: $textAreaBg;
+        }
+        textarea{
+            border:none;
+            background: $textAreaBg;
+            resize: none;
+            font-size: 1em;
+            line-height: 2;
+            width:80%;
+            max-height: 100px;
+        }
+    }
+
+    .qrcode{
+        width:200px;
+        height:200px;
+        display: inline-block;
+        border:2px solid #d7d7d7;
+        img{
+            width: 200px;
+        }
+    }
+}
+.s-history{
+    .history{
+        li{
+            margin: 10px auto;
+            font-size: 16px;
+        }
+    }
 }

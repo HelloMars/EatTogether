@@ -1,0 +1,63 @@
+/** components */
+.btn {
+  display: block;
+  width: 100px;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  margin: 0 auto;
+  background-color: #999999;
+  border-radius: 4px;
+  color: #fff;
+  text-decoration: none; }
+
+.circle-btn {
+  display: inline-block;
+  width: 80px;
+  text-align: center;
+  height: 80px;
+  line-height: 80px;
+  margin: 0 auto;
+  background-color: #999999;
+  border-radius: 40px;
+  color: #fff;
+  text-decoration: none; }
+
+.nav .return {
+  display: inline-block;
+  font-size: 30px;
+  color: #fff;
+  text-decoration: none;
+  position: absolute;
+  left: 10px; }
+.nav h1 {
+  margin: 0;
+  background: #999999;
+  height: 40px;
+  line-height: 40px;
+  font-size: 20px;
+  font-weight: normal;
+  text-align: center;
+  color: #fff; }
+.nav ul {
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  position: fixed;
+  bottom: 0;
+  text-align: center;
+  border-top: 1px solid #e0dee1; }
+  .nav ul li {
+    text-align: center;
+    display: inline-block;
+    width: 25%;
+    font-size: 16px;
+    float: left; }
+    .nav ul li a {
+      text-decoration: none;
+      color: #888;
+      width: 100%; }
+    .nav ul li.cur a {
+      color: #609700; }
+
+/*# sourceMappingURL=components.css.map */

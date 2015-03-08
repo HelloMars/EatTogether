@@ -1,33 +1,8 @@
-@charset "UTF-8";
 body {
-  background-color: #636465;
   margin: 0; }
   body p, body ul, body li {
     margin: 0;
     padding: 0; }
-
-.tuan {
-  float: left; }
-
-.tuan div {
-  border-radius: 50%;
-  background: #FF8040;
-  text-align: center;
-  text-shadow: 0 0 3px #000000;
-  margin: 0 auto;
-  transition: width 1s, height 1s, background 1s;
-  text-overflow: ellipsis;
-  overflow: hidden; }
-
-.tuan a {
-  color: #000000;
-  text-decoration: none; }
-
-label {
-  display: block; }
-
-.clear {
-  clear: both; }
 
 /** components */
 .btn {
@@ -37,8 +12,20 @@ label {
   height: 40px;
   line-height: 40px;
   margin: 0 auto;
-  background-color: #FF8040;
+  background-color: #999999;
   border-radius: 4px;
+  color: #fff;
+  text-decoration: none; }
+
+.circle-btn {
+  display: inline-block;
+  width: 80px;
+  text-align: center;
+  height: 80px;
+  line-height: 80px;
+  margin: 0 auto;
+  background-color: #999999;
+  border-radius: 40px;
   color: #fff;
   text-decoration: none; }
 
@@ -51,7 +38,7 @@ label {
   left: 10px; }
 .nav h1 {
   margin: 0;
-  background: #FF8040;
+  background: #999999;
   height: 40px;
   line-height: 40px;
   font-size: 20px;
@@ -62,83 +49,129 @@ label {
   width: 100%;
   height: 40px;
   line-height: 40px;
-  background-color: #636465;
   position: fixed;
   bottom: 0;
-  text-align: center; }
+  text-align: center;
+  border-top: 1px solid #e0dee1; }
   .nav ul li {
     text-align: center;
     display: inline-block;
     width: 25%;
     font-size: 16px;
-    background-color: #FF8040;
     float: left; }
     .nav ul li a {
       text-decoration: none;
-      color: #fff;
+      color: #888;
       width: 100%; }
-    .nav ul li.cur {
-      background: red; }
+    .nav ul li.cur a {
+      color: #609700; }
 
-/** 创团 */
-.s-create label {
+.tuan {
+  display: inline-block; }
+
+.tuan div {
+  border-radius: 50%;
+  background: #999999;
+  text-align: center;
+  text-shadow: 0 0 3px #838383;
+  margin: 0 auto;
+  transition: width 1s, height 1s, background 1s;
+  text-overflow: ellipsis;
+  overflow: hidden; }
+
+.tuan a {
+  color: #d8d8d8;
+  text-decoration: none; }
+
+label {
   display: block; }
 
-/** 入团 */
-.s-join section {
-  width: 80%;
-  margin: 1em auto;
+.loading {
+  line-height: 300px;
   text-align: center; }
-.s-join input {
-  width: 250px;
-  height: 40px;
-  line-height: 40px;
-  font-size: 15px;
-  border-radius: 4px;
-  padding: 0 1em;
-  box-sizing: border-box;
-  text-align: center; }
-.s-join .btn {
-  display: block;
-  width: 100px;
-  text-align: center;
-  height: 40px;
-  line-height: 40px;
-  margin: 0 auto;
-  background-color: #FF8040;
-  border-radius: 4px;
-  color: #fff;
-  text-decoration: none; }
 
 .s-members {
   text-align: justify; }
-  .s-members .member {
+  .s-members .members {
+    padding: 30px; }
+    .s-members .members .member {
+      display: inline-block;
+      margin: 0 10px;
+      width: 80px;
+      height: 80px;
+      background-size: 100%;
+      border-radius: 40px;
+      position: relative;
+      overflow: hidden; }
+      .s-members .members .member img {
+        max-width: 100%; }
+      .s-members .members .member p {
+        position: absolute;
+        bottom: 5px;
+        left: 10px;
+        width: 100%;
+        text-align: center;
+        height: 20px;
+        line-height: 20px;
+        -webkit-transform: rotate(-22deg);
+        transform: rotate(-22deg);
+        font-size: 14px; }
+
+.s-create {
+  text-align: center; }
+  .s-create label {
     display: inline-block;
-    margin: 0 10px;
-    width: 80px;
-    height: 80px;
-    background-size: 100%;
-    border-radius: 40px;
-    position: relative;
-    overflow: hidden; }
-    .s-members .member img {
-      max-width: 100%; }
-    .s-members .member p {
-      position: absolute;
-      bottom: 5px;
-      left: 10px;
-      width: 100%;
-      text-align: center;
-      height: 20px;
-      line-height: 20px;
-      -webkit-transform: rotate(-22deg);
-      transform: rotate(-22deg);
-      font-size: 14px; }
+    margin: 10px auto;
+    text-align: center;
+    width: 270px;
+    background: #dddddd;
+    border-radius: 10px;
+    line-height: 2;
+    font-size: 1em; }
+    .s-create label input {
+      border: none;
+      background: #dddddd; }
+    .s-create label textarea {
+      border: none;
+      background: #dddddd;
+      resize: none;
+      font-size: 1em;
+      line-height: 2;
+      width: 270px;
+      max-height: 200px; }
 
-.s-index .qrcode img {
-  width: 200px; }
+.s-index {
+  text-align: center; }
+  .s-index label {
+    display: inline-block;
+    margin: 10px auto;
+    text-align: center;
+    width: 270px;
+    background: #dddddd;
+    border-radius: 10px;
+    line-height: 2;
+    font-size: 1em; }
+    .s-index label input {
+      border: none;
+      background: #dddddd; }
+    .s-index label textarea {
+      border: none;
+      background: #dddddd;
+      resize: none;
+      font-size: 1em;
+      line-height: 2;
+      width: 80%;
+      max-height: 100px; }
+  .s-index .qrcode {
+    width: 200px;
+    height: 200px;
+    display: inline-block;
+    border: 2px solid #d7d7d7; }
+    .s-index .qrcode img {
+      width: 200px; }
 
-.loading {
-  line-height: 300px; }
+.s-history .history li {
+  margin: 10px auto;
+  font-size: 16px; }
 
 /*# sourceMappingURL=base.css.map */
