@@ -28,12 +28,17 @@ body {
   border: 1px solid #e0dee1;
   position: fixed;
   bottom: 50px;
-  right: 10px;
   color: #888;
   background: #fff;
   height: 60px;
   width: 60px;
   line-height: 60px; }
+
+.circle-btn-right {
+  right: 10px; }
+
+.circle-btn-left {
+  left: 10px; }
 
 .nav ul {
   background: #fff;
@@ -132,10 +137,11 @@ body {
       font-size: 15px;
       border: none;
       resize: none;
-      line-height: 2;
+      line-height: 1.5;
       width: 60%;
       max-height: 70px;
-      vertical-align: top; }
+      vertical-align: top;
+      padding-top: 4px; }
   .s-index .qrcode {
     width: 270px;
     height: 270px;
@@ -144,16 +150,6 @@ body {
     line-height: 270px; }
     .s-index .qrcode img {
       width: 265px; }
-  .s-index .circle-btn {
-    border: 1px solid #e0dee1;
-    position: fixed;
-    bottom: 50px;
-    right: 4px;
-    color: #888;
-    background: #fff;
-    height: 60px;
-    width: 60px;
-    line-height: 60px; }
 
 .s-history .history li {
   font-size: 14px;

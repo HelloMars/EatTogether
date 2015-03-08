@@ -90,10 +90,11 @@ $width:270px;
             font-size: 15px;
             border: none;
             resize: none;
-            line-height: 2;
+            line-height: 1.5;
             width: 60%;
             max-height: 70px;
             vertical-align: top;
+            padding-top: 4px;
         }
     }
 
@@ -108,17 +109,6 @@ $width:270px;
         }
     }
 
-    .circle-btn{
-        border: 1px solid $bgc1;
-        position: fixed;
-        bottom: 50px;
-        right: 4px;
-        color: #888;
-        background: $bgc;
-        height: 60px;
-        width: 60px;
-        line-height: 60px;
-    }
 }
 .s-history{
     .history{
