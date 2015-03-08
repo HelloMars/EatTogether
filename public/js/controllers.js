@@ -88,22 +88,21 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
-            res.members.map(function(user) {
-                angular.extend(user, getDesign(user.money));
-                $scope.list.push(user);
+            res.members.map(function(member) {
+                member.avatarBg = {
+                    'background-image': 'url(' + member.headimgurl + ')',
+                };
+                member.moneyBgc = {
+                    'background' : (member.sex === 1 ? 'lightgreen' : 'violet')
+                }
+
+
+                $scope.list.push(member);
             });
-            $scope.list.unshift(maidan);
 
         });
-        var maidan = {
-            name : '窝买单',
-            money : 10
-        };
-        angular.extend(maidan, getDesign(maidan.money));
-        $scope.click = function(name) {
-            if (name === '窝买单') {
-                $location.url('/tuan/' + $scope.tuanId + '/bill');
-            }
+        $scope.bill = function() {
+            $location.url('/tuan/' + $scope.tuanId + '/bill');
         };
 
     }
@@ -123,7 +122,6 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
 
             $scope.members.forEach(function(user) {
                 user.inThis = true;
-                console.log(user);
             });
             $scope.changeMember = function () {
                 var tmp = 0;
@@ -162,20 +160,20 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
             $scope.slogan = res.slogan;
             $scope.loaded = true;
 
-            wx.onMenuShareAppMessage({
-                title: '分享我的饭团' + $scope.name, // 分享标题
-                desc: '啦啦啦' + $scope.id, // 分享描述
-                link: res.shareUrl, // 分享链接
-                imgUrl: '', // 分享图标
-                type: '', // 分享类型,music、video或link，不填默认为link
-                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
-                success: function () {
-                    // 用户确认分享后执行的回调函数
-                },
-                cancel: function () {
-                    // 用户取消分享后执行的回调函数
-                }
-            });
+            // wx.onMenuShareAppMessage({
+            //     title: '分享我的饭团' + $scope.name, // 分享标题
+            //     desc: '啦啦啦' + $scope.id, // 分享描述
+            //     link: res.shareUrl, // 分享链接
+            //     imgUrl: '', // 分享图标
+            //     type: '', // 分享类型,music、video或link，不填默认为link
+            //     dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            //     success: function () {
+            //         // 用户确认分享后执行的回调函数
+            //     },
+            //     cancel: function () {
+            //         // 用户取消分享后执行的回调函数
+            //     }
+            // });
         });
 
         $scope.save = function () {

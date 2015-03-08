@@ -8,12 +8,9 @@
         </ul>
     </div>
     <div>
-        <div ng-repeat="data in list" class="tuan"
-             ng-style={{data.div1}}>
-            <div ng-style={{data.div2}} ng-click="click(data.name)">
-                {{data.name}}
-                <p>{{data.money}}</p>
-            </div>
+        <div ng-repeat="member in list" class="member" ng-style="member.avatarBg">
+            <p ng-style="member.moneyBgc">{{member.money}}</p>
         </div>
+        <a href="javascript:;"   ng-click="bill()" class="btn">买单</a>
     </div>
 </div>
