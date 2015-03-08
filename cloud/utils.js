@@ -592,8 +592,12 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
 
 exports.RevertHistory = function(user, tuan, historyId) {
     var query = new AV.Query(exports.TuanHistory);
-    return query.get(historyId).then(function(history) {
-        if (history && history.get('type') == HISTORY_TYPE.BILL) {
+    query.equalTo('tuan', tuan);
+    query.descending("createdAt");
+    query.limit(1);
+    return query.first().then(function(history) {
+        if (history && history.id == historyId && history.get('type') == HISTORY_TYPE.BILL) {
+            // 只能修改最近一次消费的记录
             var data = history.get('data');
             var othersnum = data.othersnum;
             var price = data.money;
