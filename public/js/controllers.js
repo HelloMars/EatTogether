@@ -25,7 +25,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
             tuan.createTuan().then(function(res){
                 $location.url('/tuan/' + res.id + '/home');
             });
-        }
+        };
     }
 ]);
 
@@ -111,6 +111,7 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
             $scope.curTabName = $scope.name;
             $scope.id = res.id;
             $scope.qrcode = res.qrcode;
+            $scope.money = res.money;
             $scope.slogan = res.slogan;
             $scope.loaded = true;
         });
