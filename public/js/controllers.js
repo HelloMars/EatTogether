@@ -12,9 +12,10 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
         $scope.column = 1;
         $scope.list = [];
         tuan.getAll().then(function(res) {
-            res.map(function(tuan) {
+            res.tuans.map(function(tuan) {
                 $scope.list.push(tuan);
             });
+            $scope.user = res.user;
             $scope.loaded = true;
         });
         $scope.enterTuan = function(id) {
@@ -106,6 +107,7 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
         $scope.loaded = false;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.name = res.name;
+            $scope.newName = res.name;
             $scope.curTabName = $scope.name;
             $scope.id = res.id;
             $scope.qrcode = res.qrcode;
@@ -114,8 +116,9 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
         });
 
         $scope.save = function () {
+            if ($scope.newName === $scope.name) return;
             tuan.modTuanInfo($scope.id, {
-                name : $scope.name,
+                name : $scope.newName,
                 slogan : $scope.slogan
             });
         };

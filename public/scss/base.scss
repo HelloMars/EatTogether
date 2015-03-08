@@ -163,13 +163,39 @@ $width:270px;
         border-radius: 40px;
         line-height: 80px;
         margin: 10px;
+        border-radius: 50%;
+        background: $btnBgc;
+        text-align: center;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
     }
+
     .index-nav{
          position: fixed;
         bottom: 0;
         height: 40px;
         line-height: 40px;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid $bgc1;
         width: 100%;
+        white-space: nowrap;
+        .menu{
+            display: inline-block;
+            width: 40px;
+            border-right:1px solid $hTextC;
+        }
+        .self{
+            display: inline-block;
+            width:200px;
+            border-right:1px solid $hTextC;
+            text-align: center;
+        }
+        .create{
+            display: inline-block;
+            width: 75px;
+            text-align: center;
+            background-color: $bgc1;
+            margin-left: -4px;
+        }
     }
 }

@@ -55,26 +55,6 @@ body {
     .nav ul li.cur a {
       color: #609700; }
 
-.tuan {
-  display: inline-block; }
-
-.tuan div {
-  border-radius: 50%;
-  background: #999999;
-  text-align: center;
-  text-shadow: 0 0 3px #838383;
-  margin: 0 auto;
-  transition: width 1s, height 1s, background 1s;
-  text-overflow: ellipsis;
-  overflow: hidden; }
-
-.tuan a {
-  color: #d8d8d8;
-  text-decoration: none; }
-
-label {
-  display: block; }
-
 .loading {
   line-height: 300px;
   text-align: center; }
@@ -199,13 +179,35 @@ label {
   width: 80px;
   border-radius: 40px;
   line-height: 80px;
-  margin: 10px; }
+  margin: 10px;
+  border-radius: 50%;
+  background: #999999;
+  text-align: center;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; }
 .s-list .index-nav {
   position: fixed;
   bottom: 0;
   height: 40px;
   line-height: 40px;
-  border-top: 1px solid #ddd;
-  width: 100%; }
+  border-top: 1px solid #e0dee1;
+  width: 100%;
+  white-space: nowrap; }
+  .s-list .index-nav .menu {
+    display: inline-block;
+    width: 40px;
+    border-right: 1px solid #d8d8d8; }
+  .s-list .index-nav .self {
+    display: inline-block;
+    width: 200px;
+    border-right: 1px solid #d8d8d8;
+    text-align: center; }
+  .s-list .index-nav .create {
+    display: inline-block;
+    width: 75px;
+    text-align: center;
+    background-color: #e0dee1;
+    margin-left: -4px; }
 
 /*# sourceMappingURL=base.css.map */

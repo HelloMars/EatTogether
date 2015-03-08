@@ -28,7 +28,7 @@
             </div>
             <div ng-switch-when="10">
                 <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元
+                <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="{!history.included}">(除我)</span>
             </div>
             <div ng-switch-when="11">
                 <span class="time">{{history.date}}</span>
