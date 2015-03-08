@@ -21,7 +21,7 @@ var MENU = {
         {
             "type":"view",
             "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
+            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
         },
         {
             "name":"菜单",
@@ -110,7 +110,6 @@ exports.getJsConfig = function(url) {
         jsApiList: JSAPILIST,
         url: url
     };
-    console.log('Get Js Config of ' + url);
     API_JS.getJsConfig(param, function(err, result) {
         if (err) {
             promise.reject('getJsConfig Error');
@@ -125,12 +124,31 @@ exports.getJsConfig = function(url) {
 exports.getOpenId = function(code) {
     var promise = new AV.Promise();
     OAUTH.getAccessToken(code, function(err, result) {
-        console.log("getOpenId result: " + JSON.stringify(result));
-        if (result.errcode) {
+        if (err) {
             promise.reject(result);
         } else {
             var openid = result.data.openid;
             promise.resolve(openid);
+        }
+    });
+    return promise;
+};
+
+exports.getUserInfo = function(code) {
+    var promise = new AV.Promise();
+    OAUTH.getAccessToken(code, function(err, result) {
+        if (err) {
+            promise.reject(result);
+        } else {
+            var openid = result.data.openid;
+            OAUTH.getUser(openid, function (err, result) {
+                if (err) {
+                    promise.reject(result);
+                } else {
+                    console.log('getUserInfo: ' + JSON.stringify(result));
+                    promise.resolve(result);
+                }
+            });
         }
     });
     return promise;
@@ -235,13 +253,25 @@ function Signup(username, password, flag) {
     return user.signUp();
 }
 
-exports.Login = function(username, password) {
+exports.Login = function(username, password, userinfo) {
     var promise = new AV.Promise();
 
     AV.User.logIn(username, password, {
         success: function(user) {
             // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
             console.log('登录成功: %j', user);
+            if (userinfo) {
+                // 修改用户信息
+                user.set('nickname', userinfo.nickname);
+                user.set('headimgurl', userinfo.headimgurl);
+                user.set('sex', userinfo.sex);
+                user.set('location', {
+                    'country': userinfo.country,
+                    'province': userinfo.province,
+                    'city': userinfo.city
+                });
+                user.save();
+            }
             promise.resolve(user);
         },
         error: function(user, error) {
@@ -418,6 +448,8 @@ exports.FormatTuanDetail = function (tuanobj) {
             members.push({
                 'uid': user.id,
                 'name': user.get('nickname'),
+                'sex': user.get('sex'),
+                'headimgurl': user.get('headimgurl'),
                 'money': formatFloat(results[i].get('money'))
             });
         }
@@ -520,110 +552,6 @@ function formatTuanHistory(history) {
         + history.get('tuan').get('name') + '团' + history.get('members').length
         + '人消费' + formatFloat(history.get('price'));
 }
-
-/*
-// 请求销账，发送模板消息2给toUser
-exports.RequestWriteOff = function(fromUser, toUser, tuanid) {
-    var promise = new AV.Promise();
-
-    var ret = {};
-    if (fromUser.id == toUser.id) {
-        ret.code = -1;
-        ret.message = '不能和自己销账';
-        promise.resolve(ret);
-    }
-
-    var query = new AV.Query(exports.Tuan);
-    query.equalTo('tuanid', tuanid);
-    query.find().then(function(tuans) {
-        if (tuans.length == 1) {
-            return AV.Promise.as(tuans[0]);
-        } else {
-            return AV.Promise.error('Tuan Results Error');
-        }
-    }).then(function(tuan) {
-        var data = {
-            fromName: {
-                "value": fromUser.get('nickname'),
-                "color": "#173177"
-            },
-            toName: {
-                "value": toUser.get('nickname'),
-                "color": "#173177"
-            },
-            tuanName: {
-                "value": tuan.get('name'),
-                "color": "#173177"
-            }
-        };
-        var username = toUser.get('username');
-        // 测试账号的信息推送到oUgQgt29VhAPB59qvib78KMFZw1I
-        var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
-        // URL置空，则在发送后,点击模板消息会进入一个空白页面（ios）, 或无法点击（android）
-        var url = exports.SERVER + 'verifyWriteOff?uid=' + fromUser.id + '&tuanid=' + tuanid;
-        var topcolor = '#FF0000'; // 顶部颜色
-        API.sendTemplate(openid, TEMPID_REQUEST, url, topcolor, data, function(err, data, res) {
-            if (err) {
-                ret.code = -1;
-                ret.message = '您的销账请求无法发送给 ' + toUser.get('nickname') + '，请尝试其他团员！';
-                console.log('SendTemplate Error %j', err);
-            } else {
-                ret.code = 0;
-                ret.message = '您的销账请求已经发送给 ' + toUser.get('nickname') + '，请联系他确认销账！';
-                console.log('SendTemplate Success: %j, %j', data, res);
-            }
-            promise.resolve(ret);
-        });
-    });
-
-    return promise;
-};
-
-// 确认销账，把fromUser的账户信息划分到toUser（销账不一定非要退团），发模板消息1给fromUser
-exports.VerifyWriteOff = function(fromUser, toUser, tuanid) {
-    var promise = new AV.Promise();
-
-    if (fromUser.id == toUser.id) {
-        ret.code = -1;
-        ret.message = '不能和自己销账';
-        promise.resolve(ret);
-    }
-
-    // 嵌套查询
-    var money = 0;
-    var tuanQuery = new AV.Query(exports.Tuan);
-    tuanQuery.equalTo("tuanid", tuanid);
-    var accountQuery = new AV.Query(exports.Account);
-    accountQuery.containedIn('user', [fromUser, toUser]);
-    accountQuery.include(['user.id']);
-    accountQuery.matchesQuery('tuan', tuanQuery);
-    accountQuery.find().then(function(accounts) {
-        if (accounts.length == 2) {
-            var fromIdx = 0, toIdx = 1;
-            if (accounts[0].get('user').id == toUser.id) {
-                fromIdx = 1;
-                toIdx = 0;
-            }
-            money = accounts[fromIdx].get('money');
-            accounts[toIdx].increment('money', money);
-            accounts[fromIdx].set('money', 0);
-            return AV.Promise.when([accounts[0].save(), accounts[1].save()]);
-        } else {
-            return AV.Promise.error('Account Results Error');
-        }
-    }).then(function() {
-        sendTemplate(TEMPID_VERIFY, fromUser, toUser, tuan);
-        ret.code = 0;
-        ret.message = '您已经和 ' + fromUser.get('nickname') + ' 销账 ' + money;
-        promise.resolve(ret);
-    }, function(error) {
-        console.log('Verify WriteOff Error: ' + JSON.stringify(error));
-        promise.reject(error);
-    });
-
-    return promise;
-};
-*/
 
 function formatFloat(float) {
     return float.toFixed(2);

@@ -78,8 +78,8 @@ app.get('/myet', function(req, res) {
         });
     } else {
         // 正常流程登陆用户
-        utils.getOpenId(code).then(function(openid) {
-            return utils.Login(openid, 'pwd:'+openid);
+        utils.getUserInfo(code).then(function(userinfo) {
+            return utils.Login(userinfo.openid, 'pwd:'+userinfo.openid, userinfo);
         }).then(function () {
             res.render('myet.html');
         }, function (error) {
@@ -228,44 +228,6 @@ app.get('/jsconfig', function(req, res) {
         res.send('JsConfig Error');
     });
 });
-
-/*
-app.get('/requestWriteOff', function(req, res) {
-    if (req.query.uid) {
-        req.AV.user.fetch().then(function(fromUser) {
-            var query = new AV.Query(AV.User);
-            return query.get(req.query.uid).then(function(toUser) {
-                return utils.RequestWriteOff(fromUser, toUser, Number(req.query.tuanid));
-            });
-        }).then(function(ret) {
-            res.jsonp(ret);
-        }, function (error) {
-            console.log('Request WriteOff Error: ' + JSON.stringify(error));
-            res.send('Request WriteOff Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
-});
-
-app.get('/verifyWriteOff', function(req, res) {
-    if (req.query.uid) {
-        req.AV.user.fetch().then(function(toUser) {
-            var query = new AV.Query(AV.User);
-            return query.get(req.query.uid).then(function(fromUser) {
-                return utils.VerifyWriteOff(fromUser, toUser, Number(req.query.tuanid));
-            });
-        }).then(function(ret) {
-            res.jsonp(ret);
-        }, function (error) {
-            console.log('Verify WriteOff Error: ' + JSON.stringify(error));
-            res.send('Verify WriteOff Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
-});
-*/
 
 app.get('/weixin', function(req, res) {
     console.log('weixin req:', req.query);

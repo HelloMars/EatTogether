@@ -22,10 +22,6 @@ tuanService.factory('tuan', ['$http',
 
             bill: bill,
 
-            requestWriteOff: requestWriteOff,
-
-            verifyWriteOff: verifyWriteOff,
-
             getJsConfig: getJsConfig
         };
 
@@ -142,35 +138,6 @@ tuanService.factory('tuan', ['$http',
                     members : members,
                     othersnum : othersnum,
                     price : price
-                }
-            });
-
-            return (request.then(handleSuccess, handleError));
-        }
-
-        /** 请求销账 (请求与tuanid里的uid销账) */
-        function requestWriteOff (tuanid, uid) {
-            var request = $http({
-                url: SERVER + 'requestWriteOff',
-                method: 'GET',
-                params: {
-                    tuanid : tuanid,
-                    uid : uid
-                }
-            });
-
-            return (request.then(handleSuccess, handleError));
-        }
-
-
-        /** 确认销账 (确认与tuanid里的uid销账) */
-        function verifyWriteOff (tuanid, uid) {
-            var request = $http({
-                url: SERVER + 'verifyWriteOff',
-                method: 'GET',
-                params: {
-                    tuanid : tuanid,
-                    uid : uid
                 }
             });
 
