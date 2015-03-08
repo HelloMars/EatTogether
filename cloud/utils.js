@@ -401,6 +401,7 @@ exports.JoinTuan = function(user, tuan, account) {
                 // 以前加入过该团
                 record = true;
                 tuan.increment('members');
+                tuan.increment('news');
                 account.set('tuan', tuan);
                 account.set('state', 0);
             }
@@ -409,6 +410,7 @@ exports.JoinTuan = function(user, tuan, account) {
             record = true;
             account = new exports.Account();
             tuan.increment('members');
+            tuan.increment('news');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
@@ -474,6 +476,7 @@ exports.DisableAccount = function(user, tuan, account) {
                 ret.code = 0;
                 ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
                 tuan.increment('members', -1);
+                tuan.increment('news');
                 // 只标记不删除
                 account.set('state', -1);
                 account.set('tuan', tuan);
@@ -488,6 +491,7 @@ exports.DisableAccount = function(user, tuan, account) {
 };
 
 exports.ModifyTuan = function(user, tuan, infoJson) {
+    var modified = false;
     if (infoJson && infoJson.name) {
         // 生成修改记录
         var tuanHistory = new exports.TuanHistory();
@@ -501,11 +505,18 @@ exports.ModifyTuan = function(user, tuan, infoJson) {
         });
         tuanHistory.save();
         tuan.set('name', infoJson.name);
+        modified = true;
     }
     if (infoJson && infoJson.slogan) {
         tuan.set('slogan', infoJson.slogan);
+        modified = true;
     }
-    return tuan.save()
+    if (modified) {
+        tuan.increment('news');
+        return tuan.save();
+    } else {
+        return AV.Promise.as(tuan);
+    }
 };
 
 exports.FormatTuanDetail = function (tuanobj) {
@@ -587,6 +598,7 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
             promises.push(user.save());
             // 给该团记总账
             tuan.increment('money', avg * members.length);
+            tuan.increment('news');
             promises.push(tuan.save());
             return AV.Promise.when(promises);
         }).then(function() {
@@ -661,7 +673,8 @@ exports.RevertHistory = function(user, tuan, historyId) {
             }).then(function() {
                 // 修改消费记录
                 history.set('type', HISTORY_TYPE.REVERT_BILL);
-                return history.save();
+                tuan.increment('news');
+                return AV.Promise.when(history.save(), tuan.save());
             });
         } else {
             console.log('history: %j', history);
@@ -687,6 +700,8 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
                 tuanHistory.push(formatTuanHistory(user, results[i], false));
             }
         }
+        tuan.set('news', 0);
+        tuan.save();
         return AV.Promise.as(tuanHistory);
     });
 };
