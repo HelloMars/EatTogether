@@ -3,7 +3,6 @@
  */
 
 var eatTogetherControllers = angular.module('eatTogetherControllers', []);
-
 /**
  * 根据数值获取样式
  * @param  {int} tuanMemberCounts
@@ -28,17 +27,18 @@ function getDesign(tuanMemberCounts) {
     };
 }
 
-
 /** 饭团列表 */
 eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan',
     function ($scope, $location, tuan) {
+        $scope.loaded = false;
+        $scope.column = 1;
         $scope.list = [];
-
         tuan.getAll().then(function(res) {
             res.map(function(tuan) {
                 angular.extend(tuan, getDesign(tuan.members));
                 $scope.list.push(tuan);
             });
+            $scope.loaded = true;
         });
         $scope.click = function(id) {
             if (id === 1) {
@@ -47,9 +47,6 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
                     if (res.id === undefined) return;
                     $location.url('/tuan/' + res.id + '/home');
                 });
-            } else if (id === 2) {
-                // 入团
-                $location.url('/tuan/join/');
             } else {
                 $location.url('/tuan/' + id + '/members');
             }
@@ -60,6 +57,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
 /** 创建饭团页 */
 eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', 'tuan', '$location',
     function ($scope, $routeParams, tuan, $location) {
+
         tuan.createTuan().then(function(res){
             if (res.id === undefined) return;
             $location.url('/tuan/' + res.id + '/home');
@@ -67,24 +65,11 @@ eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', '
     }
 ]);
 
-/** 加入饭团页 */
-eatTogetherControllers.controller('TuanJoinCtrl', ['$scope', '$routeParams', 'tuan', '$location',
-    function ($scope, $routeParams, tuan, $location) {
-
-        $scope.confirm = function () {
-            if ($scope.tuanId === '') return;
-            tuan.joinTuan($scope.tuanId).then(function (res) {
-                if (res.id === undefined) return;
-                $location.url('/tuan/' + res.id + '/home');
-            });
-        };
-    }
-]);
-
-
 /** 饭团详情页(成员列表页) */
 eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', '$location', 'tuan',
     function ($scope, $routeParams, $location, tuan) {
+        $scope.loaded = false;
+        $scope.column = 2;
         $scope.tuanId = $routeParams.tuanId;
         $scope.list = [];
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
@@ -94,12 +79,10 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                 };
                 member.moneyBgc = {
                     'background' : (member.sex === 1 ? 'lightgreen' : 'violet')
-                }
-
-
+                };
                 $scope.list.push(member);
             });
-
+            $scope.loaded = true;
         });
         $scope.bill = function() {
             $location.url('/tuan/' + $scope.tuanId + '/bill');
@@ -113,6 +96,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
 /** 买单页 */
 eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan',
     function ($scope, $routeParams, $location, tuan) {
+        $scope.loaded = false;
         $scope.tuanId = $routeParams.tuanId;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.members = res.members;
@@ -123,6 +107,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.members.forEach(function(user) {
                 user.inThis = true;
             });
+            $scope.loaded = true;
             $scope.changeMember = function () {
                 var tmp = 0;
                 $scope.members.forEach(function (member) {
@@ -138,7 +123,6 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                     return member.uid;
                 });
                 tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
-                    console.log(res);
                     $location.url('/tuan/' + $scope.tuanId + '/members/');
                 });
             };
@@ -151,29 +135,16 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
 /** 饭团首页 */
 eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 'tuan', '$location',
     function ($scope, $routeParams, tuan, $location) {
+        $scope.column = 3;
         $scope.tuanId = $routeParams.tuanId;
         $scope.loaded = false;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.name = res.name;
+            $scope.curTabName = $scope.name;
             $scope.id = res.id;
             $scope.qrcode = res.qrcode;
             $scope.slogan = res.slogan;
             $scope.loaded = true;
-
-            // wx.onMenuShareAppMessage({
-            //     title: '分享我的饭团' + $scope.name, // 分享标题
-            //     desc: '啦啦啦' + $scope.id, // 分享描述
-            //     link: res.shareUrl, // 分享链接
-            //     imgUrl: '', // 分享图标
-            //     type: '', // 分享类型,music、video或link，不填默认为link
-            //     dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
-            //     success: function () {
-            //         // 用户确认分享后执行的回调函数
-            //     },
-            //     cancel: function () {
-            //         // 用户取消分享后执行的回调函数
-            //     }
-            // });
         });
 
         $scope.save = function () {
@@ -196,11 +167,13 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
 /** 饭团历史 */
 eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan',
     function ($scope, $routeParams, tuan) {
+        $scope.loaded = false;
+        $scope.column = 4;
         $scope.tuanId = $routeParams.tuanId;
         tuan.getTuanHistory($scope.tuanId, 0, 100)
         .then(function (res) {
             $scope.histories = res;
+            $scope.loaded = true;
         });
     }
-
 ]);
