@@ -171,7 +171,13 @@ label {
       width: 200px; }
 
 .s-history .history li {
-  margin: 10px auto;
-  font-size: 16px; }
+  font-size: 16px;
+  height: 30px;
+  line-height: 30px;
+  border-bottom: 1px solid #dddddd;
+  padding: 0 0 0 20px; }
+  .s-history .history li .time {
+    color: #d8d8d8;
+    margin-right: 10px; }
 
 /*# sourceMappingURL=base.css.map */

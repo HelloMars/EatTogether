@@ -1,12 +1,4 @@
 
-
-$bgc : #dddddd;
-$btnBgc : #348903;
-$textC : #fff;
-$hTextC : #959595;
-$textAreaBg : #dddddd;
-
-
 @import "conf.scss";
 @import "reset.scss";
 @import "components.scss";
@@ -17,7 +9,6 @@ $textAreaBg : #dddddd;
   line-height: 300px;
   text-align: center;
 }
-
 
 .s-members{
     text-align: justify;
@@ -123,8 +114,15 @@ $width:270px;
 .s-history{
     .history{
         li{
-            margin: 10px auto;
             font-size: 16px;
+            height: 30px;
+            line-height: 30px;
+            border-bottom:1px solid $textAreaBg;
+            padding: 0 0 0 20px;
+            .time{
+                color:$hTextC;
+                margin-right: 10px;
+            }
         }
     }
 }
