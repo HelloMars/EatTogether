@@ -325,7 +325,7 @@ exports.GetTuanList = function(user) {
     query.find().then(function(results) {
         var tuans = [];
         for (var i = 0; i < results.length; i++) {
-            var tuan = formatTuan(results[i].get('tuan'));
+            var tuan = formatTuan(results[i].get('tuan'), results[i].get('news'));
             tuans.push(tuan);
         }
         ret.tuans = tuans;
@@ -346,12 +346,12 @@ function formatUser(userobj) {
     return user;
 }
 
-function formatTuan(tuanobj) {
+function formatTuan(tuanobj, news) {
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
     tuan.members = tuanobj.get('members');
-    tuan.news = tuanobj.get('news');
+    tuan.news = news;
     return tuan;
 }
 
@@ -401,7 +401,6 @@ exports.JoinTuan = function(user, tuan, account) {
                 // 以前加入过该团
                 record = true;
                 tuan.increment('members');
-                tuan.increment('news');
                 account.set('tuan', tuan);
                 account.set('state', 0);
             }
@@ -410,16 +409,19 @@ exports.JoinTuan = function(user, tuan, account) {
             record = true;
             account = new exports.Account();
             tuan.increment('members');
-            tuan.increment('news');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
+            account.set('news', 0);
         }
         if (record) {
             // 给所有团员发消息
             for (var i = 0; i < results.length; i++) {
+                // 给其他成员发送模板消息和抖动消息
                 sendTemplate(TEMPID_JOIN, user, results[i].get('user'), tuan);
+                results[i].increment('news');
+                results[i].save();
             }
             // 生成入团记录
             var tuanHistory = new exports.TuanHistory();
@@ -469,14 +471,15 @@ exports.DisableAccount = function(user, tuan, account) {
                 // 给所有团员发消息
                 for (var i = 0; i < results.length; i++) {
                     if (results[i].get('user').id != user.id) {
-                        // 给其他成员发送模板消息
+                        // 给其他成员发送模板消息和抖动消息
                         sendTemplate(TEMPID_QUIT, user, results[i].get('user'), tuan);
+                        results[i].increment('news');
+                        results[i].save();
                     }
                 }
                 ret.code = 0;
                 ret.message = '您在该团只有(' + money + ')团币，系统已经直接退团';
                 tuan.increment('members', -1);
-                tuan.increment('news');
                 // 只标记不删除
                 account.set('state', -1);
                 account.set('tuan', tuan);
@@ -512,7 +515,7 @@ exports.ModifyTuan = function(user, tuan, infoJson) {
         modified = true;
     }
     if (modified) {
-        tuan.increment('news');
+        //TODO: 生成消息抖动 tuan.increment('news');
         return tuan.save();
     } else {
         return AV.Promise.as(tuan);
@@ -585,8 +588,9 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
             for (var i = 0; i < results.length; i++) {
                 results[i].increment('money', -avg);
                 if (results[i].get('user').id != user.id) {
-                    // 给其他成员发送模板消息
+                    // 给其他成员发送模板消息和抖动消息
                     sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                    results[i].increment('news');
                 }
                 promises.push(results[i].save());
             }
@@ -598,7 +602,6 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
             promises.push(user.save());
             // 给该团记总账
             tuan.increment('money', avg * members.length);
-            tuan.increment('news');
             promises.push(tuan.save());
             return AV.Promise.when(promises);
         }).then(function() {
@@ -673,8 +676,7 @@ exports.RevertHistory = function(user, tuan, historyId) {
             }).then(function() {
                 // 修改消费记录
                 history.set('type', HISTORY_TYPE.REVERT_BILL);
-                tuan.increment('news');
-                return AV.Promise.when(history.save(), tuan.save());
+                return history.save();
             });
         } else {
             console.log('history: %j', history);
@@ -700,8 +702,6 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
                 tuanHistory.push(formatTuanHistory(user, results[i], false));
             }
         }
-        tuan.set('news', 0);
-        tuan.save();
         return AV.Promise.as(tuanHistory);
     });
 };

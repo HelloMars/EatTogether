@@ -108,6 +108,8 @@ app.get('/tuanhistory', function(req, res) {
     var length = Number(req.query.length);
     utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
         if (result.tuan && result.isin) {
+            result.account.set('news', 0);
+            result.account.save();
             return utils.GetTuanHistory(result.user, result.tuan, start, length);
         } else {
             return AV.Promise.error('Illegal');
