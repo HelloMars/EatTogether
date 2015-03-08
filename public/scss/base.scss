@@ -106,7 +106,11 @@ $width:270px;
             .delete{
                 position: absolute;
                 right: 0;
-                color: red;
+                background-color: red;
+                color: #fff;
+            }
+            &.deleted{
+                text-decoration: line-through;
             }
         }
     }

@@ -153,9 +153,9 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             if (!enableRevert) return;
             $scope.showDelete = false;
         };
-        $scope.revert = function ( historyId) {
-            tuan.revertHistory($scope.tuanId, historyId).then(function (res) {
-
+        $scope.revert = function ( history) {
+            tuan.revertHistory($scope.tuanId, history.id).then(function (res) {
+                history.deleted = true;
             });
         };
     }

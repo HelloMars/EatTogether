@@ -2,8 +2,8 @@
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <ul ng-show="loaded" class="history">
-        <li ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.enableRevert)" ng-swipe-right="swipeRight(history.enableRevert)" >
-            <div ng-if="history.enableRevert" class="delete" ng-show="showDelete" ng-click="revert(history.id)">删除</div>
+        <li ng-class="{deleted : history.deleted}" ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.enableRevert)" ng-swipe-right="swipeRight(history.enableRevert)" >
+            <div ng-if="history.enableRevert" class="delete" ng-show="showDelete" ng-click="revert(history)">删除</div>
         <!--
              'CREATE': 1,            // 建团记录。date, username 创建 tuanname 团
     'JOIN': 2,              // 入团记录。date, username 加入 tuanname 团
@@ -29,7 +29,7 @@
             </div>
             <div ng-switch-when="10">
                 <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="{!history.included}">(除我)</span>
+                <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="!history.included">(除我)</span>
             </div>
             <div ng-switch-when="11">
                 <span class="time">{{history.date}}</span>
