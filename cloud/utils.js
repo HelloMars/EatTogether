@@ -78,12 +78,12 @@ var JSAPILIST = [
 ];
 
 var HISTORY_TYPE = {
-    'CREATE': 1,            // 建团记录
-    'JOIN': 2,              // 入团记录
-    'QUIT': 3,              // 退团记录
-    'MODIFY_NAME': 5,       // 修改团名记录
-    'BILL': 10,             // 消费记录
-    'REVERT_BILL': 11       // 已经撤销的消费记录
+    'CREATE': 1,            // 建团记录。date, username 创建 tuanname 团
+    'JOIN': 2,              // 入团记录。date, username 加入 tuanname 团
+    'QUIT': 3,              // 退团记录。date, username 退出 tuanname 团
+    'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
+    'BILL': 10,             // 消费记录。date, username 请大家(members.length 人)消费了 money
+    'REVERT_BILL': 11       // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
 };
 
 if (__local) {
