@@ -679,20 +679,26 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     query.skip(start);
     query.limit(length);
     return query.find().then(function(results) {
+        var found = false;
         for (var i = 0; i < results.length; i++) {
-            var history = formatTuanHistory(user, results[i]);
-            tuanHistory.push(history);
+            if (!found && results[i].get('type') == HISTORY_TYPE.BILL) {
+                tuanHistory.push(formatTuanHistory(user, results[i], true));
+                found = true;
+            } else {
+                tuanHistory.push(formatTuanHistory(user, results[i], false));
+            }
         }
         return AV.Promise.as(tuanHistory);
     });
 };
 
-function formatTuanHistory(user, history) {
+function formatTuanHistory(user, history, enableRevert) {
     var type = history.get('type');
     var data = history.get('data');
     var ret = {
         'id': history.id,
         'type': type,
+        'enableRevert': enableRevert,
         'data': data,
         'date': history.createdAt.toISOString().replace(/T.+/, '')
     };
