@@ -110,19 +110,20 @@ app.get('/tuanlist', function(req, res) {
 });
 
 app.get('/tuanhistory', function(req, res) {
-    var tuanid = Number(req.query.id);
     var start = Number(req.query.start);
     var length = Number(req.query.length);
-    if (tuanid >= 10 && start >= 0 && length >=0) {
-        utils.GetTuanHistory(tuanid, start, length).then(function(tuanHistory) {
-            res.jsonp(tuanHistory);
-        }, function(error) {
-            console.log('TuanHistory Error: ' + JSON.stringify(error));
-            res.send('TuanHistory Error');
-        });
-    } else {
-        res.send('Invalid Parameters');
-    }
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.GetTuanHistory(result.tuan, start, length);
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function(history) {
+        res.jsonp(history);
+    }, function(error) {
+        console.log('Tuan History Error: ' + JSON.stringify(error));
+        res.send('Tuan History Error');
+    });
 });
 
 // 建团并入团

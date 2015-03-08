@@ -266,7 +266,11 @@ exports.Login = function(username, password, userinfo) {
             console.log('登录成功: %j', user);
             if (userinfo) {
                 // 修改用户信息
-                userinfo.location = userinfo.country + ';' + userinfo.province + ';' + userinfo.city;
+                userinfo.location = {
+                    'country': userinfo.country,
+                    'province': userinfo.province,
+                    'city': userinfo.city
+                };
                 modifyUserInfo(username, userinfo);
             }
             promise.resolve(user);
@@ -348,27 +352,40 @@ exports.JoinTuan = function(user, tuan, account) {
     query.notEqualTo('state', -1);
     query.include('user');
     return query.find().then(function(results) {
+        var record = false;
         if (account) {
             if (account.get('state') == -1) {
-                // 给所有团员发消息
-                for (var i = 0; i < results.length; i++) {
-                    sendTemplate(TEMPID_JOIN, user, results[i].get('user'), tuan);
-                }
+                // 以前加入过该团
+                record = true;
                 tuan.increment('members');
                 account.set('tuan', tuan);
                 account.set('state', 0);
             }
         } else {
-            // 给所有团员发消息
-            for (var k = 0; k < results.length; k++) {
-                sendTemplate(TEMPID_JOIN, user, results[k].get('user'), tuan);
-            }
+            // 第一次加入该团
+            record = true;
             account = new exports.Account();
             tuan.increment('members');
             account.set('user', user);
             account.set('tuan', tuan);
             account.set('money', 0);
             account.set('state', 0);
+        }
+        if (record) {
+            // 给所有团员发消息
+            for (var i = 0; i < results.length; i++) {
+                sendTemplate(TEMPID_JOIN, user, results[i].get('user'), tuan);
+            }
+            // 生成入团记录
+            var tuanHistory = new exports.TuanHistory();
+            tuanHistory.set('creater', user);
+            tuanHistory.set('tuan', tuan);
+            tuanHistory.set('type', 1);
+            tuanHistory.set('data', {
+                'username': user.get('nickname'),
+                'tuanname': tuan.get('name')
+            });
+            tuanHistory.save();
         }
         return account.save();
     });
@@ -504,12 +521,16 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
         }).then(function() {
             // 生成消费记录
             var tuanHistory = new exports.TuanHistory();
-            tuanHistory.set('payer', user);
+            tuanHistory.set('creater', user);
             tuanHistory.set('tuan', tuan);
-            // TODO: 可能是个relation
-            tuanHistory.set('members', members);
-            tuanHistory.set('othersnum', othersnum);
-            tuanHistory.set('price', price);
+            tuanHistory.set('type', 10);
+            tuanHistory.set('data', {
+                'username': user.get('nickname'),
+                'tuanname': tuan.get('name'),
+                'othersnum': othersnum,
+                'money': price,
+                'members': members
+            });
             return tuanHistory.save();
         });
     } else {
@@ -517,37 +538,41 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
     }
 };
 
-exports.GetTuanHistory = function(tuanid, start, length) {
-    var promise = new AV.Promise();
-
+exports.GetTuanHistory = function(tuan, start, length) {
     var tuanHistory = [];
-    var innerQuery = new AV.Query(exports.Tuan);
-    innerQuery.equalTo('tuanid', tuanid);
     var query = new AV.Query(exports.TuanHistory);
-    query.matchesQuery('tuan', innerQuery);
+    query.equalTo('tuan', tuan);
     query.descending("createdAt");
     query.skip(start);
     query.limit(length);
-    query.include(['tuan.name']);
-    query.find().then(function(results) {
-        console.log('Query: ' + JSON.stringify(results));
+    return query.find().then(function(results) {
         for (var i = 0; i < results.length; i++) {
             var history = formatTuanHistory(results[i]);
             tuanHistory.push(history);
         }
-        promise.resolve(tuanHistory);
-    }, function (error) {
-        console.log('Query Error: ' + JSON.stringify(error));
-        promise.reject(error);
+        return AV.Promise.as(tuanHistory);
     });
-
-    return promise;
 };
 
 function formatTuanHistory(history) {
-    return history.createdAt.toISOString().replace(/T.+/, '') + '，'
-        + history.get('tuan').get('name') + '团' + history.get('members').length
-        + '人消费' + formatFloat(history.get('price'));
+    var type = history.get('type');
+    var data = history.get('data');
+    var ret = {
+        'id': history.id,
+        'type': type,
+        'data': data,
+        'date': history.createdAt //.toISOString().replace(/T.+/, '')
+    };
+    if (type == 1) {
+        // 消费历史
+    } else if (type == 2) {
+        // 入团历史
+    } else if (type == 3) {
+        // 退团历史
+    } else {
+        // 未知类型
+    }
+    return ret;
 }
 
 function formatFloat(float) {
