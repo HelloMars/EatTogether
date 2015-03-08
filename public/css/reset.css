@@ -1,7 +1,10 @@
 body {
   margin: 0; }
-  body p, body ul, body li {
+  body p, body ul, body li, body h1, body h2, body h3, body h4, body h5 {
     margin: 0;
     padding: 0; }
+  body h1, body h2, body h3, body h4, body h5 {
+    font-size: 1em;
+    font-weight: normal; }
 
 /*# sourceMappingURL=reset.css.map */

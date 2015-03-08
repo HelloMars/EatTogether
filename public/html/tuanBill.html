@@ -2,7 +2,7 @@
     <h1>今天我买单</h1>
     <h2>聚餐团员：{{curTotal}} 人</h2>
     <div class="members">
-        <label ng-repeat="member in members">
+        <label ng-class="{choosen : member.inThis}" ng-repeat="member in members">
             <input type="checkbox" ng-change="changeMember()" ng-model="member.inThis">
             {{member.name}}
         </label>
