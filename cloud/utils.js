@@ -342,7 +342,7 @@ function formatUser(userobj) {
     user.location = userobj.get('location');
     user.sex = userobj.get('sex');
     user.money = formatFloat(userobj.get('money'));
-    user.headimgurl = formatHeadImgUrl(userobj, 64);
+    user.headimgurl = formatHeadImgUrl(userobj, 132);
     return user;
 }
 
@@ -539,7 +539,7 @@ exports.FormatTuanDetail = function (tuanobj) {
                 'uid': user.id,
                 'name': user.get('nickname'),
                 'sex': user.get('sex'),
-                'headimgurl': formatHeadImgUrl(user, 64),
+                'headimgurl': formatHeadImgUrl(user, 132),
                 'money': formatFloat(results[i].get('money'))
             });
         }
