@@ -100,10 +100,6 @@ if (__local) {
     exports.SERVER = 'http://dev.eat.avosapps.com/';
 }
 
-exports.CREAT_TUAN = {'id':1, 'name': '建团'};
-
-exports.JOIN_TUAN = {'id':2, 'name': '入团'};
-
 exports.Tuan = AV.Object.extend("Tuan");
 
 exports.TuanHistory = AV.Object.extend("TuanHistory");
@@ -345,7 +341,7 @@ function formatUser(userobj) {
     user.nickname = userobj.get('nickname');
     user.location = userobj.get('location');
     user.sex = userobj.get('sex');
-    user.money = userobj.get('money');
+    user.money = formatFloat(userobj.get('money'));
     user.headimgurl = formatHeadImgUrl(userobj, 64);
     return user;
 }
@@ -518,6 +514,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     tuan.name = tuanobj.get('name');
     tuan.news = tuanobj.get('news');
     tuan.slogan = tuanobj.get('slogan');
+    tuan.money = formatFloat(tuanobj.get('money'));
 
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuanobj);
