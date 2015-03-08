@@ -283,6 +283,7 @@ function Signup(username, password, flag) {
     user.set('nickname', username.substring(username.length-4));
     user.set('password', password);
     user.set('state', flag);
+    user.set('money', 0);
     user.set('sex', 0);
 
     return user.signUp();
@@ -315,10 +316,12 @@ exports.Login = function(username, password, userinfo) {
     return promise;
 };
 
-/** 获取用户对应的团信息 */
+/** 获取用户对应的团信息已经用户信息 */
 exports.GetTuanList = function(user) {
     var promise = new AV.Promise();
 
+    var ret = {};
+    ret.user = formatUser(user);
     var query = new AV.Query(exports.Account);
     query.equalTo('user', user);
     query.notEqualTo('state', -1);
@@ -329,11 +332,23 @@ exports.GetTuanList = function(user) {
             var tuan = formatTuan(results[i].get('tuan'));
             tuans.push(tuan);
         }
-        promise.resolve(tuans);
+        ret.tuans = tuans;
+        promise.resolve(ret);
     });
 
     return promise;
 };
+
+function formatUser(userobj) {
+    var user = {};
+    user.id = userobj.id;
+    user.nickname = userobj.get('nickname');
+    user.location = userobj.get('location');
+    user.sex = userobj.get('sex');
+    user.money = userobj.get('money');
+    user.headimgurl = formatHeadImgUrl(userobj, 64);
+    return user;
+}
 
 function formatTuan(tuanobj) {
     var tuan = {};
@@ -355,6 +370,7 @@ exports.CreateTuan = function(user) {
         var tuan = new exports.Tuan();
         tuan.set('name', name);
         tuan.set('creater', user);
+        tuan.set('money', 0);
         tuan.set('news', 0);
         tuan.set('members', 0);
         tuan.set('slogan', '给一个响亮的团口号吧！');
@@ -515,7 +531,7 @@ exports.FormatTuanDetail = function (tuanobj) {
                 'uid': user.id,
                 'name': user.get('nickname'),
                 'sex': user.get('sex'),
-                'headimgurl': user.get('headimgurl'),
+                'headimgurl': formatHeadImgUrl(user, 64),
                 'money': formatFloat(results[i].get('money'))
             });
         }
@@ -569,6 +585,12 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
             // 给买单者记账
             account.increment('money', avg * members.length);
             promises.push(account.save());
+            // 给买单者记总账
+            user.increment('money', avg * members.length);
+            promises.push(user.save());
+            // 给该团记总账
+            tuan.increment('money', avg * members.length);
+            promises.push(tuan.save());
             return AV.Promise.when(promises);
         }).then(function() {
             // 生成消费记录
@@ -692,6 +714,22 @@ function formatTuanHistory(user, history) {
 
 function formatFloat(float) {
     return float.toFixed(2);
+}
+
+// size = {0, 46, 64, 96, 132}
+function formatHeadImgUrl(user, size) {
+    var headimgurl = user.get('headimgurl');
+    if (headimgurl) {
+        var idx = headimgurl.lastIndexOf('/');
+        if (idx == -1 || headimgurl.length - idx > 4) {
+            // 非法
+            return headimgurl;
+        } else {
+            return headimgurl.substring(0, idx+1) + size;
+        }
+    } else {
+        return headimgurl;
+    }
 }
 
 function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {

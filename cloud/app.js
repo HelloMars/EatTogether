@@ -95,8 +95,8 @@ app.get('/tuanlist', function(req, res) {
     console.log('user: %j', req.AV.user);
     req.AV.user.fetch().then(function(user){
         return utils.GetTuanList(user);
-    }).then(function(tuans) {
-        res.jsonp(tuans);
+    }).then(function(ret) {
+        res.jsonp(ret);
     }, function(error) {
         console.log('TuanList Error: ' + JSON.stringify(error));
         res.send('TuanList Error');
