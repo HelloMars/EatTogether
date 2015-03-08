@@ -84,6 +84,9 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 member.avatarBg = {
                     'background-image' : 'url(' + member.headimgurl + ')'
                 };
+                member.moneyBgc = {
+                    'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
+                };
                 member.inThis = true;
             });
             $scope.loaded = true;

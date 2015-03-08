@@ -5,12 +5,12 @@
             <span ng-show="data.news !== 0" class="new">{{data.news}}</span>
             <span class="name">{{data.name}}</span>
         </div>
+        <span class="create circle-btn" ng-click="creatTuan()">建团</span>
         <div class="index-nav">
             <span class="menu"></span>
             <span class="self">
                 <span class="user">{{user.nickname}}</span>共消费<span class="money">{{user.money}}</span>元
             </span>
-            <span class="create" ng-click="creatTuan()">建团</span>
         </div>
     </div>
 </div>

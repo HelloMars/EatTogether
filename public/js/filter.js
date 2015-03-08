@@ -1,5 +1,5 @@
-angular.module('tuanFilters', []).filter('checkNaN', function() {
+angular.module('tuanFilters', []).filter('checkFinite', function() {
   return function(input) {
-    return isNaN(input) ? 0 : input;
+    return !isFinite(input) ? 0 : input;
   };
 });

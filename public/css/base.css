@@ -28,7 +28,7 @@ body {
   border: 1px solid #e0dee1;
   position: fixed;
   bottom: 50px;
-  right: 4px;
+  right: 10px;
   color: #888;
   background: #fff;
   height: 60px;
@@ -121,7 +121,12 @@ body {
       line-height: 30px;
       height: 30px;
       font-size: 15px;
-      color: #000; }
+      color: #000;
+      -webkit-appearance: none; }
+    .s-index label .money {
+      display: inline-block;
+      width: 170px;
+      text-align: left; }
     .s-index label textarea {
       color: #000;
       font-size: 15px;
@@ -182,7 +187,8 @@ body {
     height: 20px;
     line-height: 20px;
     border: 1px solid #e0dee1;
-    -webkit-appearance: none; }
+    -webkit-appearance: none;
+    padding: 0 10px; }
   .s-bill label {
     display: inline-block;
     width: 50px;
@@ -193,9 +199,10 @@ body {
     text-align: center;
     position: relative;
     overflow: hidden;
-    margin: 5px; }
+    margin: 5px;
+    border: 1px solid #e0dee1; }
     .s-bill label.choosen p {
-      background-color: #609700; }
+      background-color: #ACC088; }
     .s-bill label input {
       display: none; }
     .s-bill label p {
@@ -249,20 +256,11 @@ body {
   white-space: nowrap; }
   .s-list .index-nav .menu {
     display: inline-block;
-    width: 40px;
-    border-right: 1px solid #d8d8d8; }
+    width: 40px; }
   .s-list .index-nav .self {
     display: inline-block;
     width: 200px;
-    border-right: 1px solid #d8d8d8;
     text-align: center; }
-  .s-list .index-nav .create {
-    display: inline-block;
-    width: 75px;
-    text-align: center;
-    position: absolute;
-    right: 0;
-    bottom: 0; }
 
 .animated {
   -webkit-animation-duration: 10s;
