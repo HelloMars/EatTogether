@@ -119,7 +119,7 @@ exports.getJsConfig = function(url) {
         if (err) {
             promise.reject('getJsConfig Error');
         } else {
-            console.log('getJsConfig Success: %j', result);
+            //console.log('getJsConfig Success: %j', result);
             promise.resolve(result);
         }
     });
@@ -229,8 +229,13 @@ function modifyUserInfo(openid, userinfo) {
         if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
         if (userinfo.sex) user.set('sex', userinfo.sex);
         if (userinfo.location) user.set('location', userinfo.location);
-        console.log('Modify User Info: ' + openid + ', ' + JSON.stringify(userinfo));
-        return user.save();
+        return user.save().then(function(user) {
+            console.log('Modify User Success: ' + openid + ', ' + JSON.stringify(userinfo));
+            return AV.Promise.as(user);
+        }, function(error) {
+            console.log('Modify User Failed: ' + JSON.stringify(error));
+            return AV.Promise.error(error);
+        });
     });
 }
 
@@ -261,12 +266,8 @@ exports.Login = function(username, password, userinfo) {
             console.log('登录成功: %j', user);
             if (userinfo) {
                 // 修改用户信息
-                userinfo.location = {
-                    'country': userinfo.country,
-                    'province': userinfo.province,
-                    'city': userinfo.city
-                };
-                modifyUserInfo(userinfo.openid, userinfo);
+                userinfo.location = userinfo.country + ';' + userinfo.province + ';' + userinfo.city;
+                modifyUserInfo(username, userinfo);
             }
             promise.resolve(user);
         },
