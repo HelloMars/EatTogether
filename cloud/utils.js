@@ -615,6 +615,7 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
 exports.RevertHistory = function(user, tuan, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
+    query.equalTo('type', HISTORY_TYPE.BILL);
     query.descending("createdAt");
     query.limit(1);
     return query.first().then(function(history) {
@@ -666,6 +667,7 @@ exports.RevertHistory = function(user, tuan, historyId) {
                 return history.save();
             });
         } else {
+            console.log('history: %j', history);
             return AV.Promise.error('Invalid Parameters');
         }
     });
