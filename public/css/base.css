@@ -55,6 +55,9 @@ body {
     .nav ul li.cur a {
       color: #609700; }
 
+body {
+  padding: 0 0 40px 0; }
+
 .loading {
   line-height: 300px;
   text-align: center; }

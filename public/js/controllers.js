@@ -145,13 +145,18 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             $scope.loaded = true;
         });
 
-        $scope.swipeLeft = function (type) {
-            if (type !== 10) return;
+        $scope.swipeLeft = function (enableRevert) {
+            if (!enableRevert) return;
             $scope.showDelete = true;
         };
-        $scope.swipeRight = function (type) {
-            if (type !== 10) return;
+        $scope.swipeRight = function (enableRevert) {
+            if (!enableRevert) return;
             $scope.showDelete = false;
+        };
+        $scope.revert = function ( historyId) {
+            tuan.revertHistory($scope.tuanId, historyId).then(function (res) {
+
+            });
         };
     }
 
