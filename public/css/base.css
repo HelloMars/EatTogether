@@ -137,7 +137,10 @@ body {
   .s-history .history li .delete {
     position: absolute;
     right: 0;
-    color: red; }
+    background-color: red;
+    color: #fff; }
+  .s-history .history li.deleted {
+    text-decoration: line-through; }
 
 .s-bill {
   padding: 0 20px; }
