@@ -74,16 +74,18 @@ app.get('/myet', function(req, res) {
         }).then(function() {
             res.render('myet.html');
         }, function (error) {
-            res.render('hello', {message: error.message})
+            console.log('myet error: ' + JSON.stringify(error));
+            res.render('hello', {message: JSON.stringify(error)})
         });
     } else {
         // 正常流程登陆用户
-        utils.getUserInfo(code).then(function(userinfo) {
-            return utils.Login(userinfo.openid, 'pwd:'+userinfo.openid, userinfo);
+        utils.getUserInfo(code).then(function(result) {
+            return utils.Login(result.openid, 'pwd:'+result.openid, result.userinfo);
         }).then(function () {
             res.render('myet.html');
         }, function (error) {
-            res.render('hello', {message: error.message})
+            console.log('myet error: ' + JSON.stringify(error));
+            res.render('hello', {message: JSON.stringify(error)})
         });
     }
 });

@@ -30,6 +30,11 @@ var MENU = {
                     "type":"click",
                     "name":"赞一下我们",
                     "key":"V001_UP"
+                },
+                {
+                    "type":"view",
+                    "name":"体验链接",
+                    "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
                 }
             ]
         }]
@@ -98,9 +103,9 @@ exports.Account = AV.Object.extend("Account");
 
 exports.Init = function() {
     console.log("Init");
-    //API.createMenu(MENU, function (err, res) {
-    //    console.log("createMenu" + JSON.stringify(res));
-    //});
+    API.createMenu(MENU, function (err, res) {
+        console.log("createMenu" + JSON.stringify(res));
+    });
 };
 
 exports.getJsConfig = function(url) {
@@ -121,19 +126,6 @@ exports.getJsConfig = function(url) {
     return promise;
 };
 
-exports.getOpenId = function(code) {
-    var promise = new AV.Promise();
-    OAUTH.getAccessToken(code, function(err, result) {
-        if (err) {
-            promise.reject(result);
-        } else {
-            var openid = result.data.openid;
-            promise.resolve(openid);
-        }
-    });
-    return promise;
-};
-
 exports.getUserInfo = function(code) {
     var promise = new AV.Promise();
     OAUTH.getAccessToken(code, function(err, result) {
@@ -143,10 +135,11 @@ exports.getUserInfo = function(code) {
             var openid = result.data.openid;
             OAUTH.getUser(openid, function (err, result) {
                 if (err) {
-                    promise.reject(result);
+                    console.log('getOpenId: ' + openid);
+                    promise.resolve({'openid':openid});
                 } else {
                     console.log('getUserInfo: ' + JSON.stringify(result));
-                    promise.resolve(result);
+                    promise.resolve({'openid':openid, 'userinfo':result});
                 }
             });
         }
