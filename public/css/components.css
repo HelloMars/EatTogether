@@ -13,15 +13,18 @@
 
 .circle-btn {
   display: inline-block;
-  width: 80px;
   text-align: center;
-  height: 80px;
-  line-height: 80px;
-  margin: 10px;
-  background-color: #999999;
   border-radius: 40px;
-  color: #fff;
-  text-decoration: none; }
+  text-decoration: none;
+  border: 1px solid #e0dee1;
+  position: fixed;
+  bottom: 50px;
+  right: 4px;
+  color: #888;
+  background: #fff;
+  height: 60px;
+  width: 60px;
+  line-height: 60px; }
 
 .nav ul {
   background: #fff;
@@ -45,5 +48,7 @@
       width: 100%; }
     .nav ul li.cur a {
       color: #609700; }
+    .nav ul li.me a {
+      font-size: 20px; }
 
 /*# sourceMappingURL=components.css.map */

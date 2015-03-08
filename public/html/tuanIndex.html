@@ -7,16 +7,16 @@
             <input type="text" value="{{name}}" ng-blur="save()" ng-model="newName" placeholder="(二蛋团）随机生成的可重复团名">
         </label>
         <label for="id">
-            饭团共消费:
-
+            共消费：
             <input type="text" disabled="disabled" value="{{money}}元" >
         </label>
         <div  class="qrcode">
             <img id="qrcode" ng-src="{{qrcode}}" alt=""/>
         </div>
         <label for="broadcast">
+            饭团口号：
             <textarea name="broadcast" ng-blur="save()" ng-model="slogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
         </label>
-        <a href="javascript:;" ng-click="quit()" class="btn quit">退团</a>
+        <a href="javascript:;" ng-click="quit()" class="circle-btn quit">退团</a>
     </div>
 </div>

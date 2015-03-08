@@ -43,6 +43,17 @@ body{
               font-size: 14px;
             }
         }
+        .circle-btn{
+            border: 1px solid $bgc1;
+          position: fixed;
+            bottom: 50px;
+            right: 4px;
+            color: #888;
+            background: $bgc;
+            height: 60px;
+            width: 60px;
+            line-height: 60px;
+        }
     }
 }
 
@@ -56,36 +67,51 @@ $width:270px;
         margin: 10px auto;
         text-align:center;
         width:$width;
-        background:$textAreaBg;
         line-height: 30px;
         font-size: 15px;
         border-radius: 4px;
+        border:1px solid $bgc1;
 
         input{
             border:none;
             line-height: 30px;
             height: 30px;
             font-size: 15px;
-            background: $textAreaBg;
+            color: #000;
         }
         textarea{
+            color: #000;
             font-size: 15px;
-            border:none;
-            background: $textAreaBg;
+            border: none;
             resize: none;
             line-height: 2;
-            width:80%;
-            max-height: 100px;
+            width: 60%;
+            max-height: 70px;
+            vertical-align: top;
         }
     }
 
     .qrcode{
         width:$width;
+        height:$width;
         display: inline-block;
-        border:2px solid #d7d7d7;
+        border:1px solid $bgc1;
+        line-height: $width;
         img{
-            width: 200px;
+            width: 265px;
         }
+    }
+
+    .circle-btn{
+        border: 1px solid $bgc1;
+        position: fixed;
+        bottom: 50px;
+        right: 4px;
+        color: #888;
+        background: $bgc;
+        height: 60px;
+        width: 60px;
+        line-height: 60px;
     }
 }
 .s-history{
@@ -97,7 +123,6 @@ $width:270px;
             position: relative;
             line-height: 1.5;
             .time{
-                color:$hTextC;
                 margin-right: 10px;
                 position: absolute;
                 left:20px;
@@ -129,7 +154,8 @@ $width:270px;
     input{
         height: 20px;
         line-height: 20px;
-        border:1px solid #bgc1;
+        border:1px solid $bgc1;
+        -webkit-appearance: none;
     }
     label{
         display: inline-block;
@@ -176,15 +202,33 @@ $width:270px;
         line-height: 80px;
         margin: 10px;
         border-radius: 50%;
-        background: $btnBgc;
+        background: $bgc1;
         text-align: center;
         text-overflow: ellipsis;
-        overflow: hidden;
         white-space: nowrap;
+        position: relative;
+        .name{
+            overflow: hidden;
+            display: block;
+            width:100%;
+        }
+        .new{
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            top: 2px;
+            right: 2px;
+            background: rgb(237, 117, 117);
+            color: #fff;
+            border-radius: 10px;
+            display: inline-block;
+            line-height: 20px;
+        }
     }
 
+
     .index-nav{
-         position: fixed;
+        position: fixed;
         bottom: 0;
         height: 40px;
         line-height: 40px;
@@ -206,8 +250,11 @@ $width:270px;
             display: inline-block;
             width: 75px;
             text-align: center;
-            background-color: $bgc1;
-            margin-left: -4px;
+            position: absolute;
+            right:0;
+            bottom:0;
         }
     }
 }
+
+@import "animations.scss";

@@ -13,13 +13,25 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
         $scope.list = [];
         tuan.getAll().then(function(res) {
             res.tuans.map(function(tuan) {
+                if (tuan.news !== 0) {
+                    tuan.animatDelayStyle = {
+                        '-webkit-animation-delay' :  Math.random() + 's',
+                        'animation-delay' :  Math.random() + 's'
+                    };
+
+                }
                 $scope.list.push(tuan);
             });
             $scope.user = res.user;
             $scope.loaded = true;
         });
-        $scope.enterTuan = function(id) {
-            $location.url('/tuan/' + id + '/members');
+        $scope.enterTuan = function(tuanObj) {
+            if (tuanObj.news !== 0) {
+                $location.url('/tuan/' + tuanObj.id + '/history');
+            } else {
+                $location.url('/tuan/' + tuanObj.id + '/members');
+
+            }
         };
         $scope.creatTuan = function () {
             tuan.createTuan().then(function(res){
@@ -42,7 +54,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                     'background-image': 'url(' + member.headimgurl + ')',
                 };
                 member.moneyBgc = {
-                    'background' : (member.sex === 1 ? 'lightgreen' : 'violet')
+                    'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
                 $scope.list.push(member);
             });

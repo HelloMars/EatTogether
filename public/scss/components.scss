@@ -14,15 +14,18 @@
 }
 .circle-btn{
   display: inline-block;
-  width: 80px;
   text-align: center;
-  height: 80px;
-  line-height: 80px;
-  margin: 10px;
-  background-color: #999999;
   border-radius: 40px;
-  color: #fff;
   text-decoration: none;
+  border: 1px solid $bgc1;
+  position: fixed;
+  bottom: 50px;
+  right: 4px;
+  color: #888;
+  background: $bgc;
+  height: 60px;
+  width: 60px;
+  line-height: 60px;
 }
 
 .nav{
@@ -50,6 +53,11 @@
             &.cur{
               a{
                 color: $btnActiveBgc;
+              }
+            }
+            &.me{
+              a{
+                font-size: 20px;
               }
             }
         }

@@ -22,15 +22,18 @@ body {
 
 .circle-btn {
   display: inline-block;
-  width: 80px;
   text-align: center;
-  height: 80px;
-  line-height: 80px;
-  margin: 10px;
-  background-color: #999999;
   border-radius: 40px;
-  color: #fff;
-  text-decoration: none; }
+  text-decoration: none;
+  border: 1px solid #e0dee1;
+  position: fixed;
+  bottom: 50px;
+  right: 4px;
+  color: #888;
+  background: #fff;
+  height: 60px;
+  width: 60px;
+  line-height: 60px; }
 
 .nav ul {
   background: #fff;
@@ -54,6 +57,8 @@ body {
       width: 100%; }
     .nav ul li.cur a {
       color: #609700; }
+    .nav ul li.me a {
+      font-size: 20px; }
 
 body {
   padding: 0 0 40px 0; }
@@ -89,6 +94,16 @@ body {
         -webkit-transform: rotate(-22deg);
         transform: rotate(-22deg);
         font-size: 14px; }
+    .s-members .members .circle-btn {
+      border: 1px solid #e0dee1;
+      position: fixed;
+      bottom: 50px;
+      right: 4px;
+      color: #888;
+      background: #fff;
+      height: 60px;
+      width: 60px;
+      line-height: 60px; }
 
 .s-index {
   text-align: center; }
@@ -97,30 +112,43 @@ body {
     margin: 10px auto;
     text-align: center;
     width: 270px;
-    background: #dddddd;
     line-height: 30px;
     font-size: 15px;
-    border-radius: 4px; }
+    border-radius: 4px;
+    border: 1px solid #e0dee1; }
     .s-index label input {
       border: none;
       line-height: 30px;
       height: 30px;
       font-size: 15px;
-      background: #dddddd; }
+      color: #000; }
     .s-index label textarea {
+      color: #000;
       font-size: 15px;
       border: none;
-      background: #dddddd;
       resize: none;
       line-height: 2;
-      width: 80%;
-      max-height: 100px; }
+      width: 60%;
+      max-height: 70px;
+      vertical-align: top; }
   .s-index .qrcode {
     width: 270px;
+    height: 270px;
     display: inline-block;
-    border: 2px solid #d7d7d7; }
+    border: 1px solid #e0dee1;
+    line-height: 270px; }
     .s-index .qrcode img {
-      width: 200px; }
+      width: 265px; }
+  .s-index .circle-btn {
+    border: 1px solid #e0dee1;
+    position: fixed;
+    bottom: 50px;
+    right: 4px;
+    color: #888;
+    background: #fff;
+    height: 60px;
+    width: 60px;
+    line-height: 60px; }
 
 .s-history .history li {
   font-size: 14px;
@@ -129,7 +157,6 @@ body {
   position: relative;
   line-height: 1.5; }
   .s-history .history li .time {
-    color: #d8d8d8;
     margin-right: 10px;
     position: absolute;
     left: 20px;
@@ -154,7 +181,8 @@ body {
   .s-bill input {
     height: 20px;
     line-height: 20px;
-    border: 1px solid #bgc1; }
+    border: 1px solid #e0dee1;
+    -webkit-appearance: none; }
   .s-bill label {
     display: inline-block;
     width: 50px;
@@ -191,11 +219,26 @@ body {
   line-height: 80px;
   margin: 10px;
   border-radius: 50%;
-  background: #999999;
+  background: #e0dee1;
   text-align: center;
   text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap; }
+  white-space: nowrap;
+  position: relative; }
+  .s-list .tuan .name {
+    overflow: hidden;
+    display: block;
+    width: 100%; }
+  .s-list .tuan .new {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    top: 2px;
+    right: 2px;
+    background: #ed7575;
+    color: #fff;
+    border-radius: 10px;
+    display: inline-block;
+    line-height: 20px; }
 .s-list .index-nav {
   position: fixed;
   bottom: 0;
@@ -217,7 +260,42 @@ body {
     display: inline-block;
     width: 75px;
     text-align: center;
-    background-color: #e0dee1;
-    margin-left: -4px; }
+    position: absolute;
+    right: 0;
+    bottom: 0; }
+
+.animated {
+  -webkit-animation-duration: 1.5s;
+  animation-duration: 1.5s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both; }
+
+.animated.infinite {
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite; }
+
+@-webkit-keyframes shake {
+  0%, 70% {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0); }
+  7%, 21%, 35%, 49%, 63% {
+    -webkit-transform: translate3d(-6px, 0, 0);
+    transform: translate3d(-6px, 0, 0); }
+  14%, 28%,42%, 56% {
+    -webkit-transform: translate3d(6px, 0, 0);
+    transform: translate3d(6px, 0, 0); } }
+@keyframes shake {
+  0%, 70% {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0); }
+  7%, 21%, 35%, 49%, 63% {
+    -webkit-transform: translate3d(-6px, 0, 0);
+    transform: translate3d(-6px, 0, 0); }
+  14%, 28%,42%, 56% {
+    -webkit-transform: translate3d(6px, 0, 0);
+    transform: translate3d(6px, 0, 0); } }
+.shake {
+  -webkit-animation-name: shake;
+  animation-name: shake; }
 
 /*# sourceMappingURL=base.css.map */
