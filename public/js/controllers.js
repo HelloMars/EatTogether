@@ -108,6 +108,9 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                     $location.url('/tuan/' + $scope.tuanId + '/members/');
                 });
             };
+            $scope.cancel = function () {
+                    $location.url('/tuan/' + $scope.tuanId + '/members/');
+            };
         });
 
     }

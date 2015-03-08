@@ -19,12 +19,17 @@
   border: 1px solid #e0dee1;
   position: fixed;
   bottom: 50px;
-  right: 10px;
   color: #888;
   background: #fff;
   height: 60px;
   width: 60px;
   line-height: 60px; }
+
+.circle-btn-right {
+  right: 10px; }
+
+.circle-btn-left {
+  left: 10px; }
 
 .nav ul {
   background: #fff;

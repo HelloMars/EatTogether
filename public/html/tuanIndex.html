@@ -4,7 +4,7 @@
     <div ng-show="loaded">
         <label for="name">
             饭团名：
-            <input type="text" value="{{name}}" ng-blur="save()" ng-model="newName" placeholder="(二蛋团）随机生成的可重复团名">
+            <input type="text" value="{{name}}" ng-model="newName" placeholder="二蛋团">
         </label>
         <label for="id">
             共消费：
@@ -17,6 +17,7 @@
             饭团口号：
             <textarea name="broadcast" ng-blur="save()" ng-model="slogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
         </label>
-        <a href="javascript:;" ng-click="quit()" class="circle-btn quit">退团</a>
+        <a href="javascript:;" ng-click="quit()" class="circle-btn circle-btn-left quit">退团</a>
+        <a href="javascript:;" ng-click="save()" class="circle-btn circle-btn-right quit">确认</a>
     </div>
 </div>
