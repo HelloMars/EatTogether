@@ -7,8 +7,9 @@
             <input type="text" value="{{name}}" ng-blur="save()" ng-model="newName" placeholder="(二蛋团）随机生成的可重复团名">
         </label>
         <label for="id">
-            饭团ID：
-            <input type="text" disabled="disabled" value="{{id}}" placeholder="xxx(系统生成的唯一ID)">
+            饭团共消费:
+
+            <input type="text" disabled="disabled" value="{{money}}元" >
         </label>
         <div  class="qrcode">
             <img id="qrcode" ng-src="{{qrcode}}" alt=""/>
