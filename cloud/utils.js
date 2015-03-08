@@ -77,6 +77,14 @@ var JSAPILIST = [
     'openCard'
 ];
 
+var HISTORY_TYPE = {
+    'CREATE': 1,
+    'JOIN': 2,
+    'QUIT': 3,
+    'MODIFY_NAME': 5,
+    'BILL':10
+};
+
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
@@ -101,12 +109,34 @@ exports.TuanHistory = AV.Object.extend("TuanHistory");
 
 exports.Account = AV.Object.extend("Account");
 
+exports.Config = AV.Object.extend("Config");
+
 exports.Init = function() {
     console.log("Init");
     //API.createMenu(MENU, function (err, res) {
     //    console.log("createMenu" + JSON.stringify(res));
     //});
+    //addConfig('TuanNameList', {'TuanNameList':['创业','前端','后端','运营','全栈','编辑','西游记','八戒','悟空','沙僧','唐僧']});
 };
+
+function addConfig(key, value) {
+    var query = new AV.Query(exports.Config);
+    query.equalTo('key', key);
+    query.first().then(function(config) {
+        if (config) {
+            return AV.Promise.error(key + ' Exists');
+        } else {
+            config = new exports.Config();
+            config.set('key', key);
+            config.set('value', value);
+            return config.save()
+        }
+    }).then(function() {
+        console.log('Add Config [' + key + ', ' + JSON.stringify(value) + ']');
+    }, function(error) {
+        console.log('Add Config Error' + JSON.stringify(error));
+    });
+}
 
 exports.getJsConfig = function(url) {
     var promise = new AV.Promise();
@@ -259,7 +289,6 @@ function Signup(username, password, flag) {
 
 exports.Login = function(username, password, userinfo) {
     var promise = new AV.Promise();
-    console.log('Login: ', JSON.stringify(userinfo));
     AV.User.logIn(username, password, {
         success: function(user) {
             // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
@@ -314,35 +343,36 @@ function formatTuan(tuanobj) {
     return tuan;
 }
 
-exports.CreateTuan = function(attrs) {
-    // 参数检查
-    if (!(attrs && attrs.name)) {
-        var error = new AV.Error(
-            AV.Error.OTHER_CAUSE,
-            "无效参数");
-        return AV.Promise.error(error);
-    }
-
-    var promise = new AV.Promise();
-
-    var tuan = new exports.Tuan();
-    tuan.set('name', attrs.name);
-    tuan.set('news', 0);
-    tuan.set('members', 0);
-    tuan.set('slogan', '给一个响亮的团口号吧！');
-    tuan.save().then(function(tuan) {
+exports.CreateTuan = function(user) {
+    var query = new AV.Query(exports.Config);
+    query.equalTo('key', 'TuanNameList');
+    return query.first().then(function(result) {
+        var value = result.get('value');
+        var idx = Math.floor(Math.random() * value.TuanNameList.length);
+        return AV.Promise.as(value.TuanNameList[idx]);
+    }).then(function(name) {
+        var tuan = new exports.Tuan();
+        tuan.set('name', name);
+        tuan.set('creater', user);
+        tuan.set('news', 0);
+        tuan.set('members', 0);
+        tuan.set('slogan', '给一个响亮的团口号吧！');
+        return tuan.save();
+    }).then(function(tuan) {
+        // 生成建团记录
+        var tuanHistory = new exports.TuanHistory();
+        tuanHistory.set('creater', user);
+        tuanHistory.set('tuan', tuan);
+        tuanHistory.set('type', HISTORY_TYPE.CREATE);
+        tuanHistory.set('data', {
+            'username': user.get('nickname'),
+            'tuanname': tuan.get('name')
+        });
+        tuanHistory.save();
         // 需要重新query以获得tuanid
         var query = new AV.Query(exports.Tuan);
         return query.get(tuan.id);
-    }).then(function(tuan) {
-        console.log("建团成功: " + JSON.stringify(tuan));
-        promise.resolve(tuan);
-    }, function(error) {
-        console.log("建团失败: " + JSON.stringify(error));
-        promise.reject(error);
     });
-
-    return promise;
 };
 
 // 创建一条Account或激活原来的Account
@@ -380,7 +410,7 @@ exports.JoinTuan = function(user, tuan, account) {
             var tuanHistory = new exports.TuanHistory();
             tuanHistory.set('creater', user);
             tuanHistory.set('tuan', tuan);
-            tuanHistory.set('type', 1);
+            tuanHistory.set('type', HISTORY_TYPE.JOIN);
             tuanHistory.set('data', {
                 'username': user.get('nickname'),
                 'tuanname': tuan.get('name')
@@ -411,7 +441,17 @@ exports.DisableAccount = function(user, tuan, account) {
                 ret.message = '您在该团还有较多欠款(' + money + ')，请销账后再退团';
                 return AV.Promise.as(ret);
             } else {
-                // 直接退团，给所有团员发消息
+                // 直接退团，生成退团记录
+                var tuanHistory = new exports.TuanHistory();
+                tuanHistory.set('creater', user);
+                tuanHistory.set('tuan', tuan);
+                tuanHistory.set('type', HISTORY_TYPE.QUIT);
+                tuanHistory.set('data', {
+                    'username': user.get('nickname'),
+                    'tuanname': tuan.get('name')
+                });
+                tuanHistory.save();
+                // 给所有团员发消息
                 for (var i = 0; i < results.length; i++) {
                     if (results[i].get('user').id != user.id) {
                         // 给其他成员发送模板消息
@@ -434,8 +474,19 @@ exports.DisableAccount = function(user, tuan, account) {
     });
 };
 
-exports.ModifyTuan = function(tuan, infoJson) {
+exports.ModifyTuan = function(user, tuan, infoJson) {
     if (infoJson && infoJson.name) {
+        // 生成修改记录
+        var tuanHistory = new exports.TuanHistory();
+        tuanHistory.set('creater', user);
+        tuanHistory.set('tuan', tuan);
+        tuanHistory.set('type', HISTORY_TYPE.MODIFY_NAME);
+        tuanHistory.set('data', {
+            'username': user.get('nickname'),
+            'fromname': tuan.get('name'),
+            'toname': infoJson.name
+        });
+        tuanHistory.save();
         tuan.set('name', infoJson.name);
     }
     if (infoJson && infoJson.slogan) {
@@ -523,7 +574,7 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
             var tuanHistory = new exports.TuanHistory();
             tuanHistory.set('creater', user);
             tuanHistory.set('tuan', tuan);
-            tuanHistory.set('type', 10);
+            tuanHistory.set('type', HISTORY_TYPE.BILL);
             tuanHistory.set('data', {
                 'username': user.get('nickname'),
                 'tuanname': tuan.get('name'),
