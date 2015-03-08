@@ -14,9 +14,9 @@
                 "pxbvfffu8uli2tcld6sg9pgfouoq1fbse6l4bf0xt1ukaqrq");
             tuan.getJsConfig().then(function (res) {
                 wx.config(angular.extend(res, {
-                    debug: true
                 }));
                 wx.ready(function () {
+                    wx.hideOptionMenu();
                 });
             });
         }]);

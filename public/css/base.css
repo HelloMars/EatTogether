@@ -25,6 +25,9 @@ body {
 label {
   display: block; }
 
+.clear {
+  clear: both; }
+
 /** components */
 .btn {
   display: block;
@@ -104,8 +107,29 @@ label {
   border-radius: 4px;
   color: #fff;
   text-decoration: none; }
-.s-join img,.s-index img{
-    width: 200px;
-    height: 200px;
-}
+
+.s-members {
+  text-align: justify; }
+  .s-members .member {
+    display: inline-block;
+    margin: 0 10px;
+    width: 80px;
+    height: 80px;
+    background-size: 100%;
+    border-radius: 40px;
+    position: relative;
+    overflow: hidden; }
+    .s-members .member img {
+      max-width: 100%; }
+    .s-members .member p {
+      position: absolute;
+      bottom: 5px;
+      left: 10px;
+      width: 100%;
+      text-align: center;
+      height: 20px;
+      line-height: 20px;
+      transform: rotate(-22deg);
+      font-size: 14px; }
+
 /*# sourceMappingURL=base.css.map */
