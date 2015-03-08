@@ -114,7 +114,7 @@ app.get('/tuanhistory', function(req, res) {
     var length = Number(req.query.length);
     utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
         if (result.tuan && result.isin) {
-            return utils.GetTuanHistory(result.tuan, start, length);
+            return utils.GetTuanHistory(result.user, result.tuan, start, length);
         } else {
             return AV.Promise.error('Illegal');
         }
@@ -220,6 +220,21 @@ app.post('/bill', function(req, res) {
     }, function(error) {
         console.log('Bill Error: ' + JSON.stringify(error));
         res.send('Bill Error');
+    });
+});
+
+app.post('/revertHistory', function(req, res) {
+    utils.getUserTuanObj(req.AV.user, req.body.tuanId).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.RevertHistory(result.user, result.tuan, req.body.historyId);
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function() {
+        res.send('RevertHistory Success');
+    }, function(error) {
+        console.log('RevertHistory Error: ' + JSON.stringify(error));
+        res.send('RevertHistory Error');
     });
 });
 

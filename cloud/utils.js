@@ -78,11 +78,12 @@ var JSAPILIST = [
 ];
 
 var HISTORY_TYPE = {
-    'CREATE': 1,
-    'JOIN': 2,
-    'QUIT': 3,
-    'MODIFY_NAME': 5,
-    'BILL':10
+    'CREATE': 1,            // 建团记录
+    'JOIN': 2,              // 入团记录
+    'QUIT': 3,              // 退团记录
+    'MODIFY_NAME': 5,       // 修改团名记录
+    'BILL': 10,             // 消费记录
+    'REVERT_BILL': 11       // 已经撤销的消费记录
 };
 
 if (__local) {
@@ -589,7 +590,62 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
     }
 };
 
-exports.GetTuanHistory = function(tuan, start, length) {
+exports.RevertHistory = function(user, tuan, historyId) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(historyId).then(function(history) {
+        if (history && history.get('type') == HISTORY_TYPE.BILL) {
+            var data = history.get('data');
+            var othersnum = data.othersnum;
+            var price = data.money;
+            var members = data.members;
+
+            var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
+
+            // 嵌套查询
+            var userQuery = new AV.Query(AV.User);
+            userQuery.containedIn("objectId", members);
+            var query = new AV.Query(exports.Account);
+            query.equalTo('tuan', tuan);
+            // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
+            query.include('user');
+            query.matchesQuery('user', userQuery);
+            return query.find().then(function(results) {
+                // 撤销团员扣款
+                var promises = [];
+                for (var i = 0; i < results.length; i++) {
+                    results[i].increment('money', avg);
+                    if (results[i].get('user').id != user.id) {
+                        // 给其他成员发送模板消息
+                        //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                    }
+                    promises.push(results[i].save());
+                }
+                // 撤销买单者账单(注意这里的买单者不是user，而是history里的creater)
+                var accountQuery = new AV.Query(exports.Account);
+                accountQuery.equalTo('tuan', tuan);
+                accountQuery.equalTo('user', history.get('creater'));
+                // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
+                return accountQuery.first().then(function(account) {
+                    if (account) {
+                        account.increment('money', -avg * members.length);
+                        promises.push(account.save());
+                        return AV.Promise.when(promises);
+                    } else {
+                        return AV.Promise.error('Can\'t find payer');
+                    }
+                });
+            }).then(function() {
+                // 修改消费记录
+                history.set('type', HISTORY_TYPE.REVERT_BILL);
+                return history.save();
+            });
+        } else {
+            return AV.Promise.error('Invalid Parameters');
+        }
+    });
+};
+
+exports.GetTuanHistory = function(user, tuan, start, length) {
     var tuanHistory = [];
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
@@ -598,30 +654,34 @@ exports.GetTuanHistory = function(tuan, start, length) {
     query.limit(length);
     return query.find().then(function(results) {
         for (var i = 0; i < results.length; i++) {
-            var history = formatTuanHistory(results[i]);
+            var history = formatTuanHistory(user, results[i]);
             tuanHistory.push(history);
         }
         return AV.Promise.as(tuanHistory);
     });
 };
 
-function formatTuanHistory(history) {
+function formatTuanHistory(user, history) {
     var type = history.get('type');
     var data = history.get('data');
     var ret = {
         'id': history.id,
         'type': type,
         'data': data,
-        'date': history.createdAt //.toISOString().replace(/T.+/, '')
+        'date': history.createdAt.toISOString().replace(/T.+/, '')
     };
-    if (type == 1) {
+    if (type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.REVERT_BILL) {
         // 消费历史
-    } else if (type == 2) {
-        // 入团历史
-    } else if (type == 3) {
-        // 退团历史
-    } else {
-        // 未知类型
+        var included = false;
+        var members = data.members;
+        for (var i = 0; i < members.length; i++) {
+            if (members[i] == user.id) {
+                // 用户参了与本次消费
+                included = true;
+                break;
+            }
+        }
+        ret.included = included;
     }
     return ret;
 }

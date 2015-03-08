@@ -22,6 +22,8 @@ tuanService.factory('tuan', ['$http',
 
             bill: bill,
 
+            revertHistory: revertHistory,
+
             getJsConfig: getJsConfig
         };
 
@@ -138,6 +140,20 @@ tuanService.factory('tuan', ['$http',
                     members : members,
                     othersnum : othersnum,
                     price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 撤销历史记录(目前只支持撤销最近一次消费) */
+        function revertHistory (tuanId, historyId) {
+            var request = $http({
+                url: SERVER + 'revertHistory',
+                method: 'POST',
+                data: {
+                    'tuanId': tuanId,
+                    'historyId': historyId
                 }
             });
 
