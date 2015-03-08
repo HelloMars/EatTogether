@@ -2,9 +2,8 @@
 body {
   background-color: #636465;
   margin: 0; }
-  body p, body ul, body li {
-    margin: 0;
-    padding: 0; }
+  body p {
+    margin: 0; }
 
 .tuan {
   float: left; }
@@ -42,43 +41,42 @@ label {
   color: #fff;
   text-decoration: none; }
 
-.nav .return {
-  display: inline-block;
-  font-size: 30px;
-  color: #fff;
-  text-decoration: none;
-  position: absolute;
-  left: 10px; }
-.nav h1 {
-  margin: 0;
-  background: #FF8040;
-  height: 40px;
-  line-height: 40px;
-  font-size: 20px;
-  font-weight: normal;
-  text-align: center;
-  color: #fff; }
-.nav ul {
+.nav {
   width: 100%;
   height: 40px;
   line-height: 40px;
   background-color: #636465;
-  position: fixed;
-  bottom: 0;
+  position: relative;
   text-align: center; }
-  .nav ul li {
-    text-align: center;
+  .nav .return {
     display: inline-block;
-    width: 25%;
-    font-size: 16px;
-    background-color: #FF8040;
-    float: left; }
-    .nav ul li a {
-      text-decoration: none;
-      color: #fff;
-      width: 100%; }
-    .nav ul li.cur {
-      background: red; }
+    font-size: 30px;
+    color: #fff;
+    text-decoration: none;
+    position: absolute;
+    left: 10px; }
+  .nav h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: normal;
+    text-align: center;
+    color: #FF8040; }
+  .nav ul {
+    margin: 0;
+    padding: 0 0 0 40px; }
+    .nav ul li {
+      text-align: center;
+      display: inline-block;
+      width: 30%;
+      border: 1px solid #fff;
+      margin-left: -4px;
+      font-size: 16px;
+      height: 1.5em;
+      line-height: 1.5em; }
+      .nav ul li a {
+        text-decoration: none;
+        color: #fff;
+        width: 100%; }
 
 /** 创团 */
 .s-create label {
@@ -131,14 +129,7 @@ label {
       text-align: center;
       height: 20px;
       line-height: 20px;
-      -webkit-transform: rotate(-22deg);
       transform: rotate(-22deg);
       font-size: 14px; }
-
-.s-index .qrcode img {
-  width: 200px; }
-
-.loading {
-  line-height: 300px; }
 
 /*# sourceMappingURL=base.css.map */

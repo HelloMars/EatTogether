@@ -42,14 +42,12 @@
       font-size: 1em;
       line-height: 2;
       width: 80%;
-      max-height: 100px; }
+      max-height: 200px; }
   .s-index .qrcode {
     width: 200px;
     height: 200px;
     display: inline-block;
     border: 2px solid #d7d7d7; }
-    .s-index .qrcode img {
-      width: 200px; }
 
 .s-history .history li {
   margin: 10px auto;
