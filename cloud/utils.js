@@ -103,9 +103,9 @@ exports.Account = AV.Object.extend("Account");
 
 exports.Init = function() {
     console.log("Init");
-    API.createMenu(MENU, function (err, res) {
-        console.log("createMenu" + JSON.stringify(res));
-    });
+    //API.createMenu(MENU, function (err, res) {
+    //    console.log("createMenu" + JSON.stringify(res));
+    //});
 };
 
 exports.getJsConfig = function(url) {
@@ -206,7 +206,7 @@ exports.Subscribe = function(openid) {
     }, function(error) {
         if (error.code == 202) {
             console.log("用户已存在: %s", openid);
-            return modifyUserState(openid, 1);
+            return modifyUserInfo(openid, {'state':1});
         } else {
             // 非正常状态
             console.log("注册失败: " + JSON.stringify(error));
@@ -217,14 +217,19 @@ exports.Subscribe = function(openid) {
 
 // 取消订阅
 exports.UnSubscribe = function(openid) {
-    return modifyUserState(openid, -1);
+    return modifyUserInfo(openid, {'state':-1});
 };
 
-function modifyUserState(openid, flag) {
+function modifyUserInfo(openid, userinfo) {
     var query = new AV.Query(AV.User);
     query.equalTo('username', openid);
     return query.first().then(function(user) {
-        user.set('state', flag);
+        if (userinfo.state) user.set('state', userinfo.state);
+        if (userinfo.nickname) user.set('nickname', userinfo.nickname);
+        if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
+        if (userinfo.sex) user.set('sex', userinfo.sex);
+        if (userinfo.location) user.set('location', userinfo.location);
+        console.log('Modify User Info: ' + openid + ', ' + JSON.stringify(userinfo));
         return user.save();
     });
 }
@@ -242,6 +247,7 @@ function Signup(username, password, flag) {
     user.set('nickname', username.substring(username.length-4));
     user.set('password', password);
     user.set('state', flag);
+    user.set('sex', 0);
 
     return user.signUp();
 }
@@ -252,19 +258,16 @@ exports.Login = function(username, password, userinfo) {
     AV.User.logIn(username, password, {
         success: function(user) {
             // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
+            console.log('登录成功: %j', user);
             if (userinfo) {
                 // 修改用户信息
-                user.set('nickname', userinfo.nickname);
-                user.set('headimgurl', userinfo.headimgurl);
-                user.set('sex', userinfo.sex);
-                user.set('location', {
+                userinfo.location = {
                     'country': userinfo.country,
                     'province': userinfo.province,
                     'city': userinfo.city
-                });
-                user.save();
+                };
+                modifyUserInfo(userinfo.openid, userinfo);
             }
-            console.log('登录成功: %j', user);
             promise.resolve(user);
         },
         error: function(user, error) {
