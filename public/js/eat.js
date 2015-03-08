@@ -5,6 +5,7 @@
 (function(){
     var eatTogether = angular.module("EatTogether",[
         'ngRoute',
+        'ngTouch',
         'eatTogetherControllers',
         'tuanService',
         'tuanFilters'

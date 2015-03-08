@@ -131,6 +131,10 @@ body {
     position: absolute;
     left: 20px;
     top: 11px; }
+  .s-history .history li .delete {
+    position: absolute;
+    right: 0;
+    color: red; }
 
 .s-bill {
   padding: 0 20px; }

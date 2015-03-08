@@ -2,7 +2,8 @@
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <ul ng-show="loaded" class="history">
-        <li ng-switch="history.type" ng-repeat="history in histories">
+        <li ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.type)" ng-swipe-right="swipeRight(history.type)" >
+            <div ng-if="history.type === 10" class="delete" ng-show="showDelete">删除</div>
         <!--
              'CREATE': 1,            // 建团记录。date, username 创建 tuanname 团
     'JOIN': 2,              // 入团记录。date, username 加入 tuanname 团

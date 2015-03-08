@@ -144,5 +144,15 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             $scope.histories = res;
             $scope.loaded = true;
         });
+
+        $scope.swipeLeft = function (type) {
+            if (type !== 10) return;
+            $scope.showDelete = true;
+        };
+        $scope.swipeRight = function (type) {
+            if (type !== 10) return;
+            $scope.showDelete = false;
+        };
     }
+
 ]);
