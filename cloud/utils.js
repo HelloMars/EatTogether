@@ -248,11 +248,10 @@ function Signup(username, password, flag) {
 
 exports.Login = function(username, password, userinfo) {
     var promise = new AV.Promise();
-
+    console.log('Login: ', JSON.stringify(userinfo));
     AV.User.logIn(username, password, {
         success: function(user) {
             // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
-            console.log('登录成功: %j', user);
             if (userinfo) {
                 // 修改用户信息
                 user.set('nickname', userinfo.nickname);
@@ -265,6 +264,7 @@ exports.Login = function(username, password, userinfo) {
                 });
                 user.save();
             }
+            console.log('登录成功: %j', user);
             promise.resolve(user);
         },
         error: function(user, error) {
