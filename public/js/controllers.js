@@ -3,29 +3,7 @@
  */
 
 var eatTogetherControllers = angular.module('eatTogetherControllers', []);
-/**
- * 根据数值获取样式
- * @param  {int} tuanMemberCounts
- * @return {array}  [cssobj1, cssobj2]
- */
-function getDesign(tuanMemberCounts) {
-    // var len = Math.abs(tuanMemberCounts) * 0.01 + 50;
-    // var fz = Math.abs(tuanMemberCounts) * 0.02 + 15;
-    var len = 100;
-    var fz = 20;
-    return {
-        'div1' : {
-            'width' : len * 1.2 +'px',
-            'height' : len * 1.2 + 'px'
-        },
-        'div2' : {
-            'width' : len + 'px',
-            'height' : len/2 + 'px',
-            'padding' : len/4 + 'px 0px',
-            'font-size' : fz +'px'
-        }
-    };
-}
+
 
 /** 饭团列表 */
 eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan',
@@ -35,33 +13,18 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
         $scope.list = [];
         tuan.getAll().then(function(res) {
             res.map(function(tuan) {
-                angular.extend(tuan, getDesign(tuan.members));
                 $scope.list.push(tuan);
             });
             $scope.loaded = true;
         });
-        $scope.click = function(id) {
-            if (id === 1) {
-                // 建团
-                tuan.createTuan().then(function(res){
-                    if (res.id === undefined) return;
-                    $location.url('/tuan/' + res.id + '/home');
-                });
-            } else {
-                $location.url('/tuan/' + id + '/members');
-            }
+        $scope.enterTuan = function(id) {
+            $location.url('/tuan/' + id + '/members');
         };
-    }
-]);
-
-/** 创建饭团页 */
-eatTogetherControllers.controller('TuanCreateCtrl', ['$scope', '$routeParams', 'tuan', '$location',
-    function ($scope, $routeParams, tuan, $location) {
-
-        tuan.createTuan().then(function(res){
-            if (res.id === undefined) return;
-            $location.url('/tuan/' + res.id + '/home');
-        });
+        $scope.creatTuan = function () {
+            tuan.createTuan().then(function(res){
+                $location.url('/tuan/' + res.id + '/home');
+            });
+        }
     }
 ]);
 
@@ -104,8 +67,11 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.notMember = 0;
             $scope.numberErr = false;
 
-            $scope.members.forEach(function(user) {
-                user.inThis = true;
+            $scope.members.forEach(function(member) {
+                member.avatarBg = {
+                    'background-image' : 'url(' + member.headimgurl + ')'
+                };
+                member.inThis = true;
             });
             $scope.loaded = true;
             $scope.changeMember = function () {

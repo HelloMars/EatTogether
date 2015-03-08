@@ -96,12 +96,6 @@ app.get('/tuanlist', function(req, res) {
     req.AV.user.fetch().then(function(user){
         return utils.GetTuanList(user);
     }).then(function(tuans) {
-        tuans.push({
-            'id': 1,
-            'name': '建团',
-            'members': 10,
-            'news': 0
-        });
         res.jsonp(tuans);
     }, function(error) {
         console.log('TuanList Error: ' + JSON.stringify(error));

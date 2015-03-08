@@ -1,10 +1,15 @@
-<div>
-    <div ng-repeat="data in list" class="tuan"
-         ng-style={{data.div1}}>
-        <a href="javascript:;">
-            <div ng-style={{data.div2}} ng-click="click(data.id)">
-                {{data.name}}
-            </div>
-        </a>
+<div class="s-list">
+    <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
+
+    <div ng-show="loaded" ng-repeat="data in list" class="tuan">
+        <div ng-click="enterTuan(data.id)">
+            {{data.name}}
+        </div>
+    </div>
+    <div class="index-nav">
+        <span class="self">
+            <!-- hello, <span></span> -->
+        </span>
+        <span class="create" ng-click="creatTuan()">建团</span>
     </div>
 </div>
