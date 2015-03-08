@@ -571,7 +571,7 @@ function getQRCode(tuanid) {
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
  */
 exports.Bill = function(user, tuan, account, members, othersnum, price) {
-    if (members && members.length > 0 && othersnum >= 0 && price >= 0) {
+    if (members && members.length > 0 && othersnum >= 0 && othersnum < 100 && price >= 0 && price < 5000) {
         var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
 
         // 嵌套查询
