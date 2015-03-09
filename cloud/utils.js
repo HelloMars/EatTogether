@@ -227,42 +227,65 @@ exports.getUserTuanObj = function(requser, tuanid) {
 
 // 订阅公众号
 exports.Subscribe = function(openid) {
-    return Signup(openid, 'pwd:'+openid, 1).then(function(user) {
+    var promise = new AV.Promise();
+    Signup(openid, 'pwd:'+openid, 1).then(function(user) {
         console.log("注册成功: %j", user);
-        return AV.Promise.as(user);
+        OAUTH.getUser(openid, function (err, userinfo) {
+            if (err) {
+                console.log('getUser Error when Subscribing');
+            } else {
+                console.log('getUserInfo: ' + JSON.stringify(userinfo));
+                if (userinfo) {
+                    // 修改用户信息
+                    userinfo.location = {
+                        'country': userinfo.country,
+                        'province': userinfo.province,
+                        'city': userinfo.city
+                    };
+                    modifyUserInfo(user, userinfo);
+                }
+            }
+            promise.as(user);
+        });
     }, function(error) {
         if (error.code == 202) {
             console.log("用户已存在: %s", openid);
-            return modifyUserInfo(openid, {'state':1});
+            var query = new AV.Query(AV.User);
+            query.equalTo('username', openid);
+            query.first().then(function(user) {
+                modifyUserInfo(user, {'state':1});
+                promise.as(user);
+            });
         } else {
             // 非正常状态
             console.log("注册失败: " + JSON.stringify(error));
             promise.reject(error);
         }
     });
+    return promise;
 };
 
 // 取消订阅
 exports.UnSubscribe = function(openid) {
-    return modifyUserInfo(openid, {'state':-1});
-};
-
-function modifyUserInfo(openid, userinfo) {
     var query = new AV.Query(AV.User);
     query.equalTo('username', openid);
     return query.first().then(function(user) {
-        if (userinfo.state) user.set('state', userinfo.state);
-        if (userinfo.nickname) user.set('nickname', userinfo.nickname);
-        if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
-        if (userinfo.sex) user.set('sex', userinfo.sex);
-        if (userinfo.location) user.set('location', userinfo.location);
-        return user.save().then(function(user) {
-            console.log('Modify User Success: ' + openid + ', ' + JSON.stringify(userinfo));
-            return AV.Promise.as(user);
-        }, function(error) {
-            console.log('Modify User Failed: ' + JSON.stringify(error));
-            return AV.Promise.error(error);
-        });
+        return modifyUserInfo(user, {'state':-1});
+    });
+};
+
+function modifyUserInfo(user, userinfo) {
+    if (userinfo.state) user.set('state', userinfo.state);
+    if (userinfo.nickname) user.set('nickname', userinfo.nickname);
+    if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
+    if (userinfo.sex) user.set('sex', userinfo.sex);
+    if (userinfo.location) user.set('location', userinfo.location);
+    return user.save().then(function(user) {
+        console.log('Modify User Success: ' + JSON.stringify(userinfo));
+        return AV.Promise.as(user);
+    }, function(error) {
+        console.log('Modify User Failed: ' + JSON.stringify(error));
+        return AV.Promise.error(error);
     });
 }
 
@@ -298,7 +321,7 @@ exports.Login = function(username, password, userinfo) {
                     'province': userinfo.province,
                     'city': userinfo.city
                 };
-                modifyUserInfo(username, userinfo);
+                modifyUserInfo(user, userinfo);
             }
             promise.resolve(user);
         },
@@ -308,7 +331,6 @@ exports.Login = function(username, password, userinfo) {
             promise.reject(user);
         }
     });
-
     return promise;
 };
 
