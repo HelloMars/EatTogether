@@ -202,6 +202,9 @@ app.post('/modtuaninfo', function(req, res) {
     });
 });
 
+/**
+ * AABill 是通常意义的AA制付款模式
+ */
 app.post('/bill', function(req, res) {
     var othersnum = Number(req.body.othersnum);
     var price = Number(req.body.price);
@@ -217,6 +220,22 @@ app.post('/bill', function(req, res) {
         console.log('Bill Error: ' + JSON.stringify(error));
         res.send('Bill Error');
     });
+});
+
+/**
+ * ABUp Bill 是一种自下而上的筹款模式
+ */
+app.post('/abup', function(req, res) {
+    // 给选定成员发消息
+    // 生成一条ABUp Bill记录(是一条History记录，该记录还要维护整个ABUp Bill的进展情况)
+    //
+});
+
+/**
+ * ABDown Bill 是一种自上而下的筹款模式
+ */
+app.post('/abdown', function(req, res) {
+    //
 });
 
 app.post('/revertHistory', function(req, res) {
