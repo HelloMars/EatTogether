@@ -224,6 +224,8 @@ app.post('/bill', function(req, res) {
 
 /**
  * ABUp Bill 是一种自下而上的筹款模式
+ * 收到消息的团员需要回复金额来确定本次扣款额度(重复回复则修改为最新回复的金额)
+ * 买单者则可以在筹款界面看到筹款的进度，如果筹满则可以Finish该Bill(可以提前输入总和或不输入)
  */
 app.post('/abup', function(req, res) {
     // 给选定成员发消息
@@ -233,6 +235,7 @@ app.post('/abup', function(req, res) {
 
 /**
  * ABDown Bill 是一种自上而下的筹款模式
+ * 买单者直接输入每个团员应该支付的额度，直接结账，参团团员根据通知校验金额
  */
 app.post('/abdown', function(req, res) {
     //
