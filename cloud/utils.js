@@ -89,6 +89,11 @@ var HISTORY_TYPE = {
     'REVERT_BILL': 11       // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
 };
 
+exports.Tuan = AV.Object.extend("TESTTuan");
+exports.TuanHistory = AV.Object.extend("TESTTuanHistory");
+exports.Account = AV.Object.extend("TESTAccount");
+exports.Config = AV.Object.extend("TESTConfig");
+
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
@@ -104,20 +109,17 @@ if (__local) {
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
+    exports.Tuan = AV.Object.extend("Tuan");
+    exports.TuanHistory = AV.Object.extend("TuanHistory");
+    exports.Account = AV.Object.extend("Account");
+    exports.Config = AV.Object.extend("Config");
+
     exports.SERVER = 'http://eat.avosapps.com/';
 } else {
     // 当前环境为「测试环境」，云代码方法通过 HTTP 头部 X-AVOSCloud-Application-Production:0 来访问；webHosting 通过 dev.xxx.avosapps.com 域名来访问
     console.log('「测试环境」');
     exports.SERVER = 'http://dev.eat.avosapps.com/';
 }
-
-exports.Tuan = AV.Object.extend("Tuan");
-
-exports.TuanHistory = AV.Object.extend("TuanHistory");
-
-exports.Account = AV.Object.extend("Account");
-
-exports.Config = AV.Object.extend("Config");
 
 exports.Init = function() {
     console.log("Init");
@@ -256,7 +258,7 @@ exports.Subscribe = function(openid) {
                     modifyUserInfo(user, userinfo);
                 }
             }
-            promise.as(user);
+            promise.resolve(user);
         });
     }, function(error) {
         if (error.code == 202) {
@@ -265,7 +267,7 @@ exports.Subscribe = function(openid) {
             query.equalTo('username', openid);
             query.first().then(function(user) {
                 modifyUserInfo(user, {'state':1});
-                promise.as(user);
+                promise.resolve(user);
             });
         } else {
             // 非正常状态
