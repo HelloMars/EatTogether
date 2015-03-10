@@ -37,15 +37,7 @@ var xmlBodyParser = function (req, res, next) {
 };
 
 var app = express();
-
-// App 全局配置
-if (__local) {
-    app.set('views', 'cloud/views');
-} else if(__production) {
-    app.set('views', 'cloud/views');
-} else {
-    app.set('views', 'cloud/dev_views');
-}
+app.set('views', 'cloud/views');
 app.set('view engine', 'ejs'); // 设置 template 引擎
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser()); // 读取请求 body 的中间件

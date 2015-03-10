@@ -6,6 +6,7 @@ var WechatOAuth = require('wechat-oauth');
 
 var APPID = 'wxdb12e53d561de28e';
 var APPSECRET = '2d36952cf863088f293d57f0d99449eb';
+exports.TOKEN = 'EatTogether';
 
 var TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
 var TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
@@ -90,10 +91,11 @@ var HISTORY_TYPE = {
     'REVERT_BILL': 11       // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
 };
 
+exports.Config = AV.Object.extend("Config");
+
 exports.Tuan = AV.Object.extend("DEVTuan");
 exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
 exports.Account = AV.Object.extend("DEVAccount");
-exports.Config = AV.Object.extend("DEVConfig");
 
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
@@ -115,7 +117,6 @@ if (__local) {
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
     exports.Account = AV.Object.extend("Account");
-    exports.Config = AV.Object.extend("Config");
 
     exports.SERVER = 'http://eat.avosapps.com/';
 } else {
