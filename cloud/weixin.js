@@ -46,7 +46,7 @@ var receiveMessage = function(msg, cb) {
         switch (event) {
             case 'subscribe':
                 if (msg.xml.Ticket) {
-                    // 扫码关注(eventkey以qrscene_开头)，需要入团
+                    // 扫码关注(eventkey以qrscene_开头)，需要入团但首次关注拿不到用户信息，需要做标记等用户通过菜单第一次访问后再入团
                     synch = false;
                     var tuanid = Number(eventkey.substring(8));
                     utils.Subscribe(fromUserId).then(function(user) {
@@ -126,14 +126,20 @@ function JoinTuanByScan(user, tuanid, subscribed) {
                 }
                 return AV.Promise.as(content);
             } else {
-                if (subscribed) {
+                if (result.user.get('sex') == -1 || result.user.get('sex') >= 10) {
+                    // 在用户未更新用户名时，sex临时存储准备加入的tuanid
+                    content = '您已成功激活饭团APP，快点击 \"我的饭团\" 加入您刚才扫描的饭团('
+                    + result.tuan.get('name') + ')吧:)';
+                    result.user.set('sex', result.tuan.get('tuanid'));
+                    result.user.save();
+                    return AV.Promise.as(content);
+                } else {
+                    // 此时用户名已经更新过，可以入团
                     content = '您已成功加入饭团('
                     + result.tuan.get('name') + ')，快来点击 \"我的饭团\" 体验吧:)';
-                } else {
-                    content = '您已成功激活饭团APP，并加入第一个饭团('
-                    + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                    utils.JoinTuan(result.user, result.tuan, result.account);
+                    return AV.Promise.as(content);
                 }
-                return utils.JoinTuan(result.user, result.tuan, result.account);
             }
         } else {
             return AV.Promise.error('Illegal');

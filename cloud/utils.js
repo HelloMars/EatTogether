@@ -4,9 +4,9 @@
 var WechatAPI = require('wechat-api');
 var WechatOAuth = require('wechat-oauth');
 
+exports.TOKEN = 'EatTogether';
 var APPID = 'wxdb12e53d561de28e';
 var APPSECRET = '2d36952cf863088f293d57f0d99449eb';
-exports.TOKEN = 'EatTogether';
 
 var TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
 var TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
@@ -113,6 +113,9 @@ if (__local) {
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
     USER_STATE = 1;
+
+    API = new WechatAPI(APPID, APPSECRET);
+    OAUTH = new WechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
@@ -244,42 +247,24 @@ exports.getUserTuanObj = function(requser, tuanid) {
 
 // 订阅公众号
 exports.Subscribe = function(openid) {
-    var promise = new AV.Promise();
-    Signup(openid, 'pwd:'+openid, USER_STATE).then(function(user) {
+    return Signup(openid, 'pwd:'+openid, USER_STATE).then(function(user) {
         console.log("注册成功: %j", user);
-        OAUTH.getUser(openid, function (err, userinfo) {
-            if (err) {
-                console.log('getUser Error when Subscribing');
-            } else {
-                console.log('getUserInfo: ' + JSON.stringify(userinfo));
-                if (userinfo) {
-                    // 修改用户信息
-                    userinfo.location = {
-                        'country': userinfo.country,
-                        'province': userinfo.province,
-                        'city': userinfo.city
-                    };
-                    modifyUserInfo(user, userinfo);
-                }
-            }
-            promise.resolve(user);
-        });
+        return AV.Promise.as(user);
     }, function(error) {
         if (error.code == 202) {
             console.log("用户已存在: %s", openid);
             var query = new AV.Query(AV.User);
             query.equalTo('username', openid);
-            query.first().then(function(user) {
-                invertUserState(user);
-                promise.resolve(user);
+            return query.first().then(function(user) {
+                enableUser(user);
+                return AV.Promise.as(user);
             });
         } else {
             // 非正常状态
             console.log("注册失败: " + JSON.stringify(error));
-            promise.reject(error);
+            return AV.Promise.error(error);
         }
     });
-    return promise;
 };
 
 // 取消订阅
@@ -287,7 +272,7 @@ exports.UnSubscribe = function(openid) {
     var query = new AV.Query(AV.User);
     query.equalTo('username', openid);
     return query.first().then(function(user) {
-        return invertUserState(user);
+        return disableUser(user);
     });
 };
 
@@ -305,7 +290,7 @@ function Signup(username, password, flag) {
     user.set('password', password);
     user.set('state', flag);
     user.set('money', 0);
-    user.set('sex', 0);
+    user.set('sex', -1);
 
     return user.signUp();
 }
@@ -317,6 +302,7 @@ exports.Login = function(username, password, userinfo) {
             // 登录成功，avosExpressCookieSession会自动将登录用户信息存储到cookie
             console.log('登录成功: %j', user);
             if (userinfo) {
+                var tuanid = user.get('sex');
                 // 修改用户信息
                 userinfo.location = {
                     'country': userinfo.country,
@@ -324,8 +310,20 @@ exports.Login = function(username, password, userinfo) {
                     'city': userinfo.city
                 };
                 modifyUserInfo(user, userinfo);
+                // 加入用户准备加入的团
+                if (tuanid >= 10) {
+                    exports.getTuanObj(tuanid).then(function(tuan) {
+                        return exports.JoinTuan(user, tuan, null);
+                    }).then(function() {
+                        // 成功加入以后才能返回
+                        promise.resolve(user);
+                    }, function(error) {
+                        promise.resolve(error);
+                    });
+                }
+            } else {
+                promise.resolve(user);
             }
-            promise.resolve(user);
         },
         error: function(user, error) {
             // 登录失败，非正常状态
@@ -724,8 +722,13 @@ function getQRCode(tuan) {
     return promise;
 }
 
-function invertUserState(user) {
-    user.set('state', -user.get('state'));
+function enableUser(user) {
+    user.set('state', Math.abs(user.get('state')));
+    return user.save();
+}
+
+function disableUser(user) {
+    user.set('state', -Math.abs(user.get('state')));
     return user.save();
 }
 
