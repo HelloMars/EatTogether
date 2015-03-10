@@ -13,6 +13,8 @@ var TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 var APPID_JS = 'wx5296f7011ca92045';
 var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
 
+var QRCODE_EXP = 1800;
+
 var API = new WechatAPI(APPID, APPSECRET);
 var API_JS = new WechatAPI(APPID_JS, APPSECRET_JS);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
@@ -556,7 +558,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     query.equalTo('tuan', tuanobj);
     query.notEqualTo('state', -1);
     query.include('user');
-    return AV.Promise.when(query.find(), getQRCode(tuan.id)).then(function(results, qrcode) {
+    return AV.Promise.when(query.find(), getQRCode(tuanobj)).then(function(results, qrcode) {
         var members = [];
         for (var i = 0; i < results.length; i++) {
             var user = results[i].get('user');
@@ -569,22 +571,36 @@ exports.FormatTuanDetail = function (tuanobj) {
             });
         }
         tuan.members = members;
-        tuan.qrcode = qrcode[0];
-        tuan.shareUrl = qrcode[1];
+        tuan.qrcode = qrcode.url;
         return AV.Promise.as(tuan);
     });
 };
 
-function getQRCode(tuanid) {
+// 带缓存的QRCode
+function getQRCode(tuan) {
     var promise = new AV.Promise();
-    API.createTmpQRCode(Number(tuanid), 1800, function(err, result) {
-        if (err) {
-            promise.reject('getQRCode Error');
-        } else {
-            console.log('getQRCode Success: %j', result);
-            promise.resolve([API.showQRCodeURL(result.ticket), result.url]);
-        }
-    });
+    var qrcode = tuan.get('qrcode');
+    if (qrcode && qrcode.createdTime + QRCODE_EXP/2 > new Date().getTime()) {
+        // 缓存有效(留一半的余量)
+        promise.resolve(qrcode);
+    } else {
+        // 更新缓存
+        API.createTmpQRCode(tuan.get('tuanid'), QRCODE_EXP, function(err, result) {
+            if (err) {
+                promise.reject('getQRCode Error');
+            } else {
+                console.log('getQRCode Success: %j', result);
+                qrcode = {
+                    'url': API.showQRCodeURL(result.ticket),
+                    'sharedUrl': result.url,
+                    'createdTime': new Date().getTime()
+                };
+                tuan.set('qrcode', qrcode);
+                tuan.save();
+                promise.resolve(qrcode);
+            }
+        });
+    }
     return promise;
 }
 

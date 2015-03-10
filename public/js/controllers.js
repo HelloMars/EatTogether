@@ -51,7 +51,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             res.members.map(function(member) {
                 member.avatarBg = {
-                    'background-image': 'url(' + member.headimgurl + ')',
+                    'background-image': 'url(' + member.headimgurl + ')'
                 };
                 member.moneyBgc = {
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
