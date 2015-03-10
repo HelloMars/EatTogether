@@ -4,11 +4,12 @@
 var WechatAPI = require('wechat-api');
 var WechatOAuth = require('wechat-oauth');
 
-var APPID = 'wx215f75c4627af14a';
-var APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
-var TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
-var TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
-var TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
+var APPID = 'wxdb12e53d561de28e';
+var APPSECRET = '2d36952cf863088f293d57f0d99449eb';
+
+var TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
+var TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
+var TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
 
 var APPID_JS = 'wx5296f7011ca92045';
 var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
@@ -18,12 +19,12 @@ var QRCODE_EXP = 1800;
 var API = new WechatAPI(APPID, APPSECRET);
 var API_JS = new WechatAPI(APPID_JS, APPSECRET_JS);
 var OAUTH = new WechatOAuth(APPID, APPSECRET);
-var MENU = {
+var MENU_DEV = {
     "button":[
         {
             "type":"view",
             "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
+            "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
         },
         {
             "name":"菜单",
@@ -35,8 +36,8 @@ var MENU = {
                 },
                 {
                     "type":"view",
-                    "name":"体验链接",
-                    "url": OAUTH.getAuthorizeURL('http://eat.avosapps.com/' + 'myet', '0', 'snsapi_base')
+                    "name":"快速进团",
+                    "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
                 }
             ]
         }]
@@ -95,6 +96,14 @@ if (__local) {
 } else if(__production) {
     // 当前环境为「生产环境」，是线上正式运行的环境
     console.log('「生产环境」');
+
+    APPID = 'wx215f75c4627af14a';
+    APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
+
+    TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
+    TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
+    TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
+
     exports.SERVER = 'http://eat.avosapps.com/';
 } else {
     // 当前环境为「测试环境」，云代码方法通过 HTTP 头部 X-AVOSCloud-Application-Production:0 来访问；webHosting 通过 dev.xxx.avosapps.com 域名来访问
@@ -112,7 +121,7 @@ exports.Config = AV.Object.extend("Config");
 
 exports.Init = function() {
     console.log("Init");
-    //API.createMenu(MENU, function (err, res) {
+    //API.createMenu(MENU_DEV, function (err, res) {
     //    console.log("createMenu" + JSON.stringify(res));
     //});
     //addConfig('TuanNameList', {'TuanNameList':['创业','前端','后端','运营','全栈','编辑','西游记','八戒','悟空','沙僧','唐僧']});
