@@ -129,7 +129,7 @@ function JoinTuanByScan(user, tuanid, subscribed) {
                 if (result.user.get('sex') == -1 || result.user.get('sex') >= 10) {
                     // 在用户未更新用户名时，sex临时存储准备加入的tuanid
                     content = '您已成功激活饭团APP，快点击 \"我的饭团\" 加入您刚才扫描的饭团('
-                    + result.tuan.get('name') + ')吧:)';
+                    + result.tuan.get('name') + ')吧';
                     result.user.set('sex', result.tuan.get('tuanid'));
                     result.user.save();
                     return AV.Promise.as(content);

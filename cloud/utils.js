@@ -320,6 +320,8 @@ exports.Login = function(username, password, userinfo) {
                     }, function(error) {
                         promise.resolve(error);
                     });
+                } else {
+                    promise.resolve(user);
                 }
             } else {
                 promise.resolve(user);
