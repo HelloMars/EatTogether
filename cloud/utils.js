@@ -15,6 +15,7 @@ var APPID_JS = 'wx5296f7011ca92045';
 var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
 
 var QRCODE_EXP = 1800;
+var USER_STATE = 2;
 
 var API = new WechatAPI(APPID, APPSECRET);
 var API_JS = new WechatAPI(APPID_JS, APPSECRET_JS);
@@ -89,10 +90,10 @@ var HISTORY_TYPE = {
     'REVERT_BILL': 11       // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
 };
 
-exports.Tuan = AV.Object.extend("TESTTuan");
-exports.TuanHistory = AV.Object.extend("TESTTuanHistory");
-exports.Account = AV.Object.extend("TESTAccount");
-exports.Config = AV.Object.extend("TESTConfig");
+exports.Tuan = AV.Object.extend("DEVTuan");
+exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
+exports.Account = AV.Object.extend("DEVAccount");
+exports.Config = AV.Object.extend("DEVConfig");
 
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
@@ -109,6 +110,8 @@ if (__local) {
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
 
+    USER_STATE = 1;
+
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
     exports.Account = AV.Object.extend("Account");
@@ -120,14 +123,6 @@ if (__local) {
     console.log('「测试环境」');
     exports.SERVER = 'http://dev.eat.avosapps.com/';
 }
-
-exports.Init = function() {
-    console.log("Init");
-    //API.createMenu(MENU_DEV, function (err, res) {
-    //    console.log("createMenu" + JSON.stringify(res));
-    //});
-    //addConfig('TuanNameList', {'TuanNameList':['创业','前端','后端','运营','全栈','编辑','西游记','八戒','悟空','沙僧','唐僧']});
-};
 
 function addConfig(key, value) {
     var query = new AV.Query(exports.Config);
@@ -147,6 +142,14 @@ function addConfig(key, value) {
         console.log('Add Config Error' + JSON.stringify(error));
     });
 }
+
+exports.Init = function() {
+    console.log("Init");
+    //API.createMenu(MENU_DEV, function (err, res) {
+    //    console.log("createMenu" + JSON.stringify(res));
+    //});
+    //addConfig('TuanNameList', {'TuanNameList':['创业','前端','后端','运营','全栈','编辑','西游记','八戒','悟空','沙僧','唐僧']});
+};
 
 exports.getJsConfig = function(url) {
     var promise = new AV.Promise();
@@ -241,7 +244,7 @@ exports.getUserTuanObj = function(requser, tuanid) {
 // 订阅公众号
 exports.Subscribe = function(openid) {
     var promise = new AV.Promise();
-    Signup(openid, 'pwd:'+openid, 1).then(function(user) {
+    Signup(openid, 'pwd:'+openid, USER_STATE).then(function(user) {
         console.log("注册成功: %j", user);
         OAUTH.getUser(openid, function (err, userinfo) {
             if (err) {
@@ -266,7 +269,7 @@ exports.Subscribe = function(openid) {
             var query = new AV.Query(AV.User);
             query.equalTo('username', openid);
             query.first().then(function(user) {
-                modifyUserInfo(user, {'state':1});
+                invertUserState(user);
                 promise.resolve(user);
             });
         } else {
@@ -283,24 +286,9 @@ exports.UnSubscribe = function(openid) {
     var query = new AV.Query(AV.User);
     query.equalTo('username', openid);
     return query.first().then(function(user) {
-        return modifyUserInfo(user, {'state':-1});
+        return invertUserState(user);
     });
 };
-
-function modifyUserInfo(user, userinfo) {
-    if (userinfo.state) user.set('state', userinfo.state);
-    if (userinfo.nickname) user.set('nickname', userinfo.nickname);
-    if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
-    if (userinfo.sex) user.set('sex', userinfo.sex);
-    if (userinfo.location) user.set('location', userinfo.location);
-    return user.save().then(function(user) {
-        console.log('Modify User Success: ' + JSON.stringify(userinfo));
-        return AV.Promise.as(user);
-    }, function(error) {
-        console.log('Modify User Failed: ' + JSON.stringify(error));
-        return AV.Promise.error(error);
-    });
-}
 
 function Signup(username, password, flag) {
     if (username === undefined || password === undefined) {
@@ -347,7 +335,7 @@ exports.Login = function(username, password, userinfo) {
     return promise;
 };
 
-/** 获取用户对应的团信息已经用户信息 */
+/** 获取用户对应的团信息以及用户信息 */
 exports.GetTuanList = function(user) {
     var promise = new AV.Promise();
 
@@ -369,26 +357,6 @@ exports.GetTuanList = function(user) {
 
     return promise;
 };
-
-function formatUser(userobj) {
-    var user = {};
-    user.id = userobj.id;
-    user.nickname = userobj.get('nickname');
-    user.location = userobj.get('location');
-    user.sex = userobj.get('sex');
-    user.money = formatFloat(userobj.get('money'));
-    user.headimgurl = formatHeadImgUrl(userobj, 132);
-    return user;
-}
-
-function formatTuan(tuanobj, news) {
-    var tuan = {};
-    tuan.id = tuanobj.get('tuanid');
-    tuan.name = tuanobj.get('name');
-    tuan.members = tuanobj.get('members');
-    tuan.news = news;
-    return tuan;
-}
 
 exports.CreateTuan = function(user) {
     var query = new AV.Query(exports.Config);
@@ -417,7 +385,7 @@ exports.CreateTuan = function(user) {
             'tuanname': tuan.get('name')
         });
         tuanHistory.save();
-        // 需要重新query以获得tuanid
+        // 需要重新query以获得tuanid(TODO: 使用fetchWhenSave)
         var query = new AV.Query(exports.Tuan);
         return query.get(tuan.id);
     });
@@ -587,34 +555,6 @@ exports.FormatTuanDetail = function (tuanobj) {
     });
 };
 
-// 带缓存的QRCode
-function getQRCode(tuan) {
-    var promise = new AV.Promise();
-    var qrcode = tuan.get('qrcode');
-    if (qrcode && qrcode.createdTime + QRCODE_EXP/2 > new Date().getTime()) {
-        // 缓存有效(留一半的余量)
-        promise.resolve(qrcode);
-    } else {
-        // 更新缓存
-        API.createTmpQRCode(tuan.get('tuanid'), QRCODE_EXP, function(err, result) {
-            if (err) {
-                promise.reject('getQRCode Error');
-            } else {
-                console.log('getQRCode Success: %j', result);
-                qrcode = {
-                    'url': API.showQRCodeURL(result.ticket),
-                    'sharedUrl': result.url,
-                    'createdTime': new Date().getTime()
-                };
-                tuan.set('qrcode', qrcode);
-                tuan.save();
-                promise.resolve(qrcode);
-            }
-        });
-    }
-    return promise;
-}
-
 /** 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
@@ -755,6 +695,54 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     });
 };
 
+// 带缓存的QRCode
+function getQRCode(tuan) {
+    var promise = new AV.Promise();
+    var qrcode = tuan.get('qrcode');
+    if (qrcode && qrcode.createdTime + QRCODE_EXP/2 > new Date().getTime()) {
+        // 缓存有效(留一半的余量)
+        promise.resolve(qrcode);
+    } else {
+        // 更新缓存
+        API.createTmpQRCode(tuan.get('tuanid'), QRCODE_EXP, function(err, result) {
+            if (err) {
+                promise.reject('getQRCode Error');
+            } else {
+                console.log('getQRCode Success: %j', result);
+                qrcode = {
+                    'url': API.showQRCodeURL(result.ticket),
+                    'sharedUrl': result.url,
+                    'createdTime': new Date().getTime()
+                };
+                tuan.set('qrcode', qrcode);
+                tuan.save();
+                promise.resolve(qrcode);
+            }
+        });
+    }
+    return promise;
+}
+
+function invertUserState(user) {
+    user.set('state', -user.get('state'));
+    return user.save();
+}
+
+function modifyUserInfo(user, userinfo) {
+    if (userinfo.state) user.set('state', userinfo.state);
+    if (userinfo.nickname) user.set('nickname', userinfo.nickname);
+    if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
+    if (userinfo.sex) user.set('sex', userinfo.sex);
+    if (userinfo.location) user.set('location', userinfo.location);
+    return user.save().then(function(user) {
+        console.log('Modify User Success: ' + JSON.stringify(userinfo));
+        return AV.Promise.as(user);
+    }, function(error) {
+        console.log('Modify User Failed: ' + JSON.stringify(error));
+        return AV.Promise.error(error);
+    });
+}
+
 function formatTuanHistory(user, history, enableRevert) {
     var type = history.get('type');
     var data = history.get('data');
@@ -779,6 +767,26 @@ function formatTuanHistory(user, history, enableRevert) {
         ret.included = included;
     }
     return ret;
+}
+
+function formatUser(userobj) {
+    var user = {};
+    user.id = userobj.id;
+    user.nickname = userobj.get('nickname');
+    user.location = userobj.get('location');
+    user.sex = userobj.get('sex');
+    user.money = formatFloat(userobj.get('money'));
+    user.headimgurl = formatHeadImgUrl(userobj, 132);
+    return user;
+}
+
+function formatTuan(tuanobj, news) {
+    var tuan = {};
+    tuan.id = tuanobj.get('tuanid');
+    tuan.name = tuanobj.get('name');
+    tuan.members = tuanobj.get('members');
+    tuan.news = news;
+    return tuan;
 }
 
 function formatFloat(float) {
