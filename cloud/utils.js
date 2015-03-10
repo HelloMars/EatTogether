@@ -700,7 +700,7 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
 function getQRCode(tuan) {
     var promise = new AV.Promise();
     var qrcode = tuan.get('qrcode');
-    if (qrcode && qrcode.createdTime + QRCODE_EXP/2 > new Date().getTime()) {
+    if (qrcode && qrcode.createdTime + QRCODE_EXP*1000/2 > new Date().getTime()) {
         // 缓存有效(留一半的余量)
         promise.resolve(qrcode);
     } else {
