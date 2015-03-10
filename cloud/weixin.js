@@ -28,7 +28,6 @@ var checkSignature = function(signature, timestamp, nonce, echostr, cb) {
 // 接收普通消息
 var receiveMessage = function(msg, cb) {
     var synch = true;
-    var content;
     var result = {
         xml: {
             ToUserName: msg.xml.FromUserName[0],
@@ -52,22 +51,8 @@ var receiveMessage = function(msg, cb) {
                     synch = false;
                     var tuanid = Number(eventkey.substring(8));
                     utils.Subscribe(fromUserId).then(function(user) {
-                        return utils.getUserTuanObj(user, tuanid).then(function(result) {
-                            if (result.tuan) {
-                                if (result.isin) {
-                                    content = '您之前已经加入饭团('
-                                        + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
-                                    return AV.Promise.as();
-                                } else {
-                                    content = '您已成功激活饭团APP，并加入第一个饭团('
-                                        + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
-                                    return utils.JoinTuan(result.user, result.tuan, result.account);
-                                }
-                            } else {
-                                return AV.Promise.error('Illegal');
-                            }
-                        });
-                    }).then(function() {
+                        return JoinTuanByScan(user, tuanid, false);
+                    }).then(function(content) {
                         result.xml.Content = content;
                         cb(null, result);
                     }, function(error) {
@@ -97,25 +82,11 @@ var receiveMessage = function(msg, cb) {
                 var query = new AV.Query(AV.User);
                 query.equalTo('username', fromUserId);
                 query.first().then(function(user) {
-                    return utils.getUserTuanObj(user, eventkey).then(function(result) {
-                        if (result.tuan) {
-                            if (result.isin) {
-                                content = '您已经处于饭团('
-                                    + result.tuan.get('name') + ')中，快点击 \"我的饭团\" 体验吧:)';
-                                return AV.Promise.as();
-                            } else {
-                                content = '您已成功加入饭团('
-                                    + result.tuan.get('name') + ')，快来点击 \"我的饭团\" 体验吧:)';
-                                return utils.JoinTuan(result.user, result.tuan, result.account);
-                            }
-                        } else {
-                            return AV.Promise.error('Illegal');
-                        }
-                    });
-                }).then(function() {
+                    return JoinTuanByScan(user, eventkey, true);
+                }).then(function(content) {
                     result.xml.Content = content;
                     cb(null, result);
-                }, function() {
+                }, function(error) {
                     console.log('扫码入团失败: ' + JSON.stringify(error));
                     result.xml.Content = '激活饭团APP失败，请重新关注公众账号或联系开发者解决:(';
                     cb(null, result);
@@ -135,9 +106,38 @@ var receiveMessage = function(msg, cb) {
             default: console.log('No support for Event: ' + event);
         }
     } else {
-        result.xml.Content = msg.xml.Content + '。用轮子真是太开心了！';
+        result.xml.Content = msg.xml.Content + '。';
     }
     if (synch) {
         cb(null, result);
     }
 };
+
+function JoinTuanByScan(user, tuanid, subscribed) {
+    var content;
+    return utils.getUserTuanObj(user, tuanid).then(function(result) {
+        if (result.tuan) {
+            if (result.isin) {
+                if (subscribed) {
+                    content = '您已经处于饭团('
+                    + result.tuan.get('name') + ')中，快点击 \"我的饭团\" 体验吧:)';
+                } else {
+                    content = '您之前已经加入饭团('
+                    + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                }
+                return AV.Promise.as(content);
+            } else {
+                if (subscribed) {
+                    content = '您已成功加入饭团('
+                    + result.tuan.get('name') + ')，快来点击 \"我的饭团\" 体验吧:)';
+                } else {
+                    content = '您已成功激活饭团APP，并加入第一个饭团('
+                    + result.tuan.get('name') + ')，尝试点击 \"我的饭团\" 快来体验吧:)';
+                }
+                return utils.JoinTuan(result.user, result.tuan, result.account);
+            }
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    });
+}
