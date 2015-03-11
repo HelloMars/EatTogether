@@ -108,7 +108,7 @@ var receiveMessage = function(msg, cb) {
         // 首先需要查看用户是否处于某ABUp Bill中
         // 然后根据回复金额销账
         synch = false;
-        utils.GetABUpBill(fromUserId).then(function(accounts) {
+        utils.GetABUpAccounts(fromUserId).then(function(accounts) {
             if (accounts.length == 0) {
                 result.xml.Content = msg.xml.Content + '。';
                 cb(null, result);
@@ -119,24 +119,12 @@ var receiveMessage = function(msg, cb) {
             }
             var money = parseFloat(msg.xml.Content);
             if (money) {
-                utils.FetchABUpBill(accounts[0]).then(function(res){
-                    var toUser = res[0];
-                    toUser.increment('money', money);
-                    var history = res[1];
-                    var data = history.get('data');
-                    for (var i = 0; i < data.members.length; i++) {
-                        if (data.members[i] == toUser.id) {
-                            // 在历史中记录每个人的付款
-                            data.prices[i] = money;
-                        }
-                    }
-                    history.set('data', data);
-                    history.set('creater', toUser);
-                    history.save();
-                    accounts[0].set('abbill', null);
-                    accounts[0].increment('money', -money);
-                    accounts[0].save();
-                    result.xml.Content += '您已支出' + money;
+                utils.ClearABUpBill(accounts[0], money).then(function() {
+                    result.xml.Content += '您已支出' + money.toFixed(2);
+                    cb(null, result);
+                }, function(error) {
+                    result.xml.Content += '清算出错，请联系开发人员';
+                    console.log(result.xml.Content + JSON.stringify(error));
                     cb(null, result);
                 });
             } else {

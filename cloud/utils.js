@@ -635,9 +635,10 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
         var historyQuery = new AV.Query(exports.TuanHistory);
         historyQuery.equalTo('tuan', tuan);
         historyQuery.equalTo('type', HISTORY_TYPE.ABUP_BILL);
-        historyQuery.find().then(function(results) {
+        return historyQuery.find().then(function(results) {
             var ret = {};
             ret.code = -1;
+            console.log('ABUpbill: ' + results.length);
             if (results.length == 0) {
                 // 嵌套查询
                 var userQuery = new AV.Query(AV.User);
@@ -648,6 +649,7 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                 query.include('user');
                 query.matchesQuery('user', userQuery);
                 return query.find().then(function(results) {
+                    console.log('ABUpbill');
                     // 生成消费记录
                     var tuanHistory = new exports.TuanHistory();
                     tuanHistory.set('creater', user);
@@ -766,8 +768,8 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     });
 };
 
-// 获取用户正在进行的ABUp Bill
-exports.GetABUpBill = function(username) {
+// 获取用户正在进行ABUp Bill的Accounts
+exports.GetABUpAccounts = function(username) {
     // 嵌套查询
     var userQuery = new AV.Query(AV.User);
     userQuery.equalTo("username", username);
@@ -786,17 +788,37 @@ exports.GetABUpBill = function(username) {
     });
 };
 
-// 获取用户正在进行的ABUp Bill
-exports.FetchABUpBill = function(account) {
-    var promise = new AV.Promise();
-    account.get('abbill').fetch().then(function(history) {
-        history.get('creater').fetch().then(function(creater) {
-            promise.resolve([creater, history]);
+// 清算用户正在进行的ABUp Bill
+exports.ClearABUpBill = function(account, money) {
+    // 给accounts[0]加钱，给account扣款清状态，并修改history状态
+    return account.get('abbill').fetch().then(function(history) {
+        var query = new AV.Query(exports.Account);
+        query.equalTo('user', history.get('creater'));
+        query.equalTo('tuan', account.get('tuan'));
+        return query.find().then(function(accounts) {
+            if (accounts.length == 0) {
+                return AV.Promise.error('Account Results Error');
+            } else if (accounts.length == 1) {
+                accounts[0].increment('money', money);
+                account.increment('money', -money);
+                account.set('abbill', null);
+                var data = history.get('data');
+                for (var i = 0; i < data.members.length; i++) {
+                    if (data.members[i] == account.get('user').id) {
+                        // 在历史中记录扣款人的付款
+                        data.prices[i] = money;
+                    }
+                }
+                history.set('data', data);
+                return AV.Promise.when(
+                    accounts[0].save(),
+                    account.save(),
+                    history.save());
+            } else {
+                return AV.Promise.error('Account Results Error');
+            }
         });
-    }, function(error) {
-        promise.reject(error);
     });
-    return promise;
 };
 
 // 带缓存的QRCode
