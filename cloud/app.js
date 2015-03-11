@@ -222,7 +222,19 @@ app.post('/bill', function(req, res) {
 app.post('/abup', function(req, res) {
     // 给选定成员发消息
     // 生成一条ABUp Bill记录(是一条History记录，该记录还要维护整个ABUp Bill的进展情况)
-    //
+    var price = Number(req.body.price);
+    utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.ABUpBill(result.user, result.tuan, result.account, req.body.members, price);
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function(ret) {
+        res.jsonp(ret);
+    }, function(error) {
+        console.log('ABUp Bill Error: ' + JSON.stringify(error));
+        res.send('ABUp Bill Error');
+    });
 });
 
 /**

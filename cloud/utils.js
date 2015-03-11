@@ -11,6 +11,7 @@ var APPSECRET = '2d36952cf863088f293d57f0d99449eb';
 var TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
 var TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
 var TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
+var TEMPID_ABUP = 'ew85SpSTqeFex47QTrX4jOnYZA_tI5GtJwvPoQZldyA';
 
 var APPID_JS = 'wx5296f7011ca92045';
 var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
@@ -88,7 +89,13 @@ var HISTORY_TYPE = {
     'QUIT': 3,              // 退团记录。date, username 退出 tuanname 团
     'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
     'BILL': 10,             // 消费记录。date, username 请大家(members.length+othersnum 人)消费了 money
-    'REVERT_BILL': 11       // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
+    'REVERT_BILL': 11,      // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
+    'ABUP_BILL': 12,        // 正在进行的ABUp消费
+    'FINISH_ABUP': 13,      // 结束的ABUp消费
+    'REVERT_ABUP': 14,      // 撤销的ABUp消费
+    'ABDOWN_BILL': 16,      // 正在进行的ABDown消费
+    'FINISH_ABDOWN': 17,    // 结束的ABDown消费
+    'REVERT_ABDOWN': 18     // 撤销的ABDown消费
 };
 
 exports.Config = AV.Object.extend("Config");
@@ -556,7 +563,7 @@ exports.FormatTuanDetail = function (tuanobj) {
     });
 };
 
-/** 买单
+/** AA 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
  */
@@ -608,6 +615,62 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
                 'members': members
             });
             return tuanHistory.save();
+        });
+    } else {
+        return AV.Promise.error('Invalid Parameters');
+    }
+};
+
+/** ABUp 买单 */
+exports.ABUpBill = function(user, tuan, account, members, price) {
+    if (members && members.length > 0) {
+        // 一个团中只允许有一个正在进行的ABUpBill
+        var historyQuery = new AV.Query(exports.TuanHistory);
+        historyQuery.equalTo('tuan', tuan);
+        historyQuery.equalTo('type', HISTORY_TYPE.ABUP_BILL);
+        historyQuery.find().then(function(results) {
+            var ret = {};
+            ret.code = -1;
+            if (results.length == 0) {
+                // 嵌套查询
+                var userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", members);
+                var query = new AV.Query(exports.Account);
+                query.equalTo('tuan', tuan);
+                query.notEqualTo('state', -1);
+                query.include('user');
+                query.matchesQuery('user', userQuery);
+                return query.find().then(function(results) {
+                    // 生成消费记录
+                    var tuanHistory = new exports.TuanHistory();
+                    tuanHistory.set('creater', user);
+                    tuanHistory.set('tuan', tuan);
+                    tuanHistory.set('type', HISTORY_TYPE.ABUP_BILL);
+                    tuanHistory.set('data', {
+                        'username': user.get('nickname'),
+                        'tuanname': tuan.get('name'),
+                        'money': price,
+                        // 成员列表及其付款列表
+                        'members': members,
+                        'prices': new Array(members.length+1).join('0').split('').map(parseFloat)
+                    });
+                    // 给参与者发交款通知
+                    for (var i = 0; i < results.length; i++) {
+                        sendTempABUp(user, results[i].get('user'), tuan, members.length);
+                        results[i].set('abbill', tuanHistory);
+                        results[i].increment('news');
+                        results[i].save();
+                    }
+                    ret.code = 0;
+                    ret.message = 'Success';
+                    return AV.Promise.as(ret);
+                });
+            } else if (results.length == 1) {
+                ret.message = '该团还有尚未完成的筹款消费';
+                return AV.Promise.as(ret);
+            } else {
+                return AV.Promise.error('TuanHistory Results Error');
+            }
         });
     } else {
         return AV.Promise.error('Invalid Parameters');
@@ -694,6 +757,39 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
         }
         return AV.Promise.as(tuanHistory);
     });
+};
+
+// 获取用户正在进行的ABUp Bill
+exports.GetABUpBill = function(username) {
+    // 嵌套查询
+    var userQuery = new AV.Query(AV.User);
+    userQuery.equalTo("username", username);
+    var query = new AV.Query(exports.Account);
+    query.notEqualTo('state', -1);
+    query.descending("createdAt");
+    query.matchesQuery('user', userQuery);
+    return query.find().then(function(results) {
+        var accounts = [];
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].get('abbill')) {
+                accounts.push(results[i]);
+            }
+        }
+        return AV.Promise.as(accounts);
+    });
+};
+
+// 获取用户正在进行的ABUp Bill
+exports.FetchABUpBill = function(account) {
+    var promise = new AV.Promise();
+    account.get('abbill').fetch().then(function(history) {
+        history.get('creater').fetch().then(function(creater) {
+            promise.resolve([creater, history]);
+        });
+    }, function(error) {
+        promise.reject(error);
+    });
+    return promise;
 };
 
 // 带缓存的QRCode

@@ -30,19 +30,19 @@ var receiveMessage = function(msg, cb) {
     var result = {
         xml: {
             ToUserName: msg.xml.FromUserName[0],
-            FromUserName: '' + msg.xml.ToUserName + '',
+            FromUserName: msg.xml.ToUserName + '',
             CreateTime: new Date().getTime(),
             MsgType: 'text',
             Content: ''
         }
     };
+    var toUserId = msg.xml.ToUserName + '';
+    var fromUserId = msg.xml.FromUserName + '';
     if (msg.xml.MsgType == 'voice') {
         result.xml.Content = msg.xml.Recognition;
     } else if (msg.xml.MsgType == 'event') {
         var event = msg.xml.Event + '';
         var eventkey = msg.xml.EventKey + '';
-        var toUserId = msg.xml.ToUserName + '';
-        var fromUserId = msg.xml.FromUserName + '';
         switch (event) {
             case 'subscribe':
                 if (msg.xml.Ticket) {
@@ -104,8 +104,47 @@ var receiveMessage = function(msg, cb) {
                 break;
             default: console.log('No support for Event: ' + event);
         }
+    } else if (msg.xml.MsgType == 'text') {
+        // 首先需要查看用户是否处于某ABUp Bill中
+        // 然后根据回复金额销账
+        synch = false;
+        utils.GetABUpBill(fromUserId).then(function(accounts) {
+            if (accounts.length == 0) {
+                result.xml.Content = msg.xml.Content + '。';
+                cb(null, result);
+            } else if (accounts.length == 1) {
+
+            } else {
+                result.xml.Content = '您处于多个筹款消费中，请尽快回复确认金额(销账顺序与筹款建立顺序一致)。';
+            }
+            var money = parseFloat(msg.xml.Content);
+            if (money) {
+                utils.FetchABUpBill(accounts[0]).then(function(res){
+                    var toUser = res[0];
+                    toUser.increment('money', money);
+                    var history = res[1];
+                    var data = history.get('data');
+                    for (var i = 0; i < data.members.length; i++) {
+                        if (data.members[i] == toUser.id) {
+                            // 在历史中记录每个人的付款
+                            data.prices[i] = money;
+                        }
+                    }
+                    history.set('data', data);
+                    history.set('creater', toUser);
+                    history.save();
+                    accounts[0].set('abbill', null);
+                    accounts[0].increment('money', -money);
+                    accounts[0].save();
+                    result.xml.Content += '您已支出' + money;
+                    cb(null, result);
+                });
+            } else {
+                cb(null, result);
+            }
+        });
     } else {
-        result.xml.Content = msg.xml.Content + '。';
+
     }
     if (synch) {
         cb(null, result);
