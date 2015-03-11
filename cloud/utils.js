@@ -638,7 +638,6 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
         return historyQuery.find().then(function(results) {
             var ret = {};
             ret.code = -1;
-            console.log('ABUpbill: ' + results.length);
             if (results.length == 0) {
                 // 嵌套查询
                 var userQuery = new AV.Query(AV.User);
@@ -649,7 +648,6 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                 query.include('user');
                 query.matchesQuery('user', userQuery);
                 return query.find().then(function(results) {
-                    console.log('ABUpbill');
                     // 生成消费记录
                     var tuanHistory = new exports.TuanHistory();
                     tuanHistory.set('creater', user);
