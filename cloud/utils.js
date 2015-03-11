@@ -563,6 +563,13 @@ exports.FormatTuanDetail = function (tuanobj) {
     });
 };
 
+exports.FormatHistoryDetail = function (histid) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(histid).then(function(history) {
+        return AV.Promise.as(JSON.stringify(history.get('data')));
+    });
+};
+
 /** AA 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
@@ -950,6 +957,37 @@ function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
     var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
     var topcolor = '#FF0000'; // 顶部颜色
     API.sendTemplate(openid, TEMPID_BILL, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTempABUp(fromUser, toUser, tuan, number) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        },
+        number: {
+            "value": number,
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPID_ABUP, null, topcolor, data, function(err, data, res) {
         if (err) {
             console.log('SendTemplate Error %j', err);
         } else {

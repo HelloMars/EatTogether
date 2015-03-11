@@ -22,6 +22,10 @@ tuanService.factory('tuan', ['$http',
 
             bill: bill,
 
+            abupBill: abupBill,
+
+            abdownBill: abdownBill,
+
             revertHistory: revertHistory,
 
             getJsConfig: getJsConfig
@@ -140,6 +144,36 @@ tuanService.factory('tuan', ['$http',
                     members : members,
                     othersnum : othersnum,
                     price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 众筹买单 */
+        function abupBill (id, members, price) {
+            var request = $http({
+                url: SERVER + 'abup',
+                method: 'POST',
+                data: {
+                    id : id,
+                    members : members,
+                    price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 分配买单 */
+        function abdownBill (id, members, prices) {
+            var request = $http({
+                url: SERVER + 'abdown',
+                method: 'POST',
+                data: {
+                    id : id,
+                    members : members,
+                    prices : prices
                 }
             });
 

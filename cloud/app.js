@@ -260,6 +260,21 @@ app.post('/revertHistory', function(req, res) {
     });
 });
 
+app.get('/historyDetail', function(req, res) {
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.FormatHistoryDetail(req.query.histid);
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function(hist) {
+        res.jsonp(hist);
+    }, function(error) {
+        console.log('TuanDetail Error: ' + JSON.stringify(error));
+        res.send('TuanDetail Error');
+    });
+});
+
 app.get('/jsconfig', function(req, res) {
     utils.getJsConfig(req.headers.referer).then(function(config) {
         res.jsonp(config);
