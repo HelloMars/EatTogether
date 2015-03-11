@@ -563,9 +563,9 @@ exports.FormatTuanDetail = function (tuanobj) {
     });
 };
 
-exports.FormatHistoryDetail = function (histid) {
+exports.FormatHistoryDetail = function (historyId) {
     var query = new AV.Query(exports.TuanHistory);
-    return query.get(histid).then(function(history) {
+    return query.get(historyId).then(function(history) {
         return AV.Promise.as(JSON.stringify(history.get('data')));
     });
 };
@@ -682,6 +682,26 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
     } else {
         return AV.Promise.error('Invalid Parameters');
     }
+};
+
+exports.FinishABup = function (requser, historyId) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(historyId).then(function(history) {
+        var ret = {};
+        ret.code = -1;
+        if (history.get('creater').id == requser.id) {
+            // 有权Finish
+            history.set('type', HISTORY_TYPE.FINISH_ABUP);
+            history.save();
+            ret.code = 0;
+            ret.message = '关闭成功';
+            return AV.Promise.as(ret);
+        } else {
+            // 无权(其实每个团员都可以Finish，前端给出提示避免误操作即可)
+            ret.message = '您不是创建者，无权关闭';
+            return AV.Promise.as(ret);
+        }
+    });
 };
 
 exports.RevertHistory = function(user, tuan, historyId) {
