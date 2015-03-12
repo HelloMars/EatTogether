@@ -90,9 +90,9 @@ var HISTORY_TYPE = {
     'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
     'BILL': 10,             // 消费记录。date, username 请大家(members.length+othersnum 人)消费了 money
     'REVERT_BILL': 11,      // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
-    'ABUP_BILL': 12,        // 正在进行的ABUp消费
-    'FINISH_ABUP': 13,      // 结束的ABUp消费
-    'REVERT_ABUP': 14,      // 撤销的ABUp消费
+    'ABUP_BILL': 12,        // 正在进行的ABUp消费。date, username 发起了一次(members.length 人)筹款消费
+    'FINISH_ABUP': 13,      // 结束的ABUp消费。date, username 发起的筹款消费已结束
+    'REVERT_ABUP': 14,      // 撤销的ABUp消费。date, username 发起了筹款消费 (已撤销)
     'ABDOWN_BILL': 16,      // 正在进行的ABDown消费
     'FINISH_ABDOWN': 17,    // 结束的ABDown消费
     'REVERT_ABDOWN': 18     // 撤销的ABDown消费
@@ -566,7 +566,40 @@ exports.FormatTuanDetail = function (tuanobj) {
 exports.FormatHistoryDetail = function (historyId) {
     var query = new AV.Query(exports.TuanHistory);
     return query.get(historyId).then(function(history) {
-        return AV.Promise.as(JSON.stringify(history.get('data')));
+        var type = history.get('type');
+        var data = history.get('data');
+        var ret = {
+            'id': history.id,
+            'type': type,
+            'money': data.money,
+            'closed': type == HISTORY_TYPE.FINISH_ABUP,
+            'date': history.createdAt.toISOString().replace(/T.+/, '')
+        };
+
+        var zeronum = 0;
+        var usermap = {};
+        for (var i = 0; i < data.members.length; i++) {
+            usermap[data.members[i]] = data.prices[i];
+            if (data.prices[i] == 0) zeronum++;
+        }
+        ret.percent = 1-zeronum/data.members.length;
+
+        var userQuery = new AV.Query(AV.User);
+        userQuery.containedIn("objectId", data.members);
+        return userQuery.find().then(function(users) {
+            var members = [];
+            for (var i = 0; i < users.length; i++) {
+                members.push({
+                    'uid': users[i].id,
+                    'name': users[i].get('nickname'),
+                    'sex': users[i].get('sex'),
+                    'headimgurl': formatHeadImgUrl(users[i], 132),
+                    'money': formatFloat(usermap[users[i].id])
+                });
+            }
+            ret.members = members;
+            return AV.Promise.as(ret);
+        });
     });
 };
 
@@ -669,7 +702,8 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                         results[i].save();
                     }
                     ret.code = 0;
-                    ret.message = 'Success';
+                    ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
+                    ret.historyId = tuanHistory.id;
                     return AV.Promise.as(ret);
                 });
             } else if (results.length == 1) {
@@ -707,57 +741,111 @@ exports.FinishABup = function (requser, historyId) {
 exports.RevertHistory = function(user, tuan, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
-    query.equalTo('type', HISTORY_TYPE.BILL);
+    query.containedIn('type', [HISTORY_TYPE.BILL, HISTORY_TYPE.ABUP_BILL, HISTORY_TYPE.FINISH_ABUP]);
     query.descending("createdAt");
     query.limit(1);
     return query.first().then(function(history) {
-        if (history && history.id == historyId && history.get('type') == HISTORY_TYPE.BILL) {
-            // 只能修改最近一次消费的记录
-            var data = history.get('data');
-            var othersnum = data.othersnum;
-            var price = data.money;
-            var members = data.members;
+        // 只能修改最近一次消费的记录
+        if (history && history.id == historyId) {
+            var data, members, userQuery, query;
+            if (history.get('type') == HISTORY_TYPE.BILL) {
+                data = history.get('data');
+                members = data.members;
+                var othersnum = data.othersnum;
+                var price = data.money;
 
-            var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
+                var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
 
-            // 嵌套查询
-            var userQuery = new AV.Query(AV.User);
-            userQuery.containedIn("objectId", members);
-            var query = new AV.Query(exports.Account);
-            query.equalTo('tuan', tuan);
-            // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
-            query.include('user');
-            query.matchesQuery('user', userQuery);
-            return query.find().then(function(results) {
-                // 撤销团员扣款
-                var promises = [];
-                for (var i = 0; i < results.length; i++) {
-                    results[i].increment('money', avg);
-                    if (results[i].get('user').id != user.id) {
-                        // 给其他成员发送模板消息
-                        //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                // 嵌套查询
+                userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", members);
+                query = new AV.Query(exports.Account);
+                query.equalTo('tuan', tuan);
+                // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
+                query.include('user');
+                query.matchesQuery('user', userQuery);
+                return query.find().then(function (results) {
+                    // 撤销团员扣款
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        results[i].increment('money', avg);
+                        if (results[i].get('user').id != user.id) {
+                            // 给其他成员发送模板消息
+                            //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                        }
+                        promises.push(results[i].save());
                     }
-                    promises.push(results[i].save());
-                }
-                // 撤销买单者账单(注意这里的买单者不是user，而是history里的creater)
-                var accountQuery = new AV.Query(exports.Account);
-                accountQuery.equalTo('tuan', tuan);
-                accountQuery.equalTo('user', history.get('creater'));
-                // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
-                return accountQuery.first().then(function(account) {
-                    if (account) {
-                        account.increment('money', -avg * members.length);
-                        promises.push(account.save());
-                        return AV.Promise.when(promises);
-                    } else {
-                        return AV.Promise.error('Can\'t find payer');
-                    }
+                    // 撤销买单者账单(注意这里的买单者不是user，而是history里的creater)
+                    var accountQuery = new AV.Query(exports.Account);
+                    accountQuery.equalTo('tuan', tuan);
+                    accountQuery.equalTo('user', history.get('creater'));
+                    // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
+                    return accountQuery.first().then(function (account) {
+                        if (account) {
+                            account.increment('money', -avg * members.length);
+                            promises.push(account.save());
+                            return AV.Promise.when(promises);
+                        } else {
+                            return AV.Promise.error('Can\'t find payer');
+                        }
+                    });
+                }).then(function () {
+                    // 修改消费记录
+                    history.set('type', HISTORY_TYPE.REVERT_BILL);
+                    return history.save();
                 });
-            }).then(function() {
-                // 修改消费记录
-                history.set('type', HISTORY_TYPE.REVERT_BILL);
-                return history.save();
-            });
+            } else if (history.get('type') == HISTORY_TYPE.ABUP_BILL || history.get('type') == HISTORY_TYPE.FINISH_ABUP) {
+                // 撤销 ABUp
+                data = history.get('data');
+                members = data.members;
+
+                var usermap = {};
+                for (var i = 0; i < data.members.length; i++) {
+                    usermap[data.members[i]] = data.prices[i];
+                }
+
+                // 嵌套查询
+                userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", members);
+                query = new AV.Query(exports.Account);
+                query.equalTo('tuan', tuan);
+                // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
+                query.include('user');
+                query.matchesQuery('user', userQuery);
+                return query.find().then(function (results) {
+                    // 撤销团员扣款
+                    var sum = 0;
+                    var promises = [];
+                    for (var i = 0; i < results.length; i++) {
+                        var uid = results[i].get('user').id;
+                        results[i].increment('money', usermap[uid]);
+                        sum += usermap[uid];
+                        if (uid != user.id) {
+                            // 给其他成员发送模板消息
+                            //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                        }
+                        promises.push(results[i].save());
+                    }
+                    // 撤销买单者账单(注意这里的买单者不是user，而是history里的creater)
+                    var accountQuery = new AV.Query(exports.Account);
+                    accountQuery.equalTo('tuan', tuan);
+                    accountQuery.equalTo('user', history.get('creater'));
+                    // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
+                    return accountQuery.first().then(function (account) {
+                        if (account) {
+                            account.increment('money', sum);
+                            promises.push(account.save());
+                            return AV.Promise.when(promises);
+                        } else {
+                            return AV.Promise.error('Can\'t find payer');
+                        }
+                    });
+                }).then(function () {
+                    // 修改消费记录
+                    history.set('type', HISTORY_TYPE.REVERT_ABUP);
+                    return history.save();
+                });
+            }
         } else {
             console.log('history: %j', history);
             return AV.Promise.error('Invalid Parameters');
@@ -821,12 +909,18 @@ exports.ClearABUpBill = function(account, money) {
                 account.increment('money', -money);
                 account.set('abbill', null);
                 var data = history.get('data');
+                var finished = true;
                 for (var i = 0; i < data.members.length; i++) {
                     if (data.members[i] == account.get('user').id) {
                         // 在历史中记录扣款人的付款
                         data.prices[i] = money;
                     }
+                    if (data.prices[i] == 0) {
+                        finished = false;
+                    }
                 }
+                // 如果已经收齐款，则自动finish
+                if (finished) history.set('type', HISTORY_TYPE.FINISH_ABUP);
                 history.set('data', data);
                 return AV.Promise.when(
                     accounts[0].save(),
