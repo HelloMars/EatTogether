@@ -576,13 +576,16 @@ exports.FormatHistoryDetail = function (historyId) {
             'date': history.createdAt.toISOString().replace(/T.+/, '')
         };
 
+        var sum = 0;
         var zeronum = 0;
         var usermap = {};
         for (var i = 0; i < data.members.length; i++) {
             usermap[data.members[i]] = data.prices[i];
             if (data.prices[i] == 0) zeronum++;
+            else sum += data.prices[i];
         }
         ret.percent = 1-zeronum/data.members.length;
+        ret.sum = sum;
 
         var userQuery = new AV.Query(AV.User);
         userQuery.containedIn("objectId", data.members);
