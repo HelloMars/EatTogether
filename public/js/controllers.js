@@ -79,6 +79,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.curTotal = res.members.length;
             $scope.notMember = 0;
             $scope.numberErr = false;
+            $scope.abMode = false;
 
             $scope.members.forEach(function(member) {
                 member.avatarBg = {
@@ -104,9 +105,16 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 }).map(function (member) {
                     return member.uid;
                 });
-                tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
-                    $location.url('/tuan/' + $scope.tuanId + '/members/');
-                });
+                if ($scope.abMode) {
+                    tuan.abupBill($scope.tuanId, members, $scope.totalMoney).then(function(res) {
+                        alert('已发送众筹请求');
+                        $location.url('/tuan/' + $scope.tuanId + '/members/');
+                    });
+                } else {
+                    tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
+                        $location.url('/tuan/' + $scope.tuanId + '/members/');
+                    });
+                }
             };
             $scope.cancel = function () {
                     $location.url('/tuan/' + $scope.tuanId + '/members/');
