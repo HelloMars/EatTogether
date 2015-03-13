@@ -1,6 +1,15 @@
 <div class="s-history">
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
-    <h1>历史详情页</h1>
-    {{historyDetail}}
+    <h1>今天我买单</h1>
+    <h2>聚餐日期：{{date}}</h2>
+    <h2>众筹完成百分比：{{percent}}</h2>
+    <div class="members">
+        <label ng-style="member.avatarBg"  ng-repeat="member in members">
+            <input type="checkbox" ng-change="changeMember()" ng-model="member.inThis">
+            <p>{{member.name}}</p>
+        </label>
+    </div>
+
+    <span class="circle-btn circle-btn-right cancel" ng-click="cancelAbBill(historyDetail.id)">结束筹款</span>
 </div>

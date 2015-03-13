@@ -683,6 +683,7 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                 return query.find().then(function(results) {
                     // 生成消费记录
                     var tuanHistory = new exports.TuanHistory();
+                    tuanHistory.fetchWhenSave(true);
                     tuanHistory.set('creater', user);
                     tuanHistory.set('tuan', tuan);
                     tuanHistory.set('type', HISTORY_TYPE.ABUP_BILL);
@@ -701,10 +702,12 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                         results[i].increment('news');
                         results[i].save();
                     }
-                    ret.code = 0;
-                    ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
-                    ret.historyId = tuanHistory.id;
-                    return AV.Promise.as(ret);
+                    return tuanHistory.save().then(function() {
+                        ret.code = 0;
+                        ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
+                        ret.historyId = tuanHistory.id;
+                        return AV.Promise.as(ret);
+                    });
                 });
             } else if (results.length == 1) {
                 ret.message = '该团还有尚未完成的筹款消费';

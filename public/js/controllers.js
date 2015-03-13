@@ -107,8 +107,12 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 });
                 if ($scope.abMode) {
                     tuan.abupBill($scope.tuanId, members, $scope.totalMoney).then(function(res) {
-                        alert('已发送众筹请求');
-                        $location.url('/tuan/' + $scope.tuanId + '/members/');
+                        alert(res.message);
+                        if (res.code === 0) {
+                            $location.url('/tuan/' + $scope.tuanId + '/history/' + res.historyId);
+                        } else {
+                            $location.url('/tuan/' + $scope.tuanId + '/members/');
+                        }
                     });
                 } else {
                     tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
@@ -202,10 +206,25 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
         $scope.historyId = $routeParams.historyId;
         tuan.getHistoryDetail($scope.tuanId, $scope.historyId)
         .then(function (res) {
-            $scope.historyDetail = res;
-            console.log(res);
+            angular.extend($scope, res);
+            $scope.members.forEach(function(member) {
+                member.avatarBg = {
+                    'background-image' : 'url(' + member.headimgurl + ')'
+                };
+                member.moneyBgc = {
+                    'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
+                };
+            });
             $scope.loaded = true;
         });
+        $scope.cancelAbBill = function (historyId) {
+            tuan.finishABUp(historyId).then(function (res) {
+                alert(res.message);
+                if (res.code === 0) {
+                    $location.url('/tuan/' + $scope.tuanId + '/history');
+                }
+            });
+        };
     }
 
 ]);
