@@ -28,7 +28,7 @@
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span> 请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元（已撤销）
             </div>
-            <div ng-switch-when="12">
+            <div ng-click="goDetail(history.id)" ng-switch-when="12">
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span> 请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元
             </div>

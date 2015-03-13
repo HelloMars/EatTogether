@@ -161,8 +161,8 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
 ]);
 
 /** 饭团历史 */
-eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
+eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
         $scope.loaded = false;
         $scope.column = 4;
         $scope.tuanId = $routeParams.tuanId;
@@ -185,6 +185,27 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
                 history.deleted = true;
             });
         };
+        $scope.goDetail = function (historyId) {
+            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + historyId);
+        };
+    }
+
+]);
+
+/** 饭团历史详情 */
+
+eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
+        $scope.loaded = false;
+        $scope.column = 4;
+        $scope.tuanId = $routeParams.tuanId;
+        $scope.historyId = $routeParams.historyId;
+        tuan.getHistoryDetail($scope.tuanId, $scope.historyId)
+        .then(function (res) {
+            $scope.historyDetail = res;
+            console.log(res);
+            $scope.loaded = true;
+        });
     }
 
 ]);
