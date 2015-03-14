@@ -915,18 +915,23 @@ exports.ClearABUpBill = function(account, money) {
                 account.increment('money', -money);
                 account.set('abbill', null);
                 var data = history.get('data');
-                var finished = true;
+                var sum = 0;
+                var everyone = true;
                 for (var i = 0; i < data.members.length; i++) {
                     if (data.members[i] == account.get('user').id) {
                         // 在历史中记录扣款人的付款
                         data.prices[i] = money;
                     }
                     if (data.prices[i] == 0) {
-                        finished = false;
+                        everyone = false;
+                    } else {
+                        sum += data.prices[i];
                     }
                 }
-                // 如果已经收齐款，则自动finish
-                if (finished) history.set('type', HISTORY_TYPE.FINISH_ABUP);
+                // 如果已经收齐款(总价格达到或每个人都已交款)，则自动finish
+                if (everyone || data.money && sum >= data.money) {
+                    history.set('type', HISTORY_TYPE.FINISH_ABUP);
+                }
                 history.set('data', data);
                 return AV.Promise.when(
                     accounts[0].save(),
