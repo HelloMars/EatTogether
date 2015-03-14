@@ -143,14 +143,15 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
             $scope.qrcode = res.qrcode;
             $scope.money = res.money;
             $scope.slogan = res.slogan;
+            $scope.newSlogan = res.slogan;
             $scope.loaded = true;
         });
 
         $scope.save = function () {
-            if ($scope.newName === $scope.name) return;
+            if ($scope.newName === $scope.name && $scope.newSlogan === $scope.slogan) return;
             tuan.modTuanInfo($scope.id, {
                 name : $scope.newName,
-                slogan : $scope.slogan
+                slogan : $scope.newSlogan
             });
         };
 
