@@ -221,8 +221,8 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
             };
             $scope.loaded = true;
         });
-        $scope.cancelAbBill = function (historyId) {
-            tuan.finishABUp(historyId).then(function (res) {
+        $scope.cancelAbBill = function () {
+            tuan.finishABUp($scope.historyId).then(function (res) {
                 alert(res.message);
                 if (res.code === 0) {
                     $location.url('/tuan/' + $scope.tuanId + '/history');
