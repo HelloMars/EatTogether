@@ -584,7 +584,11 @@ exports.FormatHistoryDetail = function (historyId) {
             if (data.prices[i] == 0) zeronum++;
             else sum += data.prices[i];
         }
-        ret.percent = 1-zeronum/data.members.length;
+        if (data.money) {
+            ret.percent = Math.min(sum/data.money, 1);
+        } else {
+            ret.percent = 1-zeronum/data.members.length;
+        }
         ret.sum = sum;
 
         var userQuery = new AV.Query(AV.User);
@@ -919,7 +923,7 @@ exports.ClearABUpBill = function(account, money) {
                 var everyone = true;
                 for (var i = 0; i < data.members.length; i++) {
                     if (data.members[i] == account.get('user').id) {
-                        // 在历史中记录扣款人的付款
+                       // 在历史中记录扣款人的付款
                         data.prices[i] = money;
                     }
                     if (data.prices[i] == 0) {
