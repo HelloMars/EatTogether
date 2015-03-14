@@ -217,8 +217,10 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 };
             });
             $scope.processbarStyle = {
-                'width' : (res.percent * 100 ) + '%',
-                'background ' : '#000'
+                'width' : (res.percent * 100 ) + '%'
+            };
+            $scope.processbarStyleTotal = {
+                'width' : (1 - res.percent) * 100 + '%'
             };
             $scope.loaded = true;
         });
