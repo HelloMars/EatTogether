@@ -215,6 +215,10 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
             });
+            $scope.processbarStyle = {
+                'width' : (res.percent * 100 ) + '%',
+                'background ' : '#000'
+            };
             $scope.loaded = true;
         });
         $scope.cancelAbBill = function (historyId) {
