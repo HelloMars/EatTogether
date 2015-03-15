@@ -708,6 +708,7 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
     }
 };
 
+// 如果是提前完成，则需要清除所有人的abbill状态
 exports.FinishABup = function (requser, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     return query.get(historyId).then(function(history) {
@@ -716,6 +717,29 @@ exports.FinishABup = function (requser, historyId) {
         if (history.get('creater').id == requser.id) {
             // 有权Finish
             history.set('type', HISTORY_TYPE.FINISH_ABUP);
+            // 清除所有人的abbill状态
+            var userlist = [];
+            var data = history.get('data');
+            for (var i = 0; i < data.members.length; i++) {
+                if (data.prices[i] == 0) {
+                    userlist.push(data.members[i]);
+                }
+            }
+            if (userlist.length > 0) {
+                // 嵌套查询
+                var userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", userlist);
+                var query = new AV.Query(exports.Account);
+                query.equalTo('tuan', history.get('tuan'));
+                // 不约束state!=-1
+                query.matchesQuery('user', userQuery);
+                query.find().then(function(accounts) {
+                    for (var i = 0; i < accounts.length; i++) {
+                        accounts[i].set('abbill', null);
+                        accounts[i].save();
+                    }
+                });
+            }
             history.save();
             ret.code = 0;
             ret.message = '关闭成功';
