@@ -118,6 +118,7 @@ if (__local) {
     TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
+    TEMPID_ABUP = '0f28QRi1lt9X7NS0pw5-6pe-ZBWi3_q0osuBLjffYwM';
 
     USER_STATE = 1;
 
