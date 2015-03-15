@@ -118,7 +118,7 @@ var receiveMessage = function(msg, cb) {
                 result.xml.Content = '您处于多个筹款消费中，请尽快回复确认金额(销账顺序与筹款建立顺序一致)。';
             }
             var money = parseFloat(msg.xml.Content);
-            if (money) {
+            if (money && money > 0 && money < 500) {
                 utils.ClearABUpBill(accounts[0], money).then(function() {
                     result.xml.Content += '您已支出' + money.toFixed(2);
                     cb(null, result);
