@@ -1040,6 +1040,7 @@ function formatTuan(tuanobj, news) {
 function formatAAHistory(history, ret) {
     var data = history.get('data');
     ret.money = data.money;
+    ret.othersnum = data.othersnum;
 
     var userQuery = new AV.Query(AV.User);
     userQuery.containedIn("objectId", data.members);
