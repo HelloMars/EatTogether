@@ -251,7 +251,9 @@ $width:270px;
 
 .s-history-detail{
 
-    padding: 0 20px;
+    .history-view{
+        padding: 0 20px;
+    }
     h1{
         text-align: center;
         font-size: 30px;

@@ -1,7 +1,7 @@
 <div  class="s-history-detail">
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
-    <div ng-show="loaded">
+    <div class="history-view" ng-show="loaded">
         <h1>今天我买单<span ng-show="closed">(已完成)</span></h1>
         <h2>聚餐日期：{{date}}</h2>
         <div class="members">
@@ -10,7 +10,7 @@
                 <p>{{member.money}}</p>
             </label>
         </div>
-        <h2>众筹完成百分比：{{percent * 100 + '%'}}</h2>
+        <h2>筹款完成百分比：{{percent * 100 + '%'}}</h2>
         <span class="process-bar"><span class="inner" ng-style="processbarStyle"><span ng-show="sum !== 0" class="sum">{{sum}}</span></span><span ng-style="processbarStyleTotal" class="total">{{(money - sum > 0) ? money - sum : ''}}</span></span>
         <span class="circle-btn circle-btn-right cancel" ng-show="!closed" ng-click="cancelAbBill()">结束筹款</span>
     </div>
