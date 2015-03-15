@@ -14,8 +14,8 @@
                 'ABDOWN_BILL': 16,      // 正在进行的ABDown消费
                 'FINISH_ABDOWN': 17,    // 结束的ABDown消费
                 'REVERT_ABDOWN': 18     // 撤销的ABDown消费-->
-        <li ng-class="{deleted : history.deleted}" ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.enableRevert)" ng-swipe-right="swipeRight(history.enableRevert)" >
-            <div ng-if="history.enableRevert" class="delete" ng-show="showDelete" ng-click="revert(history)">删除</div>
+        <li ng-class="{deleted : history.deleted}" ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.revertable)" ng-swipe-right="swipeRight(history.revertable)" >
+            <div ng-if="history.revertable" class="delete" ng-show="showDelete" ng-click="revert(history)">删除</div>
             <div ng-switch-when="1">
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span>创建<span class="tuan">{{history.data.tuanname}}</span>团
