@@ -558,7 +558,8 @@ exports.FormatTuanDetail = function (tuanobj) {
                 'name': user.get('nickname'),
                 'sex': user.get('sex'),
                 'headimgurl': formatHeadImgUrl(user, 132),
-                'money': formatFloat(results[i].get('money'))
+                'money': formatFloat(results[i].get('money')),
+                'subscribed': user.get('state') > 0
             });
         }
         tuan.members = members;
@@ -570,47 +571,22 @@ exports.FormatTuanDetail = function (tuanobj) {
 exports.FormatHistoryDetail = function (historyId) {
     var query = new AV.Query(exports.TuanHistory);
     return query.get(historyId).then(function(history) {
-        var type = history.get('type');
-        var data = history.get('data');
         var ret = {
             'id': history.id,
-            'type': type,
-            'money': data.money,
-            'closed': type == HISTORY_TYPE.FINISH_ABUP,
+            'type': history.get('type'),
             'date': history.createdAt.toISOString().replace(/T.+/, '')
         };
-
-        var sum = 0;
-        var zeronum = 0;
-        var usermap = {};
-        for (var i = 0; i < data.members.length; i++) {
-            usermap[data.members[i]] = data.prices[i];
-            if (data.prices[i] == 0) zeronum++;
-            else sum += data.prices[i];
+        switch (history.get('type')) {
+            case HISTORY_TYPE.BILL:
+            case HISTORY_TYPE.REVERT_BILL:
+                return formatAAHistory(history, ret);
+            case HISTORY_TYPE.ABUP_BILL:
+            case HISTORY_TYPE.FINISH_ABUP:
+            case HISTORY_TYPE.REVERT_ABUP:
+                return formatABUpHistory(history, ret);
+            default :
+                return AV.Promise.error('Unknown Type');
         }
-        if (data.money) {
-            ret.percent = Math.min(sum/data.money, 1);
-        } else {
-            ret.percent = 1-zeronum/data.members.length;
-        }
-        ret.sum = sum;
-
-        var userQuery = new AV.Query(AV.User);
-        userQuery.containedIn("objectId", data.members);
-        return userQuery.find().then(function(users) {
-            var members = [];
-            for (var i = 0; i < users.length; i++) {
-                members.push({
-                    'uid': users[i].id,
-                    'name': users[i].get('nickname'),
-                    'sex': users[i].get('sex'),
-                    'headimgurl': formatHeadImgUrl(users[i], 132),
-                    'money': formatFloat(usermap[users[i].id])
-                });
-            }
-            ret.members = members;
-            return AV.Promise.as(ret);
-        });
     });
 };
 
@@ -846,7 +822,7 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     return query.find().then(function(results) {
         var found = false;
         for (var i = 0; i < results.length; i++) {
-            if (!found && results[i].get('type') == HISTORY_TYPE.BILL) {
+            if (!found && isRevertable(results[i].get('type'))) {
                 tuanHistory.push(formatTuanHistory(user, results[i], true));
                 found = true;
             } else {
@@ -991,13 +967,13 @@ function modifyUserInfo(user, userinfo) {
     });
 }
 
-function formatTuanHistory(user, history, enableRevert) {
+function formatTuanHistory(user, history, revertable) {
     var type = history.get('type');
     var data = history.get('data');
     var ret = {
         'id': history.id,
         'type': type,
-        'enableRevert': enableRevert,
+        'revertable': revertable,
         'data': data,
         'date': history.createdAt.toISOString().replace(/T.+/, '')
     };
@@ -1037,6 +1013,64 @@ function formatTuan(tuanobj, news) {
     return tuan;
 }
 
+function formatAAHistory(history, ret) {
+    var data = history.get('data');
+    ret.money = data.money;
+
+    var userQuery = new AV.Query(AV.User);
+    userQuery.containedIn("objectId", data.members);
+    return userQuery.find().then(function(users) {
+        var members = [];
+        for (var i = 0; i < users.length; i++) {
+            members.push({
+                'uid': users[i].id,
+                'name': users[i].get('nickname'),
+                'sex': users[i].get('sex'),
+                'headimgurl': formatHeadImgUrl(users[i], 132)
+            });
+        }
+        ret.members = members;
+        return AV.Promise.as(ret);
+    });
+}
+
+function formatABUpHistory(history, ret) {
+    var data = history.get('data');
+    ret.money = data.money;
+
+    var sum = 0;
+    var zeronum = 0;
+    var usermap = {};
+    for (var i = 0; i < data.members.length; i++) {
+        usermap[data.members[i]] = data.prices[i];
+        if (data.prices[i] == 0) zeronum++;
+        else sum += data.prices[i];
+    }
+    if (data.money) {
+        ret.percent = Math.min(sum/data.money, 1);
+    } else {
+        ret.percent = 1-zeronum/data.members.length;
+    }
+    ret.sum = sum;
+
+    var userQuery = new AV.Query(AV.User);
+    userQuery.containedIn("objectId", data.members);
+    return userQuery.find().then(function(users) {
+        var members = [];
+        for (var i = 0; i < users.length; i++) {
+            members.push({
+                'uid': users[i].id,
+                'name': users[i].get('nickname'),
+                'sex': users[i].get('sex'),
+                'headimgurl': formatHeadImgUrl(users[i], 132),
+                'money': formatFloat(usermap[users[i].id])
+            });
+        }
+        ret.members = members;
+        return AV.Promise.as(ret);
+    });
+}
+
 function formatFloat(float) {
     return float.toFixed(2);
 }
@@ -1055,6 +1089,10 @@ function formatHeadImgUrl(user, size) {
     } else {
         return headimgurl;
     }
+}
+
+function isRevertable(type) {
+    return type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.ABUP_BILL || type == HISTORY_TYPE.FINISH_ABUP;
 }
 
 function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
