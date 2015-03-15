@@ -17,7 +17,7 @@
             </h2>
             <h2>人均：<span class="average">{{money/(members.length + othersnum) | checkFinite}}</span></h2>
         </div>
-        <div class="mode-abup" ng-if="type > 12">
+        <div class="mode-abup" ng-if="type > 11">
             <h1>今天我买单<span ng-show="type == 13">(已完成)</span><span ng-show="type == 14">(已撤销)</span></h1>
             <h2 class="date">{{date}}</h2>
             <div class="members">
