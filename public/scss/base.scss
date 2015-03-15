@@ -287,14 +287,6 @@ $width:270px;
         }
     }
     .members{
-        input{
-            height: 20px;
-            line-height: 20px;
-            border:1px solid $bgc1;
-            -webkit-appearance: none;
-            padding: 0 10px;
-        }
-
         label{
             display: inline-block;
             width:50px;
@@ -308,13 +300,10 @@ $width:270px;
             margin: 5px;
             border:1px solid $bgc1;
 
-            &.choosen{
+            &.paid{
                 p{
                     background-color: #ACC088;
                 }
-            }
-            input{
-                display: none;
             }
             p{
                 position: absolute;
