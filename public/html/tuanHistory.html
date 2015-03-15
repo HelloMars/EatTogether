@@ -32,11 +32,11 @@
                 <span class="time">{{history.date}}</span>
                 <span class="oldtuan">{{history.data.fromname}}</span>团的团名被<span class="who">{{history.data.username}}</span>修改为<span class="tuan">{{history.data.toname}}</span>
             </div>
-            <div ng-switch-when="10">
+            <div  ng-click="goDetail(history.id)"  ng-switch-when="10">
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length + history.data.othersnum}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="!history.included">(除我)</span>
             </div>
-            <div ng-switch-when="11">
+            <div  ng-click="goDetail(history.id)"  ng-switch-when="11">
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span> 请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元（已撤销）
             </div>
