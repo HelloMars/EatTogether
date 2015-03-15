@@ -12,6 +12,8 @@ tuanService.factory('tuan', ['$http',
             getTuanInfo : getTuanInfo,
             getTuanHistory : getTuanHistory,
 
+            getHistoryDetail : getHistoryDetail,
+
             createTuan : createTuan,
 
             joinTuan : joinTuan,
@@ -21,6 +23,12 @@ tuanService.factory('tuan', ['$http',
             modTuanInfo : modTuanInfo,
 
             bill: bill,
+
+            abupBill: abupBill,
+
+            finishABUp: finishABUp,
+
+            abdownBill: abdownBill,
 
             revertHistory: revertHistory,
 
@@ -73,6 +81,20 @@ tuanService.factory('tuan', ['$http',
                     id : id,
                     start: start,
                     length: length
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 获取历史详情 */
+        function getHistoryDetail (tuanId, historyId) {
+            var request = $http({
+                url: SERVER + 'historyDetail',
+                method: 'GET',
+                params: {
+                    id : tuanId,
+                    historyId : historyId
                 }
             });
 
@@ -140,6 +162,49 @@ tuanService.factory('tuan', ['$http',
                     members : members,
                     othersnum : othersnum,
                     price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 众筹买单 */
+        function abupBill (id, members, price) {
+            var request = $http({
+                url: SERVER + 'abup',
+                method: 'POST',
+                data: {
+                    id : id,
+                    members : members,
+                    price : price
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 结束众筹买单 */
+        function finishABUp (historyId) {
+            var request = $http({
+                url: SERVER + 'finishabup',
+                method: 'POST',
+                data: {
+                    historyId : historyId
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 分配买单 */
+        function abdownBill (id, members, prices) {
+            var request = $http({
+                url: SERVER + 'abdown',
+                method: 'POST',
+                data: {
+                    id : id,
+                    members : members,
+                    prices : prices
                 }
             });
 

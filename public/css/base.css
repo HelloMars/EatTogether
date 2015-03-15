@@ -170,49 +170,75 @@ body {
   .s-history .history li.deleted {
     text-decoration: line-through; }
 
-.s-bill {
+.s-bill .bill {
   padding: 0 20px; }
-  .s-bill h1 {
+.s-bill h1 {
+  text-align: center;
+  font-size: 30px;
+  margin: 30px 0; }
+.s-bill h2 {
+  line-height: 20px;
+  margin: 1em 0; }
+.s-bill .tips {
+  border: 1px solid #e0dee1;
+  border-radius: 10px;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  text-align: center;
+  color: #e0dee1; }
+.s-bill .tip-panel {
+  display: block;
+  width: 100%;
+  background: #e0dee1;
+  padding: 10px;
+  box-sizing: border-box;
+  margin: 10px 0; }
+.s-bill input[type="number"] {
+  height: 30px;
+  line-height: 30px;
+  width: 80%;
+  padding: 5px;
+  font-size: 20px;
+  -webkit-appearance: none;
+  border: 1px solid #888;
+  color: #000;
+  box-shadow: none; }
+.s-bill .members input {
+  height: 20px;
+  line-height: 20px;
+  border: 1px solid #e0dee1;
+  -webkit-appearance: none;
+  padding: 0 10px; }
+.s-bill .members label {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-size: 100%;
+  line-height: 50px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin: 5px;
+  border: 1px solid #e0dee1; }
+  .s-bill .members label.choosen p {
+    background-color: #ACC088; }
+  .s-bill .members label input {
+    display: none; }
+  .s-bill .members label p {
+    position: absolute;
+    bottom: -1px;
+    left: 8px;
+    width: 100%;
     text-align: center;
-    font-size: 30px;
-    margin: 30px 0; }
-  .s-bill h2 {
-    line-height: 20px;
-    margin: 1em 0; }
-  .s-bill input {
     height: 20px;
     line-height: 20px;
-    border: 1px solid #e0dee1;
-    -webkit-appearance: none;
-    padding: 0 10px; }
-  .s-bill label {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    border-radius: 25px;
-    background-size: 100%;
-    line-height: 50px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    margin: 5px;
-    border: 1px solid #e0dee1; }
-    .s-bill label.choosen p {
-      background-color: #ACC088; }
-    .s-bill label input {
-      display: none; }
-    .s-bill label p {
-      position: absolute;
-      bottom: -1px;
-      left: 8px;
-      width: 100%;
-      text-align: center;
-      height: 20px;
-      line-height: 20px;
-      -webkit-transform: rotate(-22deg);
-      transform: rotate(-22deg);
-      font-size: 12px;
-      background-color: #d8d8d8; }
+    -webkit-transform: rotate(-22deg);
+    transform: rotate(-22deg);
+    font-size: 12px;
+    background-color: #d8d8d8; }
 
 .s-list .tuan {
   display: inline-block;
@@ -257,6 +283,64 @@ body {
     display: inline-block;
     width: 200px;
     text-align: center; }
+
+.s-history-detail .history-view {
+  padding: 0 20px; }
+.s-history-detail h1 {
+  text-align: center;
+  font-size: 30px;
+  margin: 30px 0; }
+.s-history-detail h2 {
+  line-height: 20px;
+  margin: 1em 0; }
+  .s-history-detail h2.date {
+    text-align: right; }
+.s-history-detail .process-bar {
+  width: 100%;
+  height: 30px;
+  background: wheat;
+  display: block;
+  border-radius: 20px; }
+  .s-history-detail .process-bar .inner {
+    width: 100%;
+    height: 30px;
+    background: green;
+    display: inline-block;
+    border-radius: 20px;
+    text-align: center;
+    line-height: 30px; }
+  .s-history-detail .process-bar .total {
+    display: inline-block;
+    height: 30px;
+    vertical-align: top;
+    line-height: 30px;
+    text-align: center; }
+.s-history-detail .members label {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-size: 100%;
+  line-height: 50px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin: 5px;
+  border: 1px solid #e0dee1; }
+  .s-history-detail .members label.paid p {
+    background-color: #ACC088; }
+  .s-history-detail .members label p {
+    position: absolute;
+    bottom: -1px;
+    left: 8px;
+    width: 100%;
+    text-align: center;
+    height: 20px;
+    line-height: 20px;
+    -webkit-transform: rotate(-22deg);
+    transform: rotate(-22deg);
+    font-size: 12px;
+    background-color: #d8d8d8; }
 
 .animated {
   -webkit-animation-duration: 10s;

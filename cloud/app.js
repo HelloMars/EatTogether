@@ -237,6 +237,15 @@ app.post('/abup', function(req, res) {
     });
 });
 
+app.post('/finishabup', function(req, res) {
+    utils.FinishABup(req.AV.user, req.body.historyId).then(function(ret){
+        res.jsonp(ret);
+    }, function(error) {
+        console.log('Finish ABUp Error: ' + JSON.stringify(error));
+        res.send('Finish ABUp Error');
+    });
+});
+
 /**
  * ABDown Bill 是一种自上而下的筹款模式
  * 买单者直接输入每个团员应该支付的额度，直接结账，参团团员根据通知校验金额
@@ -257,6 +266,21 @@ app.post('/revertHistory', function(req, res) {
     }, function(error) {
         console.log('RevertHistory Error: ' + JSON.stringify(error));
         res.send('RevertHistory Error');
+    });
+});
+
+app.get('/historyDetail', function(req, res) {
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return utils.FormatHistoryDetail(req.query.historyId);
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function(hist) {
+        res.jsonp(hist);
+    }, function(error) {
+        console.log('TuanDetail Error: ' + JSON.stringify(error));
+        res.send('TuanDetail Error');
     });
 });
 

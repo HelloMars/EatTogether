@@ -79,6 +79,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.curTotal = res.members.length;
             $scope.notMember = 0;
             $scope.numberErr = false;
+            $scope.abMode = false;
 
             $scope.members.forEach(function(member) {
                 member.avatarBg = {
@@ -104,9 +105,20 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 }).map(function (member) {
                     return member.uid;
                 });
-                tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
-                    $location.url('/tuan/' + $scope.tuanId + '/members/');
-                });
+                if ($scope.abMode) {
+                    tuan.abupBill($scope.tuanId, members, $scope.totalMoney).then(function(res) {
+                        alert(res.message);
+                        if (res.code === 0) {
+                            $location.url('/tuan/' + $scope.tuanId + '/history/' + res.historyId);
+                        } else {
+                            $location.url('/tuan/' + $scope.tuanId + '/members/');
+                        }
+                    });
+                } else {
+                    tuan.bill($scope.tuanId, members, $scope.notMember, $scope.totalMoney).then(function(res) {
+                        $location.url('/tuan/' + $scope.tuanId + '/members/');
+                    });
+                }
             };
             $scope.cancel = function () {
                     $location.url('/tuan/' + $scope.tuanId + '/members/');
@@ -154,8 +166,8 @@ eatTogetherControllers.controller('TuanIndexCtrl', ['$scope', '$routeParams', 't
 ]);
 
 /** 饭团历史 */
-eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan',
-    function ($scope, $routeParams, tuan) {
+eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
         $scope.loaded = false;
         $scope.column = 4;
         $scope.tuanId = $routeParams.tuanId;
@@ -176,6 +188,49 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
         $scope.revert = function ( history) {
             tuan.revertHistory($scope.tuanId, history.id).then(function (res) {
                 history.deleted = true;
+            });
+        };
+        $scope.goDetail = function (historyId) {
+            console.log(historyId);
+            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + historyId);
+        };
+    }
+
+]);
+
+/** 饭团历史详情 */
+
+eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location',
+    function ($scope, $routeParams, tuan, $location) {
+        $scope.loaded = false;
+        $scope.column = 4;
+        $scope.tuanId = $routeParams.tuanId;
+        $scope.historyId = $routeParams.historyId;
+        tuan.getHistoryDetail($scope.tuanId, $scope.historyId)
+        .then(function (res) {
+            angular.extend($scope, res);
+            $scope.members.forEach(function(member) {
+                member.avatarBg = {
+                    'background-image' : 'url(' + member.headimgurl + ')'
+                };
+                member.moneyBgc = {
+                    'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
+                };
+            });
+            $scope.processbarStyle = {
+                'width' : (res.percent * 100 ) + '%'
+            };
+            $scope.processbarStyleTotal = {
+                'width' : (1 - res.percent) * 100 + '%'
+            };
+            $scope.loaded = true;
+        });
+        $scope.cancelAbBill = function () {
+            tuan.finishABUp($scope.historyId).then(function (res) {
+                alert(res.message);
+                if (res.code === 0) {
+                    $location.url('/tuan/' + $scope.tuanId + '/history');
+                }
             });
         };
     }

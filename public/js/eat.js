@@ -38,6 +38,10 @@
                     templateUrl: './html/tuanHistory.html',
                     controller: 'TuanHistoryCtrl'
                 }).
+                when('/tuan/:tuanId/history/:historyId', {
+                    templateUrl: './html/tuanHistoryDetail.html',
+                    controller: 'TuanHistoryDetailCtrl'
+                }).
                 when('/tuan/:tuanId/home', {
                     templateUrl: './html/tuanIndex.html',
                     controller: 'TuanIndexCtrl'

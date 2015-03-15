@@ -90,9 +90,9 @@ var HISTORY_TYPE = {
     'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
     'BILL': 10,             // 消费记录。date, username 请大家(members.length+othersnum 人)消费了 money
     'REVERT_BILL': 11,      // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
-    'ABUP_BILL': 12,        // 正在进行的ABUp消费
-    'FINISH_ABUP': 13,      // 结束的ABUp消费
-    'REVERT_ABUP': 14,      // 撤销的ABUp消费
+    'ABUP_BILL': 12,        // 正在进行的ABUp消费。date, username 发起了一次(members.length 人)筹款消费
+    'FINISH_ABUP': 13,      // 结束的ABUp消费。date, username 发起的筹款消费已结束
+    'REVERT_ABUP': 14,      // 撤销的ABUp消费。date, username 发起了筹款消费 (已撤销)
     'ABDOWN_BILL': 16,      // 正在进行的ABDown消费
     'FINISH_ABDOWN': 17,    // 结束的ABDown消费
     'REVERT_ABDOWN': 18     // 撤销的ABDown消费
@@ -118,6 +118,7 @@ if (__local) {
     TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
+    TEMPID_ABUP = '0f28QRi1lt9X7NS0pw5-6pe-ZBWi3_q0osuBLjffYwM';
 
     USER_STATE = 1;
 
@@ -226,29 +227,33 @@ exports.getTuanObj = function(tuanid) {
 exports.getUserTuanObj = function(requser, tuanid) {
     var promise = new AV.Promise();
 
-    requser.fetch().then(function(user) {
-        exports.getTuanObj(tuanid).then(function(tuan) {
-            var query = new AV.Query(exports.Account);
-            query.equalTo('user', user);
-            query.equalTo('tuan', tuan);
-            query.find().then(function(accounts) {
-                if (accounts.length == 0) {
-                    promise.resolve({
-                        'user':user, 'tuan':tuan,
-                        'isin': false
-                    });
-                } else if (accounts.length == 1) {
-                    promise.resolve({
-                        'user':user, 'tuan':tuan,
-                        'account':accounts[0],
-                        'isin':(accounts[0].get('state') != -1)
-                    });
-                } else {
-                    promise.reject('Account Results Error');
-                }
-            });
-        })
-    });
+    if (requser) {
+        requser.fetch().then(function (user) {
+            exports.getTuanObj(tuanid).then(function (tuan) {
+                var query = new AV.Query(exports.Account);
+                query.equalTo('user', user);
+                query.equalTo('tuan', tuan);
+                query.find().then(function (accounts) {
+                    if (accounts.length == 0) {
+                        promise.resolve({
+                            'user': user, 'tuan': tuan,
+                            'isin': false
+                        });
+                    } else if (accounts.length == 1) {
+                        promise.resolve({
+                            'user': user, 'tuan': tuan,
+                            'account': accounts[0],
+                            'isin': (accounts[0].get('state') != -1)
+                        });
+                    } else {
+                        promise.reject('Account Results Error');
+                    }
+                });
+            })
+        });
+    } else {
+        promise.reject('Please ReLogin');
+    }
     return promise;
 };
 
@@ -554,12 +559,35 @@ exports.FormatTuanDetail = function (tuanobj) {
                 'name': user.get('nickname'),
                 'sex': user.get('sex'),
                 'headimgurl': formatHeadImgUrl(user, 132),
-                'money': formatFloat(results[i].get('money'))
+                'money': formatFloat(results[i].get('money')),
+                'subscribed': user.get('state') > 0
             });
         }
         tuan.members = members;
         tuan.qrcode = qrcode.url;
         return AV.Promise.as(tuan);
+    });
+};
+
+exports.FormatHistoryDetail = function (historyId) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(historyId).then(function(history) {
+        var ret = {
+            'id': history.id,
+            'type': history.get('type'),
+            'date': history.createdAt.toISOString().replace(/T.+/, '')
+        };
+        switch (history.get('type')) {
+            case HISTORY_TYPE.BILL:
+            case HISTORY_TYPE.REVERT_BILL:
+                return formatAAHistory(history, ret);
+            case HISTORY_TYPE.ABUP_BILL:
+            case HISTORY_TYPE.FINISH_ABUP:
+            case HISTORY_TYPE.REVERT_ABUP:
+                return formatABUpHistory(history, ret);
+            default :
+                return AV.Promise.error('Unknown Type');
+        }
     });
 };
 
@@ -628,7 +656,7 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
         var historyQuery = new AV.Query(exports.TuanHistory);
         historyQuery.equalTo('tuan', tuan);
         historyQuery.equalTo('type', HISTORY_TYPE.ABUP_BILL);
-        historyQuery.find().then(function(results) {
+        return historyQuery.find().then(function(results) {
             var ret = {};
             ret.code = -1;
             if (results.length == 0) {
@@ -643,6 +671,7 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                 return query.find().then(function(results) {
                     // 生成消费记录
                     var tuanHistory = new exports.TuanHistory();
+                    tuanHistory.fetchWhenSave(true);
                     tuanHistory.set('creater', user);
                     tuanHistory.set('tuan', tuan);
                     tuanHistory.set('type', HISTORY_TYPE.ABUP_BILL);
@@ -661,9 +690,12 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
                         results[i].increment('news');
                         results[i].save();
                     }
-                    ret.code = 0;
-                    ret.message = 'Success';
-                    return AV.Promise.as(ret);
+                    return tuanHistory.save().then(function() {
+                        ret.code = 0;
+                        ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
+                        ret.historyId = tuanHistory.id;
+                        return AV.Promise.as(ret);
+                    });
                 });
             } else if (results.length == 1) {
                 ret.message = '该团还有尚未完成的筹款消费';
@@ -677,66 +709,133 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
     }
 };
 
+// 如果是提前完成，则需要清除所有人的abbill状态
+exports.FinishABup = function (requser, historyId) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(historyId).then(function(history) {
+        var ret = {};
+        ret.code = -1;
+        if (history.get('creater').id == requser.id) {
+            // 有权Finish
+            history.set('type', HISTORY_TYPE.FINISH_ABUP);
+            // 清除所有人的abbill状态
+            var userlist = [];
+            var data = history.get('data');
+            for (var i = 0; i < data.members.length; i++) {
+                if (data.prices[i] == 0) {
+                    userlist.push(data.members[i]);
+                }
+            }
+            if (userlist.length > 0) {
+                // 嵌套查询
+                var userQuery = new AV.Query(AV.User);
+                userQuery.containedIn("objectId", userlist);
+                var query = new AV.Query(exports.Account);
+                query.equalTo('tuan', history.get('tuan'));
+                // 不约束state!=-1
+                query.matchesQuery('user', userQuery);
+                query.find().then(function(accounts) {
+                    for (var i = 0; i < accounts.length; i++) {
+                        accounts[i].set('abbill', null);
+                        accounts[i].save();
+                    }
+                });
+            }
+            history.save();
+            ret.code = 0;
+            ret.message = '关闭成功';
+            return AV.Promise.as(ret);
+        } else {
+            // 无权(其实每个团员都可以Finish，前端给出提示避免误操作即可)
+            ret.message = '您不是创建者，无权关闭';
+            return AV.Promise.as(ret);
+        }
+    });
+};
+
 exports.RevertHistory = function(user, tuan, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
-    query.equalTo('type', HISTORY_TYPE.BILL);
+    query.containedIn('type', [HISTORY_TYPE.BILL, HISTORY_TYPE.ABUP_BILL, HISTORY_TYPE.FINISH_ABUP]);
     query.descending("createdAt");
     query.limit(1);
     return query.first().then(function(history) {
-        if (history && history.id == historyId && history.get('type') == HISTORY_TYPE.BILL) {
-            // 只能修改最近一次消费的记录
-            var data = history.get('data');
-            var othersnum = data.othersnum;
-            var price = data.money;
-            var members = data.members;
-
-            var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
-
-            // 嵌套查询
-            var userQuery = new AV.Query(AV.User);
-            userQuery.containedIn("objectId", members);
-            var query = new AV.Query(exports.Account);
-            query.equalTo('tuan', tuan);
-            // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
-            query.include('user');
-            query.matchesQuery('user', userQuery);
-            return query.find().then(function(results) {
-                // 撤销团员扣款
-                var promises = [];
-                for (var i = 0; i < results.length; i++) {
-                    results[i].increment('money', avg);
-                    if (results[i].get('user').id != user.id) {
-                        // 给其他成员发送模板消息
-                        //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
-                    }
-                    promises.push(results[i].save());
+        // 只能修改最近一次消费的记录
+        if (history && history.id == historyId) {
+            var data, usermap, i;
+            if (history.get('type') == HISTORY_TYPE.BILL) {
+                // 撤销 AA Bill
+                data = history.get('data');
+                var avg = Math.ceil(data.money * 100 / (data.members.length + data.othersnum)) / 100;
+                usermap = {};
+                for (i = 0; i < data.members.length; i++) {
+                    usermap[data.members[i]] = avg;
                 }
-                // 撤销买单者账单(注意这里的买单者不是user，而是history里的creater)
-                var accountQuery = new AV.Query(exports.Account);
-                accountQuery.equalTo('tuan', tuan);
-                accountQuery.equalTo('user', history.get('creater'));
-                // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
-                return accountQuery.first().then(function(account) {
-                    if (account) {
-                        account.increment('money', -avg * members.length);
-                        promises.push(account.save());
-                        return AV.Promise.when(promises);
-                    } else {
-                        return AV.Promise.error('Can\'t find payer');
-                    }
+                return revert(history.get('creater'), tuan, usermap).then(function() {
+                    // 修改消费记录类型
+                    history.set('type', HISTORY_TYPE.REVERT_BILL);
+                    return history.save();
                 });
-            }).then(function() {
-                // 修改消费记录
-                history.set('type', HISTORY_TYPE.REVERT_BILL);
-                return history.save();
-            });
+            } else if (history.get('type') == HISTORY_TYPE.ABUP_BILL || history.get('type') == HISTORY_TYPE.FINISH_ABUP) {
+                // 撤销 ABUp
+                data = history.get('data');
+                usermap = {};
+                for (i = 0; i < data.members.length; i++) {
+                    usermap[data.members[i]] = data.prices[i];
+                }
+                return revert(history.get('creater'), tuan, usermap).then(function() {
+                    // 修改消费记录类型
+                    history.set('type', HISTORY_TYPE.REVERT_ABUP);
+                    return history.save();
+                });
+            }
         } else {
             console.log('history: %j', history);
             return AV.Promise.error('Invalid Parameters');
         }
     });
 };
+
+// 撤销消费记录(注意这里的user是history里的creater)
+function revert(user, tuan, usermap) {
+    // 嵌套查询
+    var userQuery = new AV.Query(AV.User);
+    userQuery.containedIn("objectId", Object.keys(usermap));
+    var query = new AV.Query(exports.Account);
+    query.equalTo('tuan', tuan);
+    // 撤销时候依旧返还已经离开团的成员，所以不约束state!=-1
+    query.include('user');
+    query.matchesQuery('user', userQuery);
+    return query.find().then(function (results) {
+        // 撤销团员扣款
+        var sum = 0;
+        var promises = [];
+        for (var i = 0; i < results.length; i++) {
+            var uid = results[i].get('user').id;
+            results[i].increment('money', usermap[uid]);
+            sum += usermap[uid];
+            if (uid != user.id) {
+                // 给其他成员发送模板消息
+                //sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+            }
+            promises.push(results[i].save());
+        }
+        // 撤销买单者账单(注意这里的买单者是history里的creater)
+        var accountQuery = new AV.Query(exports.Account);
+        accountQuery.equalTo('tuan', tuan);
+        accountQuery.equalTo('user', user);
+        // 撤销时候买单者可能已经离开该团，所以不约束state!=-1
+        return accountQuery.first().then(function (account) {
+            if (account) {
+                account.increment('money', -sum);
+                promises.push(account.save());
+                return AV.Promise.when(promises);
+            } else {
+                return AV.Promise.error('Can\'t find payer');
+            }
+        });
+    });
+}
 
 exports.GetTuanHistory = function(user, tuan, start, length) {
     var tuanHistory = [];
@@ -748,7 +847,7 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     return query.find().then(function(results) {
         var found = false;
         for (var i = 0; i < results.length; i++) {
-            if (!found && results[i].get('type') == HISTORY_TYPE.BILL) {
+            if (!found && isRevertable(results[i].get('type'))) {
                 tuanHistory.push(formatTuanHistory(user, results[i], true));
                 found = true;
             } else {
@@ -759,8 +858,8 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
     });
 };
 
-// 获取用户正在进行的ABUp Bill
-exports.GetABUpBill = function(username) {
+// 获取用户正在进行ABUp Bill的Accounts
+exports.GetABUpAccounts = function(username) {
     // 嵌套查询
     var userQuery = new AV.Query(AV.User);
     userQuery.equalTo("username", username);
@@ -779,17 +878,65 @@ exports.GetABUpBill = function(username) {
     });
 };
 
-// 获取用户正在进行的ABUp Bill
-exports.FetchABUpBill = function(account) {
-    var promise = new AV.Promise();
-    account.get('abbill').fetch().then(function(history) {
-        history.get('creater').fetch().then(function(creater) {
-            promise.resolve([creater, history]);
+// 清算用户正在进行的ABUp Bill
+exports.ClearABUpBill = function(account, money) {
+    // accounts[0]是买单人在该团的账户
+    // account是正在清算的交款人
+    // 给accounts[0]加钱，给account扣款清状态，并修改history状态
+    // 给买单者记总账，给该团记总帐
+    return account.get('abbill').fetch().then(function(history) {
+        var query = new AV.Query(exports.Account);
+        query.equalTo('user', history.get('creater'));
+        query.equalTo('tuan', account.get('tuan'));
+        query.include('user');
+        query.include('tuan');
+        return query.find().then(function(accounts) {
+            if (accounts.length == 0) {
+                return AV.Promise.error('Account Results Error');
+            } else if (accounts.length == 1) {
+                accounts[0].increment('money', money);
+                account.increment('money', -money);
+                account.set('abbill', null);
+                var data = history.get('data');
+                var sum = 0;
+                var everyone = true;
+                for (var i = 0; i < data.members.length; i++) {
+                    if (data.members[i] == account.get('user').id) {
+                        // 在历史中记录扣款人的付款
+                        data.prices[i] = money;
+                    }
+                    if (data.prices[i] == 0) {
+                        everyone = false;
+                    } else {
+                        sum += data.prices[i];
+                    }
+                }
+                // 如果已经收齐款(总价格达到或没有总价格但每个人都已交款)，则自动finish
+                if (data.money) {
+                    if (sum >= data.money) {
+                        history.set('type', HISTORY_TYPE.FINISH_ABUP);
+                    }
+                } else if (everyone) {
+                    history.set('type', HISTORY_TYPE.FINISH_ABUP);
+                }
+                // 给买单者记总账
+                var user = accounts[0].get('user');
+                user.increment('money', money);
+                accounts[0].set('user', user);
+                // 给该团记总账
+                var tuan = accounts[0].get('tuan');
+                tuan.increment('money', money);
+                accounts[0].set('tuan', tuan);
+                history.set('data', data);
+                return AV.Promise.when(
+                    accounts[0].save(),
+                    account.save(),
+                    history.save());
+            } else {
+                return AV.Promise.error('Account Results Error');
+            }
         });
-    }, function(error) {
-        promise.reject(error);
     });
-    return promise;
 };
 
 // 带缓存的QRCode
@@ -845,13 +992,13 @@ function modifyUserInfo(user, userinfo) {
     });
 }
 
-function formatTuanHistory(user, history, enableRevert) {
+function formatTuanHistory(user, history, revertable) {
     var type = history.get('type');
     var data = history.get('data');
     var ret = {
         'id': history.id,
         'type': type,
-        'enableRevert': enableRevert,
+        'revertable': revertable,
         'data': data,
         'date': history.createdAt.toISOString().replace(/T.+/, '')
     };
@@ -891,6 +1038,65 @@ function formatTuan(tuanobj, news) {
     return tuan;
 }
 
+function formatAAHistory(history, ret) {
+    var data = history.get('data');
+    ret.money = data.money;
+    ret.othersnum = data.othersnum;
+
+    var userQuery = new AV.Query(AV.User);
+    userQuery.containedIn("objectId", data.members);
+    return userQuery.find().then(function(users) {
+        var members = [];
+        for (var i = 0; i < users.length; i++) {
+            members.push({
+                'uid': users[i].id,
+                'name': users[i].get('nickname'),
+                'sex': users[i].get('sex'),
+                'headimgurl': formatHeadImgUrl(users[i], 132)
+            });
+        }
+        ret.members = members;
+        return AV.Promise.as(ret);
+    });
+}
+
+function formatABUpHistory(history, ret) {
+    var data = history.get('data');
+    ret.money = data.money;
+
+    var sum = 0;
+    var zeronum = 0;
+    var usermap = {};
+    for (var i = 0; i < data.members.length; i++) {
+        usermap[data.members[i]] = data.prices[i];
+        if (data.prices[i] == 0) zeronum++;
+        else sum += data.prices[i];
+    }
+    if (data.money) {
+        ret.percent = Math.min(sum/data.money, 1);
+    } else {
+        ret.percent = 1-zeronum/data.members.length;
+    }
+    ret.sum = sum;
+
+    var userQuery = new AV.Query(AV.User);
+    userQuery.containedIn("objectId", data.members);
+    return userQuery.find().then(function(users) {
+        var members = [];
+        for (var i = 0; i < users.length; i++) {
+            members.push({
+                'uid': users[i].id,
+                'name': users[i].get('nickname'),
+                'sex': users[i].get('sex'),
+                'headimgurl': formatHeadImgUrl(users[i], 132),
+                'money': formatFloat(usermap[users[i].id])
+            });
+        }
+        ret.members = members;
+        return AV.Promise.as(ret);
+    });
+}
+
 function formatFloat(float) {
     return float.toFixed(2);
 }
@@ -909,6 +1115,10 @@ function formatHeadImgUrl(user, size) {
     } else {
         return headimgurl;
     }
+}
+
+function isRevertable(type) {
+    return type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.ABUP_BILL || type == HISTORY_TYPE.FINISH_ABUP;
 }
 
 function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
@@ -950,6 +1160,37 @@ function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
     var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
     var topcolor = '#FF0000'; // 顶部颜色
     API.sendTemplate(openid, TEMPID_BILL, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTempABUp(fromUser, toUser, tuan, number) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        },
+        number: {
+            "value": number,
+            "color": "#173177"
+        }
+    };
+    var username = toUser.get('username');
+    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPID_ABUP, null, topcolor, data, function(err, data, res) {
         if (err) {
             console.log('SendTemplate Error %j', err);
         } else {
