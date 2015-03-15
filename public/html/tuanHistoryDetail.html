@@ -3,7 +3,7 @@
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <div class="history-view" ng-show="loaded">
         <h1>今天我买单<span ng-show="type == 13">(已完成)</span><span ng-show="type == 14">(已撤销)</span></h1>
-        <h2>聚餐日期：{{date}}</h2>
+        <h2 class="date">{{date}}</h2>
         <div class="members">
             <label ng-class="{paid : member.money != 0}" ng-style="member.avatarBg"  ng-repeat="member in members">
                 <p>{{member.money}}</p>

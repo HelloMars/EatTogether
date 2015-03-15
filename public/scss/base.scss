@@ -292,6 +292,9 @@ $width:270px;
     h2{
         line-height: 20px;
         margin: 1em 0;
+        &.date{
+            text-align: right;
+        }
     }
     .process-bar{
         width: 100%;
