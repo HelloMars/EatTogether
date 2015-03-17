@@ -225,8 +225,8 @@ exports.getTuanObj = function(tuanid) {
 };
 
 exports.getUserTuanObj = function(requser, tuanid) {
+    console.time("getUserTuanObj");
     var promise = new AV.Promise();
-
     if (requser) {
         requser.fetch().then(function (user) {
             exports.getTuanObj(tuanid).then(function (tuan) {
@@ -234,6 +234,7 @@ exports.getUserTuanObj = function(requser, tuanid) {
                 query.equalTo('user', user);
                 query.equalTo('tuan', tuan);
                 query.find().then(function (accounts) {
+                    console.timeEnd("getUserTuanObj");
                     if (accounts.length == 0) {
                         promise.resolve({
                             'user': user, 'tuan': tuan,
@@ -539,6 +540,7 @@ exports.ModifyTuan = function(user, tuan, infoJson) {
 };
 
 exports.FormatTuanDetail = function (tuanobj) {
+    console.time("FormatTuanDetail");
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
@@ -565,6 +567,7 @@ exports.FormatTuanDetail = function (tuanobj) {
         }
         tuan.members = members;
         tuan.qrcode = qrcode.url;
+        console.timeEnd("FormatTuanDetail");
         return AV.Promise.as(tuan);
     });
 };
