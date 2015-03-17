@@ -163,7 +163,7 @@ exports.Init = function() {
     //addConfig('TuanNameList', {'TuanNameList':['创业','前端','后端','运营','全栈','编辑','西游记','八戒','悟空','沙僧','唐僧']});
 };
 
-exports.getJsConfig = function(url) {
+exports.getJsConfig = wrapper(function(url) {
     var promise = new AV.Promise();
     var param = {
         debug: false,
@@ -179,9 +179,9 @@ exports.getJsConfig = function(url) {
         }
     });
     return promise;
-};
+}, 'getJsConfig');
 
-exports.getUserInfo = function(code) {
+exports.getUserInfo = wrapper(function(code) {
     var promise = new AV.Promise();
     OAUTH.getAccessToken(code, function(err, result) {
         if (err) {
@@ -200,9 +200,9 @@ exports.getUserInfo = function(code) {
         }
     });
     return promise;
-};
+}, 'getUserInfo');
 
-exports.getTuanObj = function(tuanid) {
+exports.getTuanObj = wrapper(function(tuanid) {
     var promise = new AV.Promise();
 
     var id = Number(tuanid);
@@ -222,10 +222,9 @@ exports.getTuanObj = function(tuanid) {
         promise.reject('Invalid Parameters');
     }
     return promise;
-};
+}, 'getTuanObj');
 
-exports.getUserTuanObj = function(requser, tuanid) {
-    console.time("getUserTuanObj");
+exports.getUserTuanObj = wrapper(function(requser, tuanid) {
     var promise = new AV.Promise();
     if (requser) {
         requser.fetch().then(function (user) {
@@ -234,7 +233,6 @@ exports.getUserTuanObj = function(requser, tuanid) {
                 query.equalTo('user', user);
                 query.equalTo('tuan', tuan);
                 query.find().then(function (accounts) {
-                    console.timeEnd("getUserTuanObj");
                     if (accounts.length == 0) {
                         promise.resolve({
                             'user': user, 'tuan': tuan,
@@ -256,10 +254,10 @@ exports.getUserTuanObj = function(requser, tuanid) {
         promise.reject('Please ReLogin');
     }
     return promise;
-};
+}, 'getUserTuanObj');
 
 // 订阅公众号
-exports.Subscribe = function(openid) {
+exports.Subscribe = wrapper(function(openid) {
     return Signup(openid, 'pwd:'+openid, USER_STATE).then(function(user) {
         console.log("注册成功: %j", user);
         return AV.Promise.as(user);
@@ -278,16 +276,16 @@ exports.Subscribe = function(openid) {
             return AV.Promise.error(error);
         }
     });
-};
+}, 'Subscribe');
 
 // 取消订阅
-exports.UnSubscribe = function(openid) {
+exports.UnSubscribe = wrapper(function(openid) {
     var query = new AV.Query(AV.User);
     query.equalTo('username', openid);
     return query.first().then(function(user) {
         return disableUser(user);
     });
-};
+}, 'UnSubscribe');
 
 function Signup(username, password, flag) {
     if (username === undefined || password === undefined) {
@@ -308,7 +306,7 @@ function Signup(username, password, flag) {
     return user.signUp();
 }
 
-exports.Login = function(username, password, userinfo) {
+exports.Login = wrapper(function(username, password, userinfo) {
     var promise = new AV.Promise();
     AV.User.logIn(username, password, {
         success: function(user) {
@@ -347,10 +345,10 @@ exports.Login = function(username, password, userinfo) {
         }
     });
     return promise;
-};
+}, 'Login');
 
 /** 获取用户对应的团信息以及用户信息 */
-exports.GetTuanList = function(user) {
+exports.GetTuanList = wrapper(function(user) {
     var promise = new AV.Promise();
 
     var ret = {};
@@ -370,9 +368,9 @@ exports.GetTuanList = function(user) {
     });
 
     return promise;
-};
+}, 'GetTuanList');
 
-exports.CreateTuan = function(user) {
+exports.CreateTuan = wrapper(function(user) {
     var query = new AV.Query(exports.Config);
     query.equalTo('key', 'TuanNameList');
     return query.first().then(function(result) {
@@ -403,10 +401,10 @@ exports.CreateTuan = function(user) {
         var query = new AV.Query(exports.Tuan);
         return query.get(tuan.id);
     });
-};
+}, 'CreateTuan');
 
 // 创建一条Account或激活原来的Account
-exports.JoinTuan = function(user, tuan, account) {
+exports.JoinTuan = wrapper(function(user, tuan, account) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
     query.notEqualTo('state', -1);
@@ -453,10 +451,10 @@ exports.JoinTuan = function(user, tuan, account) {
         }
         return account.save();
     });
-};
+}, 'JoinTuan');
 
 // 关闭一条Account
-exports.DisableAccount = function(user, tuan, account) {
+exports.DisableAccount = wrapper(function(user, tuan, account) {
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuan);
     query.notEqualTo('state', -1);
@@ -508,9 +506,9 @@ exports.DisableAccount = function(user, tuan, account) {
             return AV.Promise.error('Invalid Parameters');
         }
     });
-};
+}, 'DisableAccount');
 
-exports.ModifyTuan = function(user, tuan, infoJson) {
+exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
     var modified = false;
     if (infoJson && infoJson.name) {
         // 生成修改记录
@@ -537,10 +535,9 @@ exports.ModifyTuan = function(user, tuan, infoJson) {
     } else {
         return AV.Promise.as(tuan);
     }
-};
+}, 'ModifyTuan');
 
-exports.FormatTuanDetail = function (tuanobj) {
-    console.time("FormatTuanDetail");
+exports.FormatTuanDetail = wrapper(function (tuanobj) {
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
@@ -567,12 +564,11 @@ exports.FormatTuanDetail = function (tuanobj) {
         }
         tuan.members = members;
         tuan.qrcode = qrcode.url;
-        console.timeEnd("FormatTuanDetail");
         return AV.Promise.as(tuan);
     });
-};
+}, 'FormatTuanDetail');
 
-exports.FormatHistoryDetail = function (historyId) {
+exports.FormatHistoryDetail = wrapper(function (historyId) {
     var query = new AV.Query(exports.TuanHistory);
     return query.get(historyId).then(function(history) {
         var ret = {
@@ -592,13 +588,13 @@ exports.FormatHistoryDetail = function (historyId) {
                 return AV.Promise.error('Unknown Type');
         }
     });
-};
+}, 'FormatHistoryDetail');
 
 /** AA 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
  */
-exports.Bill = function(user, tuan, account, members, othersnum, price) {
+exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) {
     if (members && members.length > 0 && othersnum >= 0 && othersnum < 100 && price >= 0 && price < 5000) {
         var avg = Math.ceil(price * 100 / (members.length + othersnum)) / 100;
 
@@ -650,10 +646,10 @@ exports.Bill = function(user, tuan, account, members, othersnum, price) {
     } else {
         return AV.Promise.error('Invalid Parameters');
     }
-};
+}, 'Bill');
 
 /** ABUp 买单 */
-exports.ABUpBill = function(user, tuan, account, members, price) {
+exports.ABUpBill = wrapper(function(user, tuan, account, members, price) {
     if (members && members.length > 0) {
         // 一个团中只允许有一个正在进行的ABUpBill
         var historyQuery = new AV.Query(exports.TuanHistory);
@@ -710,10 +706,10 @@ exports.ABUpBill = function(user, tuan, account, members, price) {
     } else {
         return AV.Promise.error('Invalid Parameters');
     }
-};
+}, 'ABUpBill');
 
 // 如果是提前完成，则需要清除所有人的abbill状态
-exports.FinishABup = function (requser, historyId) {
+exports.FinishABup = wrapper(function (requser, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     return query.get(historyId).then(function(history) {
         var ret = {};
@@ -754,9 +750,9 @@ exports.FinishABup = function (requser, historyId) {
             return AV.Promise.as(ret);
         }
     });
-};
+}, 'FinishABup');
 
-exports.RevertHistory = function(user, tuan, historyId) {
+exports.RevertHistory = wrapper(function(user, tuan, historyId) {
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
     query.containedIn('type', [HISTORY_TYPE.BILL, HISTORY_TYPE.ABUP_BILL, HISTORY_TYPE.FINISH_ABUP]);
@@ -797,7 +793,7 @@ exports.RevertHistory = function(user, tuan, historyId) {
             return AV.Promise.error('Invalid Parameters');
         }
     });
-};
+}, 'RevertHistory');
 
 // 撤销消费记录(注意这里的user是history里的creater)
 function revert(user, tuan, usermap) {
@@ -840,7 +836,7 @@ function revert(user, tuan, usermap) {
     });
 }
 
-exports.GetTuanHistory = function(user, tuan, start, length) {
+exports.GetTuanHistory = wrapper(function(user, tuan, start, length) {
     var tuanHistory = [];
     var query = new AV.Query(exports.TuanHistory);
     query.equalTo('tuan', tuan);
@@ -859,10 +855,10 @@ exports.GetTuanHistory = function(user, tuan, start, length) {
         }
         return AV.Promise.as(tuanHistory);
     });
-};
+}, 'GetTuanHistory');
 
 // 获取用户正在进行ABUp Bill的Accounts
-exports.GetABUpAccounts = function(username) {
+exports.GetABUpAccounts = wrapper(function(username) {
     // 嵌套查询
     var userQuery = new AV.Query(AV.User);
     userQuery.equalTo("username", username);
@@ -879,10 +875,10 @@ exports.GetABUpAccounts = function(username) {
         }
         return AV.Promise.as(accounts);
     });
-};
+}, 'GetABUpAccounts');
 
 // 清算用户正在进行的ABUp Bill
-exports.ClearABUpBill = function(account, money) {
+exports.ClearABUpBill = wrapper(function(account, money) {
     // accounts[0]是买单人在该团的账户
     // account是正在清算的交款人
     // 给accounts[0]加钱，给account扣款清状态，并修改history状态
@@ -940,7 +936,7 @@ exports.ClearABUpBill = function(account, money) {
             }
         });
     });
-};
+}, 'ClearABUpBill');
 
 // 带缓存的QRCode
 function getQRCode(tuan) {
@@ -1227,4 +1223,14 @@ function sendTemplate(tempId, fromUser, toUser, tuan) {
             console.log('SendTemplate Success: %j, %j', data, res);
         }
     });
+}
+
+function wrapper(callback, name) {
+    return function() {
+        console.time(name);
+        return callback.apply(null, arguments).then(function(res) {
+            console.timeEnd(name);
+            return AV.Promise.as(res);
+        });
+    };
 }
