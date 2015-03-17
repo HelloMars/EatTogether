@@ -551,6 +551,9 @@ exports.FormatTuanDetail = wrapper(function (tuanobj) {
     query.include('user');
     return AV.Promise.when(query.find(), getQRCode(tuanobj)).then(function(results, qrcode) {
         var members = [];
+        results.sort(function(a, b) {
+            return a.get('money') - b.get('money');
+        });
         for (var i = 0; i < results.length; i++) {
             var user = results[i].get('user');
             members.push({
