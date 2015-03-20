@@ -5,46 +5,9 @@ var WechatAPI = require('wechat-api');
 var WechatOAuth = require('wechat-oauth');
 
 exports.TOKEN = 'EatTogether';
-var APPID = 'wxdb12e53d561de28e';
-var APPSECRET = '2d36952cf863088f293d57f0d99449eb';
-
-var TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
-var TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
-var TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
-var TEMPID_ABUP = 'ew85SpSTqeFex47QTrX4jOnYZA_tI5GtJwvPoQZldyA';
-
-var APPID_JS = 'wx5296f7011ca92045';
-var APPSECRET_JS = 'de3f486b57ab015946eb8d4c473db192 ';
+var APPID, APPSECRET, API, OAUTH, TEMPID_BILL, TEMPID_JOIN, TEMPID_QUIT, TEMPID_ABUP, USER_STATE;
 
 var QRCODE_EXP = 1800;
-var USER_STATE = 2;
-
-var API = new WechatAPI(APPID, APPSECRET);
-var API_JS = new WechatAPI(APPID_JS, APPSECRET_JS);
-var OAUTH = new WechatOAuth(APPID, APPSECRET);
-var MENU_DEV = {
-    "button":[
-        {
-            "type":"view",
-            "name":"我的饭团",
-            "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
-        },
-        {
-            "name":"菜单",
-            "sub_button":[
-                {
-                    "type":"click",
-                    "name":"赞一下我们",
-                    "key":"V001_UP"
-                },
-                {
-                    "type":"view",
-                    "name":"快速进团",
-                    "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
-                }
-            ]
-        }]
-};
 
 var JSAPILIST = [
     'checkJsApi',
@@ -100,18 +63,54 @@ var HISTORY_TYPE = {
 
 exports.Config = AV.Object.extend("Config");
 
-exports.Tuan = AV.Object.extend("DEVTuan");
-exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
-exports.Account = AV.Object.extend("DEVAccount");
-
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
+
+    setTest();
+
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
     // 当前环境为「生产环境」，是线上正式运行的环境
     console.log('「生产环境」');
 
+    setOnline();
+
+    exports.SERVER = 'http://eat.avosapps.com/';
+} else {
+    // 当前环境为「测试环境」，云代码方法通过 HTTP 头部 X-AVOSCloud-Application-Production:0 来访问；webHosting 通过 dev.xxx.avosapps.com 域名来访问
+    console.log('「测试环境」');
+
+    setTest();
+
+    exports.SERVER = 'http://dev.eat.avosapps.com/';
+}
+
+var MENU_DEV = {
+    "button":[
+        {
+            "type":"view",
+            "name":"我的饭团",
+            "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
+        },
+        {
+            "name":"菜单",
+            "sub_button":[
+                {
+                    "type":"click",
+                    "name":"赞一下我们",
+                    "key":"V001_UP"
+                },
+                {
+                    "type":"view",
+                    "name":"快速进团",
+                    "url": OAUTH.getAuthorizeURL('http://dev.eat.avosapps.com/' + 'myet', '0', 'snsapi_userinfo')
+                }
+            ]
+        }]
+};
+
+function setOnline() {
     APPID = 'wx215f75c4627af14a';
     APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 
@@ -128,12 +127,25 @@ if (__local) {
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
     exports.Account = AV.Object.extend("Account");
+}
 
-    exports.SERVER = 'http://eat.avosapps.com/';
-} else {
-    // 当前环境为「测试环境」，云代码方法通过 HTTP 头部 X-AVOSCloud-Application-Production:0 来访问；webHosting 通过 dev.xxx.avosapps.com 域名来访问
-    console.log('「测试环境」');
-    exports.SERVER = 'http://dev.eat.avosapps.com/';
+function setTest() {
+    APPID = 'wxdb12e53d561de28e';
+    APPSECRET = '2d36952cf863088f293d57f0d99449eb';
+
+    TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
+    TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
+    TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
+    TEMPID_ABUP = 'ew85SpSTqeFex47QTrX4jOnYZA_tI5GtJwvPoQZldyA';
+
+    USER_STATE = 2;
+
+    API = new WechatAPI(APPID, APPSECRET);
+    OAUTH = new WechatOAuth(APPID, APPSECRET);
+
+    exports.Tuan = AV.Object.extend("DEVTuan");
+    exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
+    exports.Account = AV.Object.extend("DEVAccount");
 }
 
 function addConfig(key, value) {
@@ -170,7 +182,7 @@ exports.getJsConfig = wrapper(function(url) {
         jsApiList: JSAPILIST,
         url: url
     };
-    API_JS.getJsConfig(param, function(err, result) {
+    API.getJsConfig(param, function(err, result) {
         if (err) {
             promise.reject('getJsConfig Error');
         } else {
