@@ -22,6 +22,8 @@ tuanService.factory('tuan', ['$http',
 
             modTuanInfo : modTuanInfo,
 
+            setUserName : setUserName,
+
             bill: bill,
 
             abupBill: abupBill,
@@ -146,6 +148,19 @@ tuanService.factory('tuan', ['$http',
                 data: {
                     id : id,
                     info : jsonObj
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 修改用户昵称 */
+        function setUserName(nickname) {
+            var request = $http({
+                url: SERVER + 'setusername',
+                method: 'POST',
+                data: {
+                    nickname : nickname
                 }
             });
 

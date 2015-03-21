@@ -194,6 +194,22 @@ app.post('/modtuaninfo', function(req, res) {
     });
 });
 
+app.post('/setusername', function(req, res) {
+    if (req.body.nickname) {
+        req.AV.user.fetch().then(function (user) {
+            user.set('nickname', req.body.nickname);
+            return user.save();
+        }).then(function() {
+            res.send('Set User Name Success');
+        }, function(error) {
+            console.log('Set User Name Error: ' + JSON.stringify(error));
+            res.send('Set User Name Error');
+        });
+    } else {
+        res.send('Set User Name Error');
+    }
+});
+
 /**
  * AABill 是通常意义的AA制付款模式
  */
