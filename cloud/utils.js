@@ -309,7 +309,8 @@ function Signup(username, password, flag) {
 
     var user = new AV.User();
     user.set('username', username);
-    user.set('nickname', username.substring(username.length-4));
+    user.set('nickname', '__null__');
+    user.set('wxname', username.substring(username.length-4));
     user.set('password', password);
     user.set('state', flag);
     user.set('money', 0);
@@ -993,7 +994,12 @@ function disableUser(user) {
 
 function modifyUserInfo(user, userinfo) {
     if (userinfo.state) user.set('state', userinfo.state);
-    if (userinfo.nickname) user.set('nickname', userinfo.nickname);
+    if (userinfo.nickname) {
+        user.set('wxname', userinfo.nickname);
+        if (user.get('nickname') == '__null__') {
+            user.set('nickname', userinfo.nickname);
+        }
+    }
     if (userinfo.headimgurl) user.set('headimgurl', userinfo.headimgurl);
     if (userinfo.sex) user.set('sex', userinfo.sex);
     if (userinfo.location) user.set('location', userinfo.location);
