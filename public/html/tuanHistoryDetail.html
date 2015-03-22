@@ -28,7 +28,7 @@
             <h2 ng-show="money">筹款目标：{{money}} 元</h2>
             <h2>筹款完成百分比：{{percent * 100 + '%'}}</h2>
             <span class="process-bar"><span class="inner" ng-style="processbarStyle"><span ng-show="sum !== 0" class="sum">已筹{{sum}}元</span></span><span ng-style="processbarStyleTotal" class="total">{{(money - sum > 0) ? ('还差' + (money - sum) + '元') : ''}}</span></span>
-            <span class="circle-btn circle-btn-right cancel" ng-show="type == 12" ng-click="cancelAbBill()">结束筹款</span>
+            <span class="btn warn cancel" ng-show="type == 12" ng-click="cancelAbBill()">结束筹款</span>
         </div>
     </div>
 </div>

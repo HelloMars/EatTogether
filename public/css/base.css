@@ -325,6 +325,8 @@ body {
     vertical-align: top;
     line-height: 30px;
     text-align: center; }
+.s-history-detail .btn {
+  margin: 30px auto; }
 .s-history-detail .members label {
   display: inline-block;
   width: 50px;
