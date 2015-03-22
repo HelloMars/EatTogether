@@ -34,10 +34,13 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
 
             }
         };
+        $scope.blur = function (){
+            $scope.modName = false;
+            console.log('blur', new Date())
+        };
         $scope.saveNewName = function () {
             if ($scope.user.newNickname !== $scope.user.nickname) {
                 tuan.setUserName($scope.user.newNickname).then(function (res) {
-                    $scope.modName = false;
                     $scope.user.nickname = $scope.user.newNickname;
                 });
             }

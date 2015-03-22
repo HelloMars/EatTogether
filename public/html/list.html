@@ -5,11 +5,12 @@
             <span ng-show="data.news !== 0" class="new">{{data.news}}</span>
             <span class="name">{{data.name}}</span>
         </div>
+        <input type="text" ng-blur="blur()" ng-change="saveNewName()" ng-show="modName" value="user.nickname" ng-model="user.newNickname"/>
+
         <div class="index-nav">
             <span class="menu"></span>
             <span class="self">
-                <input type="text" ng-blur="saveNewName()" ng-show="modName" value="user.nickname" ng-model="user.newNickname"/>
-                <span class="user" ng-show="!modName" ng-click="modName = !modName">{{user.nickname}}</span>共消费<span class="money">{{user.money}}</span>元
+                <span class="user" ng-show="!modName" ng-click="modName = true">{{user.nickname}}</span>共消费<span class="money">{{user.money}}</span>元
             </span>
             <span class="create" ng-click="creatTuan()">建团</span>
         </div>
