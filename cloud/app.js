@@ -151,7 +151,7 @@ app.get('/jointuan', function(req, res) {
 // 退团
 app.get('/quittuan', function(req, res) {
     utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
-        if (result.tuan && result.isin) {
+        if (result.tuan && result.isin && result.account) {
             return utils.DisableAccount(result.user, result.tuan, result.account);
         } else {
             return AV.Promise.error('Illegal');
@@ -195,7 +195,7 @@ app.post('/modtuaninfo', function(req, res) {
 });
 
 app.post('/setusername', function(req, res) {
-    if (req.body.nickname) {
+    if (req.body.nickname && req.body.nickname.length < 10) {
         req.AV.user.fetch().then(function (user) {
             user.set('nickname', req.body.nickname);
             return user.save();

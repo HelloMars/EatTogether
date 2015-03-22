@@ -475,9 +475,14 @@ exports.DisableAccount = wrapper(function(user, tuan, account) {
     query.notEqualTo('state', -1);
     query.include('user');
     return query.find().then(function(results) {
-        if (account) {
-            var ret = {};
-            ret.code = -1;
+        var ret = {};
+        ret.code = -1;
+        if (results.length == 1 && results[0].get('user').id == user.id) {
+            ret.code = 0;
+            ret.message = '您是最后一个退出该团的人，团信息将被全部清理';
+            deleteTuan(tuan);
+            return AV.Promise.as(ret);
+        } else {
             var money = formatFloat(account.get('money'));
             if (money > 10) {
                 // 清除账户余额再退团
@@ -517,8 +522,6 @@ exports.DisableAccount = wrapper(function(user, tuan, account) {
                     return AV.Promise.as(ret);
                 });
             }
-        } else {
-            return AV.Promise.error('Invalid Parameters');
         }
     });
 }, 'DisableAccount');
@@ -972,6 +975,16 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
         createrAccount.save(),
         modifiedAccount.save(),
         history.save());
+}
+
+// 删除团，该团成员的账户，所有团历史
+function deleteTuan(tuan) {
+    var accountQuery = new AV.Query(exports.Account);
+    accountQuery.equalTo('tuan', tuan);
+    accountQuery.destroyAll();
+    var historyQuery = new AV.Query(exports.TuanHistory);
+    historyQuery.equalTo('tuan', tuan);
+    historyQuery.destroyAll();
 }
 
 // 带缓存的QRCode
