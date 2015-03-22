@@ -17,6 +17,7 @@
         <li ng-class="{deleted : history.deleted}" ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.revertable)" ng-swipe-right="swipeRight(history.revertable)" >
             <div ng-if="history.revertable" class="delete" ng-show="showDelete" ng-click="revert(history)">删除</div>
             <div ng-switch-when="1">
+                <img src="{{history.data}}" alt=""/>
                 <span class="time">{{history.date}}</span>
                 <span class="who">{{history.data.username}}</span>创建<span class="tuan">{{history.data.tuanname}}</span>团
             </div>

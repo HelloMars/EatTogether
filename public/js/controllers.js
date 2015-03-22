@@ -132,6 +132,12 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 $scope.members.forEach(function (member) {
                     member.inThis = $scope.all;
                 });
+                if ($scope.all === true) {
+                    $scope.curTotal = $scope.members.length;
+                } else {
+                    $scope.curTotal = 0;
+
+                }
 
             };
             $scope.changeMember = function () {
