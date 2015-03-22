@@ -28,6 +28,8 @@ tuanService.factory('tuan', ['$http',
 
             abupBill: abupBill,
 
+            modABUpBill: modABUpBill,
+
             finishABUp: finishABUp,
 
             abdownBill: abdownBill,
@@ -183,7 +185,7 @@ tuanService.factory('tuan', ['$http',
             return (request.then(handleSuccess, handleError));
         }
 
-        /** 众筹买单 */
+        /** 筹款买单 */
         function abupBill (id, members, price) {
             var request = $http({
                 url: SERVER + 'abup',
@@ -198,7 +200,23 @@ tuanService.factory('tuan', ['$http',
             return (request.then(handleSuccess, handleError));
         }
 
-        /** 结束众筹买单 */
+        /** 修改筹款买单成员价格 */
+        function modABUpBill (id, historyId, userid, diff) {
+            var request = $http({
+                url: SERVER + 'modabup',
+                method: 'POST',
+                data: {
+                    id : id,
+                    historyId : historyId,
+                    userid : userid,
+                    diff : diff
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 结束筹款买单 */
         function finishABUp (historyId) {
             var request = $http({
                 url: SERVER + 'finishabup',

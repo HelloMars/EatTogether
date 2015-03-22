@@ -606,6 +606,18 @@ exports.FormatHistoryDetail = wrapper(function (historyId) {
     });
 }, 'FormatHistoryDetail');
 
+// 验证访问用户是否为history创建者
+exports.VerifyCreater = wrapper(function (requser, historyId) {
+    var query = new AV.Query(exports.TuanHistory);
+    return query.get(historyId).then(function(history) {
+        if (history.get('creater').id == requser.id) {
+            return AV.Promise.as(history);
+        } else {
+            return AV.Promise.as(null);
+        }
+    });
+}, 'VerifyCreater');
+
 /** AA 买单
  * 1. 给买单者记账(验证买单者是否属于该团)
  * 2. 给被买单者记账(一般包含买单者)，并群发消费信息(不给买单者发)
@@ -724,48 +736,47 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, price) {
     }
 }, 'ABUpBill');
 
-// 如果是提前完成，则需要清除所有人的abbill状态
-exports.FinishABup = wrapper(function (requser, historyId) {
-    var query = new AV.Query(exports.TuanHistory);
-    return query.get(historyId).then(function(history) {
-        var ret = {};
-        ret.code = -1;
-        if (history.get('creater').id == requser.id) {
-            // 有权Finish
-            history.set('type', HISTORY_TYPE.FINISH_ABUP);
-            // 清除所有人的abbill状态
-            var userlist = [];
-            var data = history.get('data');
-            for (var i = 0; i < data.members.length; i++) {
-                if (data.prices[i] == 0) {
-                    userlist.push(data.members[i]);
-                }
-            }
-            if (userlist.length > 0) {
-                // 嵌套查询
-                var userQuery = new AV.Query(AV.User);
-                userQuery.containedIn("objectId", userlist);
-                var query = new AV.Query(exports.Account);
-                query.equalTo('tuan', history.get('tuan'));
-                // 不约束state!=-1
-                query.matchesQuery('user', userQuery);
-                query.find().then(function(accounts) {
-                    for (var i = 0; i < accounts.length; i++) {
-                        accounts[i].set('abbill', null);
-                        accounts[i].save();
-                    }
-                });
-            }
-            history.save();
-            ret.code = 0;
-            ret.message = '关闭成功';
-            return AV.Promise.as(ret);
+/** 修改 ABUp Bill 的成员金额 */
+exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, diff) {
+    var query = new AV.Query(exports.Account);
+    query.equalTo('user', userid);
+    query.equalTo('tuan', tuan);
+    return query.find().then(function(accounts) {
+        if (accounts.length == 1) {
+            return modifyABUpBill(user, account, tuan, accounts[0], history, diff);
         } else {
-            // 无权(其实每个团员都可以Finish，前端给出提示避免误操作即可)
-            ret.message = '您不是创建者，无权关闭';
-            return AV.Promise.as(ret);
+            return AV.Promise.error('Account Results Error');
         }
     });
+}, 'ModifyABUpBill');
+
+// 如果是提前完成，则需要清除所有人的abbill状态
+exports.FinishABup = wrapper(function (history) {
+    history.set('type', HISTORY_TYPE.FINISH_ABUP);
+    // 清除所有人的abbill状态
+    var userlist = [];
+    var data = history.get('data');
+    for (var i = 0; i < data.members.length; i++) {
+        if (data.prices[i] == 0) {
+            userlist.push(data.members[i]);
+        }
+    }
+    if (userlist.length > 0) {
+        // 嵌套查询
+        var userQuery = new AV.Query(AV.User);
+        userQuery.containedIn("objectId", userlist);
+        var query = new AV.Query(exports.Account);
+        query.equalTo('tuan', history.get('tuan'));
+        // 不约束state!=-1
+        query.matchesQuery('user', userQuery);
+        query.find().then(function(accounts) {
+            for (var i = 0; i < accounts.length; i++) {
+                accounts[i].set('abbill', null);
+                accounts[i].save();
+            }
+        });
+    }
+    return history.save();
 }, 'FinishABup');
 
 exports.RevertHistory = wrapper(function(user, tuan, historyId) {
@@ -895,64 +906,66 @@ exports.GetABUpAccounts = wrapper(function(username) {
 
 // 清算用户正在进行的ABUp Bill
 exports.ClearABUpBill = wrapper(function(account, money) {
-    // accounts[0]是买单人在该团的账户
-    // account是正在清算的交款人
-    // 给accounts[0]加钱，给account扣款清状态，并修改history状态
-    // 给买单者记总账，给该团记总帐
     return account.get('abbill').fetch().then(function(history) {
         var query = new AV.Query(exports.Account);
-        query.equalTo('user', history.get('creater'));
-        query.equalTo('tuan', account.get('tuan'));
+        var creater = history.get('creater');
+        var tuan = account.get('tuan');
+        query.equalTo('user', creater);
+        query.equalTo('tuan', tuan);
         query.include('user');
         query.include('tuan');
         return query.find().then(function(accounts) {
-            if (accounts.length == 0) {
-                return AV.Promise.error('Account Results Error');
-            } else if (accounts.length == 1) {
-                accounts[0].increment('money', money);
-                account.increment('money', -money);
-                account.set('abbill', null);
-                var data = history.get('data');
-                var sum = 0;
-                var everyone = true;
-                for (var i = 0; i < data.members.length; i++) {
-                    if (data.members[i] == account.get('user').id) {
-                        // 在历史中记录扣款人的付款
-                        data.prices[i] = money;
-                    }
-                    if (data.prices[i] == 0) {
-                        everyone = false;
-                    } else {
-                        sum += data.prices[i];
-                    }
-                }
-                // 如果已经收齐款(总价格达到或没有总价格但每个人都已交款)，则自动finish
-                if (data.money) {
-                    if (sum >= data.money) {
-                        history.set('type', HISTORY_TYPE.FINISH_ABUP);
-                    }
-                } else if (everyone) {
-                    history.set('type', HISTORY_TYPE.FINISH_ABUP);
-                }
-                // 给买单者记总账
-                var user = accounts[0].get('user');
-                user.increment('money', money);
-                accounts[0].set('user', user);
-                // 给该团记总账
-                var tuan = accounts[0].get('tuan');
-                tuan.increment('money', money);
-                accounts[0].set('tuan', tuan);
-                history.set('data', data);
-                return AV.Promise.when(
-                    accounts[0].save(),
-                    account.save(),
-                    history.save());
+            if (accounts.length == 1) {
+                return modifyABUpBill(creater, accounts[0], tuan, account, history, money);
             } else {
                 return AV.Promise.error('Account Results Error');
             }
         });
     });
 }, 'ClearABUpBill');
+
+// createrAccount是买单人在该团的账户
+// modifiedAccount是将被修改的交款人在该团的账户
+// 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
+// 给买单人记总账，给该团记总帐
+function modifyABUpBill(creater, createrAccount, tuan, modifiedAccount, history, money) {
+    createrAccount.increment('money', money);
+    modifiedAccount.increment('money', -money);
+    modifiedAccount.set('abbill', null);
+    var data = history.get('data');
+    var sum = 0;
+    var everyone = true;
+    for (var i = 0; i < data.members.length; i++) {
+        if (data.members[i] == createrAccount.get('user').id) {
+            // 在历史中记录扣款人的付款
+            data.prices[i] += money;
+        }
+        if (data.prices[i] == 0) {
+            everyone = false;
+        } else {
+            sum += data.prices[i];
+        }
+    }
+    // 如果已经收齐款(总价格达到或没有总价格但每个人都已交款)，则自动finish
+    if (data.money) {
+        if (sum >= data.money) {
+            history.set('type', HISTORY_TYPE.FINISH_ABUP);
+        }
+    } else if (everyone) {
+        history.set('type', HISTORY_TYPE.FINISH_ABUP);
+    }
+    // 给买单者记总账
+    creater.increment('money', money);
+    createrAccount.set('user', creater);
+    // 给该团记总账
+    tuan.increment('money', money);
+    createrAccount.set('tuan', tuan);
+    history.set('data', data);
+    return AV.Promise.when(
+        createrAccount.save(),
+        modifiedAccount.save(),
+        history.save());
+}
 
 // 带缓存的QRCode
 function getQRCode(tuan) {

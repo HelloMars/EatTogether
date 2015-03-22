@@ -253,8 +253,50 @@ app.post('/abup', function(req, res) {
     });
 });
 
+app.post('/modabup', function(req, res) {
+    // price 是修改的差值，即newprice-oldprice
+    var diff = Number(req.body.diff);
+    utils.VerifyCreater(req.AV.user, req.body.historyId).then(function(history) {
+        var ret = {};
+        if (history) {
+            return utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
+                if (result.tuan && result.isin) {
+                    return utils.ModifyABUpBill(result.user, result.tuan, result.account,
+                        history, req.body.userid, diff);
+                } else {
+                    return AV.Promise.error('Illegal');
+                }
+            }).then(function() {
+                ret.code = 0;
+                ret.message = '修改成功';
+                return AV.Promise.as(ret);
+            });
+        } else {
+            ret.code = -1;
+            ret.message = '您不是创建者，无权修改';
+            return AV.Promise.as(ret);
+        }
+    }).then(function(ret){
+        res.jsonp(ret);
+    }, function(error) {
+        console.log('Modify ABUp Error: ' + JSON.stringify(error));
+        res.send('Modify ABUp Error');
+    });
+});
+
 app.post('/finishabup', function(req, res) {
-    utils.FinishABup(req.AV.user, req.body.historyId).then(function(ret){
+    utils.VerifyCreater(req.AV.user, req.body.historyId).then(function(history) {
+        var ret = {};
+        if (history) {
+            utils.FinishABup(history);
+            ret.code = 0;
+            ret.message = '关闭成功';
+        } else {
+            ret.code = -1;
+            ret.message = '您不是创建者，无权关闭';
+        }
+        return AV.Promise.as(ret);
+    }).then(function(ret){
         res.jsonp(ret);
     }, function(error) {
         console.log('Finish ABUp Error: ' + JSON.stringify(error));
