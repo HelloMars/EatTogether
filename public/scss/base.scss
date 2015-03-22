@@ -278,6 +278,15 @@ $width:270px;
             // border-right:1px solid $hTextC;
             text-align: center;
         }
+        .create{
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 60px;
+            border-left: 1px solid $hTextC;
+            text-align: center;
+
+        }
     }
 }
 

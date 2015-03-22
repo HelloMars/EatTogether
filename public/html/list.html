@@ -1,16 +1,16 @@
 <div class="s-list">
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <div  ng-show="loaded" >
-        <div ng-class="{shake : data.news !== 0 }" ng-style="{{data.animatDelayStyle}}" ng-repeat="data in list" class="tuan  animated infinite" ng-click="enterTuan(data)">
+        <div ng-class="{shake : data.news !== 0, bounceIn : data.new}" ng-style="{{data.animatDelayStyle}}" ng-repeat="data in list" class="tuan  animated infinite" ng-click="enterTuan(data)">
             <span ng-show="data.news !== 0" class="new">{{data.news}}</span>
             <span class="name">{{data.name}}</span>
         </div>
-        <span class="create circle-btn circle-btn-right" ng-click="creatTuan()">建团</span>
         <div class="index-nav">
             <span class="menu"></span>
             <span class="self">
                 <span class="user">{{user.nickname}}</span>共消费<span class="money">{{user.money}}</span>元
             </span>
+            <span class="create" ng-click="creatTuan()">建团</span>
         </div>
     </div>
 </div>
