@@ -4,7 +4,7 @@
     <div ng-show="loaded">
         <label for="name">
             饭团名：
-            <input type="text" value="{{name}}" ng-model="newName" placeholder="二蛋团">
+            <input type="text" value="{{name}}" ng-blur="save()" ng-model="newName" placeholder="二蛋团">
         </label>
         <label for="id">
             共消费：
@@ -14,10 +14,9 @@
             <img id="qrcode" ng-src="{{qrcode}}" alt=""/>
         </div>
         <label for="broadcast">
-            饭团口号：
-            <textarea name="broadcast" ng-model="newSlogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
+            团口号：
+            <textarea ng-blur="save()" name="broadcast" ng-model="newSlogan" value="{{slogan}}"  id="" cols="30" rows="10">{{slogan}}</textarea>
         </label>
-        <a href="javascript:;" ng-click="quit()" class="circle-btn circle-btn-left quit">退团</a>
-        <a href="javascript:;" ng-click="save()" class="circle-btn circle-btn-right quit">确认</a>
+        <a href="javascript:;" ng-click="quit()" class="btn warn quit">退团</a>
     </div>
 </div>

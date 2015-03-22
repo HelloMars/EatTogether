@@ -23,6 +23,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
                 $scope.list.push(tuan);
             });
             $scope.user = res.user;
+            $scope.user.newNickname = res.user.nickname;
             $scope.loaded = true;
         });
         $scope.enterTuan = function(tuanObj) {
@@ -31,6 +32,14 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
             } else {
                 $location.url('/tuan/' + tuanObj.id + '/members');
 
+            }
+        };
+        $scope.saveNewName = function () {
+            if ($scope.user.newNickname !== $scope.user.nickname) {
+                tuan.setUserName($scope.user.newNickname).then(function (res) {
+                    $scope.modName = false;
+                    $scope.user.nickname = $scope.user.newNickname;
+                });
             }
         };
         $scope.creatTuan = function () {
@@ -80,6 +89,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
 eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan',
     function ($scope, $routeParams, $location, tuan) {
         $scope.loaded = false;
+        $scope.column = 2;
         $scope.tuanId = $routeParams.tuanId;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
             $scope.members = res.members;
@@ -87,6 +97,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.notMember = 0;
             $scope.numberErr = false;
             $scope.abMode = false;
+            $scope.all = true;
 
             $scope.members.forEach(function(member) {
                 member.avatarBg = {
@@ -98,12 +109,23 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 member.inThis = true;
             });
             $scope.loaded = true;
+            $scope.selectAll = function () {
+                $scope.members.forEach(function (member) {
+                    member.inThis = $scope.all;
+                });
+
+            };
             $scope.changeMember = function () {
                 var tmp = 0;
                 $scope.members.forEach(function (member) {
                     if (member.inThis) tmp++;
                 });
                 $scope.curTotal = tmp;
+                if (tmp === $scope.members.length) {
+                    $scope.all = true;
+                } else {
+                    $scope.all = false;
+                }
                 $scope.average = $scope.totalMoney/( $scope.curTotal +  $scope.notMember);
             };
             $scope.confirm = function () {
