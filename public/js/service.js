@@ -186,13 +186,14 @@ tuanService.factory('tuan', ['$http',
         }
 
         /** 筹款买单 */
-        function abupBill (id, members, price) {
+        function abupBill (id, members, prices, price) {
             var request = $http({
                 url: SERVER + 'abup',
                 method: 'POST',
                 data: {
                     id : id,
                     members : members,
+                    prices : prices,
                     price : price
                 }
             });

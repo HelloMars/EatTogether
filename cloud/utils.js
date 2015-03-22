@@ -365,12 +365,12 @@ exports.Login = wrapper(function(username, password, userinfo) {
 /** 获取用户对应的团信息以及用户信息 */
 exports.GetTuanList = wrapper(function(user) {
     var promise = new AV.Promise();
-
     var ret = {};
     ret.user = formatUser(user);
     var query = new AV.Query(exports.Account);
     query.equalTo('user', user);
     query.notEqualTo('state', -1);
+    query.descending("updatedAt");
     query.include('tuan');
     query.find().then(function(results) {
         var tuans = [];
@@ -381,7 +381,6 @@ exports.GetTuanList = wrapper(function(user) {
         ret.tuans = tuans;
         promise.resolve(ret);
     });
-
     return promise;
 }, 'GetTuanList');
 
@@ -688,8 +687,8 @@ exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) 
 }, 'Bill');
 
 /** ABUp 买单 */
-exports.ABUpBill = wrapper(function(user, tuan, account, members, price) {
-    if (members && members.length > 0) {
+exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money) {
+    if (members && prices && members.length > 0 && members.length == prices.length) {
         // 一个团中只允许有一个正在进行的ABUpBill
         var historyQuery = new AV.Query(exports.TuanHistory);
         historyQuery.equalTo('tuan', tuan);
@@ -716,21 +715,39 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, price) {
                     tuanHistory.set('data', {
                         'username': user.get('nickname'),
                         'tuanname': tuan.get('name'),
-                        'money': price,
+                        'money': money,
                         // 成员列表及其付款列表
                         'members': members,
                         'prices': new Array(members.length+1).join('0').split('').map(parseFloat)
                     });
+                    var usermap = {};
+                    for (i = 0; i < members.length; i++) {
+                        usermap[members[i]] = prices[i];
+                    }
                     // 给参与者发交款通知
+                    var needFinish = true;
                     for (var i = 0; i < results.length; i++) {
-                        sendTempABUp(user, results[i].get('user'), tuan, members.length);
-                        results[i].set('abbill', tuanHistory);
+                        var toUser = results[i].get('user');
+                        if (usermap[toUser.id] <= 0) {
+                            // 需要发筹款信息
+                            sendTempABUp(user, toUser, tuan, members.length);
+                            results[i].set('abbill', tuanHistory);
+                            needFinish = false;
+                        } else {
+                            // 直接发消费提醒
+                            sendTempModABUp(user, toUser, tuan, usermap[toUser.id]);
+                        }
                         results[i].increment('news');
                         results[i].save();
                     }
+                    if (needFinish) {
+                        ret.message = '所有成员均已付款，本次筹款自动结束';
+                        tuanHistory.set('type', HISTORY_TYPE.FINISH_ABUP);
+                    } else {
+                        ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
+                    }
                     return tuanHistory.save().then(function() {
                         ret.code = 0;
-                        ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
                         ret.historyId = tuanHistory.id;
                         return AV.Promise.as(ret);
                     });
@@ -1055,12 +1072,14 @@ function modifyUserInfo(user, userinfo) {
 function formatTuanHistory(user, history, revertable) {
     var type = history.get('type');
     var data = history.get('data');
+    var datestr = history.createdAt.toISOString();
     var ret = {
         'id': history.id,
         'type': type,
         'revertable': revertable,
         'data': data,
-        'date': history.createdAt.toISOString().replace(/T.+/, '')
+        'date': datestr.replace(/T.+/, ''),
+        'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
     };
     if (type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.REVERT_BILL) {
         // 消费历史

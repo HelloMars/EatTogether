@@ -195,7 +195,8 @@ app.post('/modtuaninfo', function(req, res) {
 });
 
 app.post('/setusername', function(req, res) {
-    if (req.body.nickname && req.body.nickname.length < 10) {
+    var nickname = req.body.nickname;
+    if (nickname && nickname.length > 0 && nickname.length < 10) {
         req.AV.user.fetch().then(function (user) {
             user.set('nickname', req.body.nickname);
             return user.save();
@@ -241,7 +242,8 @@ app.post('/abup', function(req, res) {
     var price = Number(req.body.price);
     utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
         if (result.tuan && result.isin) {
-            return utils.ABUpBill(result.user, result.tuan, result.account, req.body.members, price);
+            return utils.ABUpBill(result.user, result.tuan, result.account,
+                req.body.members, req.body.prices, price);
         } else {
             return AV.Promise.error('Illegal');
         }
