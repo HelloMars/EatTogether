@@ -6,8 +6,8 @@ var eatTogetherControllers = angular.module('eatTogetherControllers', []);
 
 
 /** 饭团列表 */
-eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan',
-    function ($scope, $location, tuan) {
+eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan', '$modal',
+    function ($scope, $location, tuan, $modal) {
         $scope.loaded = false;
         $scope.column = 1;
         $scope.list = [];
@@ -34,17 +34,31 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
 
             }
         };
-        $scope.blur = function (){
-            $scope.modName = false;
-            console.log('blur', new Date())
+        $scope.changeName = function () {
+
+            var modalInstance = $modal.open({
+                templateUrl: '../html/modals/changeName.html',
+                controller: 'changeNameModal',
+                size: 'lg',
+                resolve: {
+                    oldName: function () {
+                        return $scope.user.nickname;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (newNickname) {
+                $scope.user.newNickname = newNickname;
+                if ($scope.user.newNickname !== $scope.user.nickname) {
+                    tuan.setUserName($scope.user.newNickname).then(function (res) {
+                        $scope.user.nickname = $scope.user.newNickname;
+                    });
+                }
+                console.log(newNickname);
+            }, function () {
+            });
         };
-        $scope.saveNewName = function () {
-            if ($scope.user.newNickname !== $scope.user.nickname) {
-                tuan.setUserName($scope.user.newNickname).then(function (res) {
-                    $scope.user.nickname = $scope.user.newNickname;
-                });
-            }
-        };
+
         $scope.creatTuan = function () {
             $scope.loaded = false;
             tuan.createTuan().then(function(newTuan){

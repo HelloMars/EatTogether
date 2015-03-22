@@ -8,7 +8,8 @@
         'ngTouch',
         'eatTogetherControllers',
         'tuanService',
-        'tuanFilters'
+        'tuanFilters',
+        'ui.bootstrap'
     ]);
     eatTogether.run(['tuan', function(tuan) {
             AV.initialize("vk84p7j0sizwl03zgvb3y1eg6z7klbs97hrgock7ilfascaf",

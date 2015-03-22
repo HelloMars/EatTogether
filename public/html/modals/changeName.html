@@ -1,0 +1,10 @@
+<div class="modal-header">
+    <h3 class="modal-title">输入新昵称！</h3>
+</div>
+<div class="modal-body">
+    <input type="text"  id="nameInput" ng-model="newNickname"/>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="ok($scope.newNickname)">OK</button>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>
