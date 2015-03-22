@@ -119,8 +119,7 @@ var receiveMessage = function(msg, cb) {
             }
             var money = parseFloat(msg.xml.Content);
             if (money && money > 0 && money < 500) {
-                utils.ClearABUpBill(accounts[0], money).then(function() {
-                    result.xml.Content += '您已支出' + money.toFixed(2);
+                utils.ClearABUpBill(accounts[0].get('user'), accounts[0], money).then(function() {
                     cb(null, result);
                 }, function(error) {
                     result.xml.Content += '清算出错，请联系开发人员';

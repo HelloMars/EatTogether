@@ -5,7 +5,8 @@ var WechatAPI = require('wechat-api');
 var WechatOAuth = require('wechat-oauth');
 
 exports.TOKEN = 'EatTogether';
-var APPID, APPSECRET, API, OAUTH, TEMPID_BILL, TEMPID_JOIN, TEMPID_QUIT, TEMPID_ABUP, USER_STATE;
+var APPID, APPSECRET, API, OAUTH, TEMPID_BILL, TEMPID_JOIN,
+    TEMPID_QUIT, TEMPID_ABUP, TEMPID_MODAB, USER_STATE;
 
 var QRCODE_EXP = 1800;
 
@@ -137,6 +138,7 @@ function setTest() {
     TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
     TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
     TEMPID_ABUP = 'ew85SpSTqeFex47QTrX4jOnYZA_tI5GtJwvPoQZldyA';
+    TEMPID_MODAB = 'T5kKx_gE4Y4xfk2WSdYhsMSa2OxeVpHsGcEYJbMuvCY';
 
     USER_STATE = 2;
 
@@ -741,9 +743,10 @@ exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, 
     var query = new AV.Query(exports.Account);
     query.equalTo('user', userid);
     query.equalTo('tuan', tuan);
+    query.include('user');
     return query.find().then(function(accounts) {
         if (accounts.length == 1) {
-            return modifyABUpBill(user, account, tuan, accounts[0], history, diff);
+            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0], tuan, history, diff);
         } else {
             return AV.Promise.error('Account Results Error');
         }
@@ -892,6 +895,7 @@ exports.GetABUpAccounts = wrapper(function(username) {
     var query = new AV.Query(exports.Account);
     query.notEqualTo('state', -1);
     query.descending("createdAt");
+    query.include('user');
     query.matchesQuery('user', userQuery);
     return query.find().then(function(results) {
         var accounts = [];
@@ -905,7 +909,7 @@ exports.GetABUpAccounts = wrapper(function(username) {
 }, 'GetABUpAccounts');
 
 // 清算用户正在进行的ABUp Bill
-exports.ClearABUpBill = wrapper(function(account, money) {
+exports.ClearABUpBill = wrapper(function(user, account, money) {
     return account.get('abbill').fetch().then(function(history) {
         var query = new AV.Query(exports.Account);
         var creater = history.get('creater');
@@ -916,7 +920,7 @@ exports.ClearABUpBill = wrapper(function(account, money) {
         query.include('tuan');
         return query.find().then(function(accounts) {
             if (accounts.length == 1) {
-                return modifyABUpBill(creater, accounts[0], tuan, account, history, money);
+                return modifyABUpBill(creater, accounts[0], user, account, tuan, history, money);
             } else {
                 return AV.Promise.error('Account Results Error');
             }
@@ -928,17 +932,19 @@ exports.ClearABUpBill = wrapper(function(account, money) {
 // modifiedAccount是将被修改的交款人在该团的账户
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
-function modifyABUpBill(creater, createrAccount, tuan, modifiedAccount, history, money) {
-    createrAccount.increment('money', money);
-    modifiedAccount.increment('money', -money);
+function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff) {
+    createrAccount.increment('money', diff);
+    modifiedAccount.increment('money', -diff);
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
     var sum = 0;
     var everyone = true;
+    var money = 0;
     for (var i = 0; i < data.members.length; i++) {
-        if (data.members[i] == createrAccount.get('user').id) {
+        if (data.members[i] == modifiedAccount.get('user').id) {
             // 在历史中记录扣款人的付款
-            data.prices[i] += money;
+            data.prices[i] += diff;
+            money = data.prices[i];
         }
         if (data.prices[i] == 0) {
             everyone = false;
@@ -955,12 +961,13 @@ function modifyABUpBill(creater, createrAccount, tuan, modifiedAccount, history,
         history.set('type', HISTORY_TYPE.FINISH_ABUP);
     }
     // 给买单者记总账
-    creater.increment('money', money);
+    creater.increment('money', diff);
     createrAccount.set('user', creater);
     // 给该团记总账
-    tuan.increment('money', money);
+    tuan.increment('money', diff);
     createrAccount.set('tuan', tuan);
     history.set('data', data);
+    sendTempModABUp(creater, modified, tuan, money);
     return AV.Promise.when(
         createrAccount.save(),
         modifiedAccount.save(),
@@ -1189,8 +1196,7 @@ function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
             "color": "#000000"
         }
     };
-    var username = toUser.get('username');
-    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    var openid = toUser.get('username');
     var topcolor = '#FF0000'; // 顶部颜色
     API.sendTemplate(openid, TEMPID_BILL, null, topcolor, data, function(err, data, res) {
         if (err) {
@@ -1220,10 +1226,39 @@ function sendTempABUp(fromUser, toUser, tuan, number) {
             "color": "#173177"
         }
     };
-    var username = toUser.get('username');
-    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    var openid = toUser.get('username');
     var topcolor = '#FF0000'; // 顶部颜色
     API.sendTemplate(openid, TEMPID_ABUP, null, topcolor, data, function(err, data, res) {
+        if (err) {
+            console.log('SendTemplate Error %j', err);
+        } else {
+            console.log('SendTemplate Success: %j, %j', data, res);
+        }
+    });
+}
+
+function sendTempModABUp(fromUser, toUser, tuan, money) {
+    var data = {
+        fromName: {
+            "value": fromUser.get('nickname'),
+            "color": "#173177"
+        },
+        toName: {
+            "value": toUser.get('nickname'),
+            "color": "#173177"
+        },
+        tuanName: {
+            "value": tuan.get('name'),
+            "color": "#173177"
+        },
+        money: {
+            "value": formatFloat(money),
+            "color": "#173177"
+        }
+    };
+    var openid = toUser.get('username');
+    var topcolor = '#FF0000'; // 顶部颜色
+    API.sendTemplate(openid, TEMPID_MODAB, null, topcolor, data, function(err, data, res) {
         if (err) {
             console.log('SendTemplate Error %j', err);
         } else {
@@ -1247,8 +1282,7 @@ function sendTemplate(tempId, fromUser, toUser, tuan) {
             "color": "#173177"
         }
     };
-    var username = toUser.get('username');
-    var openid = username.length < 10 ? 'oUgQgt29VhAPB59qvib78KMFZw1I' : username;
+    var openid = toUser.get('username');
     var topcolor = '#FF0000'; // 顶部颜色
     API.sendTemplate(openid, tempId, null, topcolor, data, function(err, data, res) {
         if (err) {
