@@ -529,6 +529,9 @@ exports.DisableAccount = wrapper(function(user, tuan, account) {
 exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
     var modified = false;
     if (infoJson && infoJson.name) {
+        if (infoJson.name.length > 10) {
+            infoJson.name = infoJson.name.substring(10);
+        }
         // 生成修改记录
         var tuanHistory = new exports.TuanHistory();
         tuanHistory.set('creater', user);
@@ -544,6 +547,9 @@ exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
         modified = true;
     }
     if (infoJson && infoJson.slogan) {
+        if (infoJson.slogan.length > 100) {
+            infoJson.slogan = infoJson.slogan.substring(100);
+        }
         tuan.set('slogan', infoJson.slogan);
         modified = true;
     }
