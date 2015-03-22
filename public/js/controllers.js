@@ -36,6 +36,8 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
         };
         $scope.changeName = function () {
 
+            // 注意！！： 使用的ui-bootstrapjs有更改 解决ngTouch导致的modal内input失效
+            // @ref: https://github.com/angular-ui/bootstrap/issues/2280
             var modalInstance = $modal.open({
                 templateUrl: '../html/modals/changeName.html',
                 controller: 'changeNameModal',
