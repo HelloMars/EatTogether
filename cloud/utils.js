@@ -991,6 +991,7 @@ function deleteTuan(tuan) {
     var historyQuery = new AV.Query(exports.TuanHistory);
     historyQuery.equalTo('tuan', tuan);
     historyQuery.destroyAll();
+    tuan.destroy();
 }
 
 // 带缓存的QRCode
