@@ -899,6 +899,7 @@ exports.GetTuanHistory = wrapper(function(user, tuan, start, length) {
     query.descending("createdAt");
     query.skip(start);
     query.limit(length);
+    query.include('creater');
     return query.find().then(function(results) {
         var found = false;
         for (var i = 0; i < results.length; i++) {
@@ -1070,6 +1071,7 @@ function modifyUserInfo(user, userinfo) {
 }
 
 function formatTuanHistory(user, history, revertable) {
+    var creater = history.get('creater');
     var type = history.get('type');
     var data = history.get('data');
     var datestr = history.createdAt.toISOString();
@@ -1077,11 +1079,12 @@ function formatTuanHistory(user, history, revertable) {
         'id': history.id,
         'type': type,
         'revertable': revertable,
+        'creater': formatUser(creater),
         'data': data,
         'date': datestr.replace(/T.+/, ''),
         'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
     };
-    if (type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.REVERT_BILL) {
+    if (isBill(type)) {
         // 消费历史
         var included = false;
         var members = data.members;
@@ -1099,12 +1102,14 @@ function formatTuanHistory(user, history, revertable) {
 
 function formatUser(userobj) {
     var user = {};
-    user.id = userobj.id;
-    user.nickname = userobj.get('nickname');
-    user.location = userobj.get('location');
-    user.sex = userobj.get('sex');
-    user.money = formatFloat(userobj.get('money'));
-    user.headimgurl = formatHeadImgUrl(userobj, 132);
+    if (userobj) {
+        user.id = userobj.id;
+        user.nickname = userobj.get('nickname');
+        user.location = userobj.get('location');
+        user.sex = userobj.get('sex');
+        user.money = formatFloat(userobj.get('money'));
+        user.headimgurl = formatHeadImgUrl(userobj, 132);
+    }
     return user;
 }
 
@@ -1198,6 +1203,11 @@ function formatHeadImgUrl(user, size) {
 
 function isRevertable(type) {
     return type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.ABUP_BILL || type == HISTORY_TYPE.FINISH_ABUP;
+}
+
+function isBill(type) {
+    return type == HISTORY_TYPE.BILL || type == HISTORY_TYPE.REVERT_BILL ||
+        type == HISTORY_TYPE.ABUP_BILL || type == HISTORY_TYPE.FINISH_ABUP || type == HISTORY_TYPE.REVERT_ABUP;
 }
 
 function sendTempBill(fromUser, toUser, tuan, money, number, avg, remain) {
