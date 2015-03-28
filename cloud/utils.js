@@ -648,7 +648,7 @@ exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) 
             // 给团成员记账
             var promises = [];
             for (var i = 0; i < results.length; i++) {
-                results[i].increment('money', -avg);
+                recordAccount(results[i], -avg, true);
                 if (results[i].get('user').id != user.id) {
                     // 给其他成员发送模板消息和抖动消息
                     sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
@@ -657,7 +657,7 @@ exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) 
                 promises.push(results[i].save());
             }
             // 给买单者记账
-            account.increment('money', avg * members.length);
+            recordAccount(account, avg * members.length, true);
             promises.push(account.save());
             // 给买单者记总账
             user.increment('money', avg * members.length);
@@ -718,13 +718,16 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         'money': money,
                         // 成员列表及其付款列表
                         'members': members,
-                        'prices': new Array(members.length+1).join('0').split('').map(parseFloat)
+                        'prices': prices
                     });
+                    var sum = 0;
                     var usermap = {};
                     for (i = 0; i < members.length; i++) {
                         usermap[members[i]] = prices[i];
+                        sum += prices[i];
                     }
                     // 给参与者发交款通知
+                    var promises = [];
                     var needFinish = true;
                     for (var i = 0; i < results.length; i++) {
                         var toUser = results[i].get('user');
@@ -734,19 +737,30 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                             results[i].set('abbill', tuanHistory);
                             needFinish = false;
                         } else {
-                            // 直接发消费提醒
+                            // 记账并发消费提醒
+                            recordAccount(results[i], -usermap[toUser.id], true);
                             sendTempModABUp(user, toUser, tuan, usermap[toUser.id]);
                         }
                         results[i].increment('news');
-                        results[i].save();
+                        promises.push(results[i].save());
                     }
+                    // 给买单者记账
+                    recordAccount(account, sum, true);
+                    promises.push(account.save());
+                    // 给买单者记总账
+                    user.increment('money', sum);
+                    promises.push(user.save());
+                    // 给该团记总账
+                    tuan.increment('money', sum);
+                    promises.push(tuan.save());
                     if (needFinish) {
                         ret.message = '所有成员均已付款，本次筹款自动结束';
                         tuanHistory.set('type', HISTORY_TYPE.FINISH_ABUP);
                     } else {
                         ret.message = '已成功向团员发送筹款通知，请及时关注筹款进度';
                     }
-                    return tuanHistory.save().then(function() {
+                    promises.push(tuanHistory.save());
+                    return AV.Promise.when(promises).then(function() {
                         ret.code = 0;
                         ret.historyId = tuanHistory.id;
                         return AV.Promise.as(ret);
@@ -999,6 +1013,41 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
         createrAccount.save(),
         modifiedAccount.save(),
         history.save());
+}
+
+// 记录一笔消费
+function recordAccount(account, money, isnew) {
+    var datestr = new Date().toISOString();
+    var history = account.get('history'); // 个人近期消费历史，记录时间和金额
+    if (isnew && (money > 0 || !history)) {
+        // 正向消费或尚未有历史记录(抹除之前记录，写入当前余额和本次消费金额)
+        history = [];
+        history.push({
+            'money' : account.get('money')
+        });
+        history.push({
+            'money' : money,
+            'date': datestr.replace(/T.+/, ''),
+            'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
+        });
+    } else {
+        if (isnew) {
+            // 新的负向消费(加入一笔记录)
+            history.push({
+                'money' : money,
+                'date': datestr.replace(/T.+/, ''),
+                'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
+            });
+        } else {
+            // 修改消费(修改最后一个消费记录)
+            history[history.length-1].money += money;
+            history[history.length-1].date = datestr.replace(/T.+/, '');
+            history[history.length-1].time = datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '');
+        }
+    }
+
+    account.set('history', history);
+    account.increment('money', money);
 }
 
 // 删除团，该团成员的账户，所有团历史
