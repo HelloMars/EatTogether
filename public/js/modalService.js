@@ -13,3 +13,17 @@ angular.module('eatTogetherControllers').controller('changeNameModal', function 
         $modalInstance.dismiss('cancel');
     };
 });
+
+
+angular.module('eatTogetherControllers').controller('setMoneyModal', function ($scope, $modalInstance, money) {
+
+    $scope.moneySpent = money;
+
+    $scope.ok = function () {
+        $modalInstance.close($scope.moneySpent);
+    };
+
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
+});

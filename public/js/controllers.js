@@ -105,8 +105,8 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
 
 
 /** 买单页 */
-eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan',
-    function ($scope, $routeParams, $location, tuan) {
+eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$location', 'tuan', '$modal',
+    function ($scope, $routeParams, $location, tuan, $modal) {
         $scope.loaded = false;
         $scope.column = 2;
         $scope.tuanId = $routeParams.tuanId;
@@ -126,6 +126,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
                 member.inThis = true;
+                member.moneySpent = 0;
             });
             $scope.loaded = true;
             $scope.selectAll = function () {
@@ -154,14 +155,17 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                 $scope.average = $scope.totalMoney/( $scope.curTotal +  $scope.notMember);
             };
             $scope.confirm = function () {
-                var members = $scope.members.filter(function (member) {
+                var membersList = $scope.members.filter(function (member) {
                     return member.inThis;
-                }).map(function (member) {
+                })
+                var members = membersList.map(function (member) {
                     return member.uid;
                 });
+                var prices = membersList.map(function (member) {
+                    return parseFloat(member.moneySpent);
+                });
                 if ($scope.abMode) {
-                    tuan.abupBill($scope.tuanId, members, $scope.totalMoney).then(function(res) {
-                        alert(res.message);
+                    tuan.abupBill($scope.tuanId, members, prices, $scope.totalMoney).then(function(res) {
                         if (res.code === 0) {
                             $location.url('/tuan/' + $scope.tuanId + '/history/' + res.historyId);
                         } else {
@@ -176,6 +180,26 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             };
             $scope.cancel = function () {
                     $location.url('/tuan/' + $scope.tuanId + '/members/');
+            };
+            $scope.setMoney = function (member) {
+                if (!$scope.abMode) return;
+                // 注意！！： 使用的ui-bootstrapjs有更改 解决ngTouch导致的modal内input失效
+                // @ref: https://github.com/angular-ui/bootstrap/issues/2280
+                var modalInstance = $modal.open({
+                    templateUrl: '../html/modals/setMoney.html',
+                    controller: 'setMoneyModal',
+                    size: 'lg',
+                    resolve: {
+                        money: function () {
+                            return member.moneySpent;
+                        }
+                    }
+                });
+
+                modalInstance.result.then(function (money) {
+                    member.moneySpent = money;
+                }, function () {
+                });
             };
         });
 

@@ -9,9 +9,9 @@
         </h2>
         <h2>聚餐团员：{{curTotal}} 人 <label for="all"><input ng-click="selectAll()" type="checkbox" id="all" ng-model="all"/>全选</label></h2>
         <div class="members">
-            <label ng-style="member.avatarBg" ng-class="{choosen : member.inThis}" ng-repeat="member in members">
+            <label hm-hold="setMoney(member)" ng-style="member.avatarBg" ng-class="{choosen : member.inThis}" ng-repeat="member in members">
                 <input type="checkbox" ng-change="changeMember()" ng-model="member.inThis">
-                <p>{{member.name}}</p>
+                <p>{{member.moneySpent === 0 ? member.name : member.moneySpent}}</p>
             </label>
         </div>
         <h2 ng-show="!abMode">非团员：<input type="number" placeholder="0" ng-model="notMember"></h2>
