@@ -617,7 +617,7 @@ exports.FormatHistoryDetail = wrapper(function (historyId) {
 }, 'FormatHistoryDetail');
 
 exports.FormatUserHistory = wrapper(function (account) {
-    
+
 }, 'FormatUserHistory');
 
 // 验证访问用户是否为history创建者
@@ -784,8 +784,10 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
 
 /** 修改 ABUp Bill 的成员金额 */
 exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, diff) {
+    var modified = new AV.User();
+    modified.id = userid;
     var query = new AV.Query(exports.Account);
-    query.equalTo('user', userid);
+    query.equalTo('user', modified);
     query.equalTo('tuan', tuan);
     query.include('user');
     return query.find().then(function(accounts) {
