@@ -616,6 +616,10 @@ exports.FormatHistoryDetail = wrapper(function (historyId) {
     });
 }, 'FormatHistoryDetail');
 
+exports.FormatUserHistory = wrapper(function (account) {
+    
+}, 'FormatUserHistory');
+
 // 验证访问用户是否为history创建者
 exports.VerifyCreater = wrapper(function (requser, historyId) {
     var query = new AV.Query(exports.TuanHistory);
@@ -786,7 +790,7 @@ exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, 
     query.include('user');
     return query.find().then(function(accounts) {
         if (accounts.length == 1) {
-            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0], tuan, history, diff);
+            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0], tuan, history, diff, false);
         } else {
             return AV.Promise.error('Account Results Error');
         }
@@ -961,7 +965,7 @@ exports.ClearABUpBill = wrapper(function(user, account, money) {
         query.include('tuan');
         return query.find().then(function(accounts) {
             if (accounts.length == 1) {
-                return modifyABUpBill(creater, accounts[0], user, account, tuan, history, money);
+                return modifyABUpBill(creater, accounts[0], user, account, tuan, history, money, true);
             } else {
                 return AV.Promise.error('Account Results Error');
             }
@@ -973,9 +977,9 @@ exports.ClearABUpBill = wrapper(function(user, account, money) {
 // modifiedAccount是将被修改的交款人在该团的账户
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
-function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff) {
-    createrAccount.increment('money', diff);
-    modifiedAccount.increment('money', -diff);
+function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff, isnew) {
+    recordAccount(createrAccount, diff, isnew);
+    recordAccount(modifiedAccount, -diff, isnew);
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
     var sum = 0;

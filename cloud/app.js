@@ -194,6 +194,21 @@ app.post('/modtuaninfo', function(req, res) {
     });
 });
 
+app.get('/userhistory', function(req, res) {
+    utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
+        if (result.tuan && result.isin) {
+            return result.account.get('history');
+        } else {
+            return AV.Promise.error('Illegal');
+        }
+    }).then(function(ret) {
+        res.jsonp(ret);
+    }, function(error) {
+        console.log('UserHistory Error: ' + JSON.stringify(error));
+        res.send('UserHistory Error');
+    });
+});
+
 app.post('/setusername', function(req, res) {
     var nickname = req.body.nickname;
     if (nickname && nickname.length > 0 && nickname.length < 10) {
