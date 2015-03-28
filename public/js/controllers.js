@@ -278,8 +278,8 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
 
 /** 饭团历史详情 */
 
-eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location',
-    function ($scope, $routeParams, tuan, $location) {
+eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location', '$modal',
+    function ($scope, $routeParams, tuan, $location, $modal) {
         $scope.loaded = false;
         $scope.column = 4;
         $scope.tuanId = $routeParams.tuanId;
@@ -294,6 +294,7 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 member.moneyBgc = {
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
+                member.modMoney = member.money;
             });
             $scope.processbarStyle = {
                 'width' : (res.percent * 100 ) + '%'
@@ -312,7 +313,6 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
             });
         };
         $scope.modMoney = function (member) {
-            if (!$scope.abMode) return;
             // 注意！！： 使用的ui-bootstrapjs有更改 解决ngTouch导致的modal内input失效
             // @ref: https://github.com/angular-ui/bootstrap/issues/2280
             var modalInstance = $modal.open({
@@ -321,13 +321,14 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 size: 'lg',
                 resolve: {
                     money: function () {
-                        return member.moneySpent;
+                        return parseFloat(member.money);
                     }
                 }
             });
 
             modalInstance.result.then(function (money) {
-                member.moneySpent = money;
+                member.modMoney = money;
+                tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, member.modMoney - member.money);
             }, function () {
             });
         };
