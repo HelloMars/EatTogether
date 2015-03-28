@@ -169,6 +169,7 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
                         if (res.code === 0) {
                             $location.url('/tuan/' + $scope.tuanId + '/history/' + res.historyId);
                         } else {
+                            alert(res.message);
                             $location.url('/tuan/' + $scope.tuanId + '/members/');
                         }
                     });
@@ -268,9 +269,8 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
                 history.deleted = true;
             });
         };
-        $scope.goDetail = function (historyId) {
-            console.log(historyId);
-            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + historyId);
+        $scope.goDetail = function (history) {
+            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + history.id);
         };
     }
 
@@ -278,8 +278,8 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
 
 /** 饭团历史详情 */
 
-eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location',
-    function ($scope, $routeParams, tuan, $location) {
+eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routeParams', 'tuan', '$location', '$modal',
+    function ($scope, $routeParams, tuan, $location, $modal) {
         $scope.loaded = false;
         $scope.column = 4;
         $scope.tuanId = $routeParams.tuanId;
@@ -294,6 +294,7 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 member.moneyBgc = {
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
+                member.modMoney = member.money;
             });
             $scope.processbarStyle = {
                 'width' : (res.percent * 100 ) + '%'
@@ -309,6 +310,26 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 if (res.code === 0) {
                     $location.url('/tuan/' + $scope.tuanId + '/history');
                 }
+            });
+        };
+        $scope.modMoney = function (member) {
+            // 注意！！： 使用的ui-bootstrapjs有更改 解决ngTouch导致的modal内input失效
+            // @ref: https://github.com/angular-ui/bootstrap/issues/2280
+            var modalInstance = $modal.open({
+                templateUrl: '../html/modals/setMoney.html',
+                controller: 'setMoneyModal',
+                size: 'lg',
+                resolve: {
+                    money: function () {
+                        return parseFloat(member.money);
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (money) {
+                member.modMoney = money;
+                tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, member.modMoney - member.money);
+            }, function () {
             });
         };
     }
