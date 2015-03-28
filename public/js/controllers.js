@@ -269,9 +269,8 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
                 history.deleted = true;
             });
         };
-        $scope.goDetail = function (historyId) {
-            console.log(historyId);
-            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + historyId);
+        $scope.goDetail = function (history) {
+            $location.url('/tuan/' + $routeParams.tuanId + '/history/' + history.id);
         };
     }
 
@@ -310,6 +309,26 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
                 if (res.code === 0) {
                     $location.url('/tuan/' + $scope.tuanId + '/history');
                 }
+            });
+        };
+        $scope.modMoney = function (member) {
+            if (!$scope.abMode) return;
+            // 注意！！： 使用的ui-bootstrapjs有更改 解决ngTouch导致的modal内input失效
+            // @ref: https://github.com/angular-ui/bootstrap/issues/2280
+            var modalInstance = $modal.open({
+                templateUrl: '../html/modals/setMoney.html',
+                controller: 'setMoneyModal',
+                size: 'lg',
+                resolve: {
+                    money: function () {
+                        return member.moneySpent;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function (money) {
+                member.moneySpent = money;
+            }, function () {
             });
         };
     }
