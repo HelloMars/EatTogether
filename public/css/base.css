@@ -8,7 +8,7 @@ body {
     font-weight: normal; }
 
 /** components */
-.btn {
+.btn-s {
   display: block;
   padding: 0;
   width: 100px;
