@@ -585,6 +585,7 @@ exports.FormatTuanDetail = wrapper(function (tuanobj) {
                 'sex': user.get('sex'),
                 'headimgurl': formatHeadImgUrl(user, 132),
                 'money': formatFloat(results[i].get('money')),
+                'history': user.get('history'),
                 'subscribed': user.get('state') > 0
             });
         }
@@ -615,10 +616,6 @@ exports.FormatHistoryDetail = wrapper(function (historyId) {
         }
     });
 }, 'FormatHistoryDetail');
-
-exports.FormatUserHistory = wrapper(function (account) {
-
-}, 'FormatUserHistory');
 
 // 验证访问用户是否为history创建者
 exports.VerifyCreater = wrapper(function (requser, historyId) {
