@@ -1,9 +1,6 @@
-<div class="modal-header">
-    <h3 class="modal-title">输入该成员费用！</h3>
-</div>
 <div class="modal-body">
     <form name="form">
-        <input type="number" name="moneySpent" min="0" max="500" required ng-model="moneySpent" />
+        <input type="number" name="moneySpent" min="0" max="500" placeholder="输入该成员费用！" required ng-model="moneySpent" />
     </form>
     <span  ng-show="form.moneySpent.$error.number || form.moneySpent.$error.max || form.moneySpent.$error.min">请输入0~500的数值</span>
 </div>

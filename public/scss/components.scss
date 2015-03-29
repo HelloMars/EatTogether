@@ -16,6 +16,26 @@
 .btn-s.warn{
   background: rgb(242, 1, 10);
 }
+
+// 重设bootstrap按钮
+.btn-primary{
+  background-color: red;
+  border-color:red;
+}
+.btn-warning{
+  background-color: #e0dee1;
+  border-color:#e0dee1;
+}
+.modal-body input{
+  width: 60%;
+  height: 40px;
+  line-height: 40px;
+  margin: 30px auto 0;
+  display: block;
+  font-size: 20px;
+  padding: 0 10px;
+}
+
 .circle-btn{
   display: inline-block;
   text-align: center;
