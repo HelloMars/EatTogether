@@ -1026,7 +1026,6 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
 
 // 记录一笔消费
 function recordAccount(account, money, isnew) {
-    var datestr = new Date().toISOString();
     var history = account.get('history'); // 个人近期消费历史，记录时间和金额
     if (isnew && (money > 0 || !history)) {
         // 正向消费或尚未有历史记录(抹除之前记录，写入当前余额和本次消费金额)
@@ -1036,22 +1035,19 @@ function recordAccount(account, money, isnew) {
         });
         history.push({
             'money' : money,
-            'date': datestr.replace(/T.+/, ''),
-            'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
+            'time': new Date()
         });
     } else {
         if (isnew) {
             // 新的负向消费(加入一笔记录)
             history.push({
                 'money' : money,
-                'date': datestr.replace(/T.+/, ''),
-                'time': datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '')
+                'time': new Date()
             });
         } else {
             // 修改消费(修改最后一个消费记录)
             history[history.length-1].money += money;
-            history[history.length-1].date = datestr.replace(/T.+/, '');
-            history[history.length-1].time = datestr.substring(0, datestr.lastIndexOf(':')).replace(/.+T/, '');
+            history[history.length-1].time = new Date();
         }
     }
 
