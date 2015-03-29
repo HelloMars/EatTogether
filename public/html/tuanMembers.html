@@ -2,9 +2,28 @@
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <div class="members" ng-show="loaded">
-        <div ng-repeat="member in list" class="member" ng-style="member.avatarBg">
-            <p ng-style="member.moneyBgc">{{member.money}}</p>
+        <div class=" dropdown" dropdown on-toggle="toggled(open)" ng-repeat="member in list">
+            <a  ng-style="member.avatarBg" href class="member dropdown-toggle" dropdown-toggle>
+                <p ng-style="member.moneyBgc">{{member.money}}</p>
+            </a>
+            <ul class="dropdown-menu">
+                <li ng-repeat="choice in items">
+                <a href>{{choice}}</a>
+                </li>
+            </ul>
         </div>
+        <!--<span class="dropdown" dropdown on-toggle="toggled(open)">-->
+          <!--<a href class="dropdown-toggle" dropdown-toggle>-->
+              <!--Click me for a dropdown, yo!-->
+          <!--</a>-->
+          <!--<ul class="dropdown-menu">-->
+              <!--<li ng-repeat="choice in items">-->
+                  <!--<a href>{{choice}}</a>-->
+              <!--</li>-->
+          <!--</ul>-->
+        <!--</span>-->
+
+
         <a href="javascript:;"   ng-click="bill()" class="circle-btn circle-btn-right">买单</a>
     </div>
 </div>

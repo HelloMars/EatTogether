@@ -30,17 +30,18 @@ body{
             img{
               max-width: 100%;
             }
+
             p{
-              position: absolute;
-              bottom: 5px;
-              left: 10px;
-              width: 100%;
-              text-align: center;
-              height: 20px;
-              line-height: 20px;
-              -webkit-transform: rotate(-22deg);
-              transform: rotate(-22deg);
-              font-size: 14px;
+                position: absolute;
+                bottom: 5px;
+                left: 10px;
+                width: 100%;
+                text-align: center;
+                height: 20px;
+                line-height: 20px;
+                -webkit-transform: rotate(-22deg);
+                transform: rotate(-22deg);
+                font-size: 14px;
             }
         }
         .circle-btn{

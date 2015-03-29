@@ -98,7 +98,15 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         $scope.bill = function() {
             $location.url('/tuan/' + $scope.tuanId + '/bill');
         };
+        $scope.items = [
+            'The first choice!',
+            'And another choice for you.',
+            'but wait! A third!'
+        ];
 
+        $scope.status = {
+            isopen: false
+        };
     }
 ]);
 
