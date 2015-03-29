@@ -16,44 +16,38 @@
                 'REVERT_ABDOWN': 18     // 撤销的ABDown消费-->
         <li ng-class="{deleted : history.deleted}" ng-switch="history.type" ng-repeat="history in histories" ng-swipe-left="swipeLeft(history.revertable)" ng-swipe-right="swipeRight(history.revertable)" >
             <div ng-if="history.revertable" class="delete" ng-show="showDelete" ng-click="revert(history)">删除</div>
-            <div ng-switch-when="1">
+            <div ng-click="goDetail(history)" >
                 <img ng-src="{{history.creater.headimgurl}}" alt=""/>
+                <div class="detail" ng-switch-when="1">
+                    <span class="who">{{history.data.username}}</span>创建<span class="tuan">{{history.data.tuanname}}</span>团
+                </div>
+                <div class="detail" ng-switch-when="2">
+                    <span class="who">{{history.data.username}}</span>加入<span class="tuan">{{history.data.tuanname}}</span>团
+                </div>
+                <div class="detail" ng-switch-when="3">
+                    <span class="who">{{history.data.username}}</span>退出<span class="tuan">{{history.data.tuanname}}</span>团
+                </div>
+                <div class="detail" ng-switch-when="5">
+                    <span class="oldtuan">{{history.data.fromname}}</span>团的团名被<span class="who">{{history.data.username}}</span>修改为<span class="tuan">{{history.data.toname}}</span>
+                </div>
+                <div class="detail" ng-switch-when="10">
+                    <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length + history.data.othersnum}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="!history.included">(除我)</span>
+                </div>
+                <div class="detail" ng-switch-when="11">
+                    <span class="who">{{history.data.username}}</span> 请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元（已撤销）
+                </div>
+                <div class="detail" ng-switch-when="12">
+                    <span class="who">{{history.data.username}}</span> 发起了一次<span class="members-count">{{history.data.members.length}}</span>人筹款消费
+                </div>
+                <div class="detail" ng-switch-when="13">
+                    <span class="who">{{history.data.username}}</span>  发起的筹款消费已结束
+                </div>
+                <div class="detail" ng-switch-when="14">
+                    <span class="who">{{history.data.username}}</span>发起了筹款消费 (已撤销)
+                </div>
+                <div ng-switch-default></div>
                 <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>创建<span class="tuan">{{history.data.tuanname}}</span>团
             </div>
-            <div ng-switch-when="2">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>加入<span class="tuan">{{history.data.tuanname}}</span>团
-            </div>
-            <div ng-switch-when="3">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>退出<span class="tuan">{{history.data.tuanname}}</span>团
-            </div>
-            <div ng-switch-when="5">
-                <span class="time">{{history.date}}</span>
-                <span class="oldtuan">{{history.data.fromname}}</span>团的团名被<span class="who">{{history.data.username}}</span>修改为<span class="tuan">{{history.data.toname}}</span>
-            </div>
-            <div  ng-click="goDetail(history)"  ng-switch-when="10">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length + history.data.othersnum}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="!history.included">(除我)</span>
-            </div>
-            <div  ng-click="goDetail(history)"  ng-switch-when="11">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span> 请大家<span class="members-count">{{history.data.members.length}}</span>人消费了<span class="money">{{history.data.money}}</span> 元（已撤销）
-            </div>
-            <div ng-click="goDetail(history)" ng-switch-when="12">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span> 发起了一次<span class="members-count">{{history.data.members.length}}</span>人筹款消费
-            </div>
-            <div ng-click="goDetail(history)" ng-switch-when="13">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>  发起的筹款消费已结束
-            </div>
-            <div ng-click="goDetail(history)" ng-switch-when="14">
-                <span class="time">{{history.date}}</span>
-                <span class="who">{{history.data.username}}</span>发起了筹款消费 (已撤销)
-            </div>
-            <div ng-switch-default></div>
         </li>
     </ul>
 </div>

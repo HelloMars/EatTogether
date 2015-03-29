@@ -1035,19 +1035,19 @@ function recordAccount(account, money, isnew) {
         });
         history.push({
             'money' : money,
-            'time': new Date()
+            'time': new Date().getTime()
         });
     } else {
         if (isnew) {
             // 新的负向消费(加入一笔记录)
             history.push({
                 'money' : money,
-                'time': new Date()
+                'time': new Date().getTime()
             });
         } else {
             // 修改消费(修改最后一个消费记录)
             history[history.length-1].money += money;
-            history[history.length-1].time = new Date();
+            history[history.length-1].time = new Date().getTime();
         }
     }
 

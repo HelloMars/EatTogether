@@ -92,6 +92,14 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                     'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
                 };
                 $scope.list.push(member);
+                if (member.history) {
+                    member.history = member.history.map(function(his){
+                        if (his.time) {
+                            his.date = (new Date(his.time).getMonth() + 1) + '/' + new Date(his.time).getDate();
+                        }
+                        return his;
+                    });
+                }
             });
             $scope.loaded = true;
         });
@@ -102,6 +110,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
         $scope.status = {
             isopen: false
         };
+
     }
 ]);
 
