@@ -339,9 +339,9 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
             });
 
             modalInstance.result.then(function (money) {
-                tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, member.modMoney - member.money).then(function (res) {
+                tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, money - member.money).then(function (res) {
                     if (res.code === 0) {
-                        member.modMoney = money;
+                        location.reload();
                     } else {
                         alert(res.message);
                     }
