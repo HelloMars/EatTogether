@@ -109,14 +109,17 @@ body {
           transform: rotate(-22deg);
           font-size: 14px; }
       .s-members .members .member-wrap ul {
-        width: 130px;
+        width: 110px;
         min-width: 50px;
         padding: 5px 10px; }
         .s-members .members .member-wrap ul li {
           font-size: 16px;
           line-height: 2; }
           .s-members .members .member-wrap ul li .first {
-            font-size: 20px; }
+            font-size: 20px;
+            width: 100%;
+            text-align: center;
+            display: inline-block; }
           .s-members .members .member-wrap ul li .date {
             display: inline-block;
             width: 46px; }
@@ -126,7 +129,6 @@ body {
               color: #000; }
           .s-members .members .member-wrap ul li.sum {
             border-top: 1px solid #d8d8d8;
-            padding: 0 10px 0 0;
             text-align: right; }
 
 .s-index {

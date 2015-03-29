@@ -50,7 +50,7 @@ body{
                 }
             }
             ul{
-                width: 130px;
+                width: 110px;
                 min-width: 50px;
                 padding: 5px 10px;
                 li{
@@ -58,6 +58,9 @@ body{
                     line-height: 2;
                     .first {
                         font-size: 20px;
+                        width: 100%;
+                        text-align: center;
+                        display: inline-block;
                     }
                     .date{
                         display: inline-block;
@@ -71,7 +74,6 @@ body{
                     }
                     &.sum{
                         border-top: 1px solid $hTextC;
-                        padding: 0 10px 0 0;
                         text-align: right;
                     }
                 }

@@ -8,7 +8,7 @@
             </a>
             <ul ng-if="member.history"  class="dropdown-menu">
                 <li ng-repeat="history in member.history">
-                    <span class="date">{{history.date}}</span>
+                    <span ng-if="history.date" class="date">{{history.date}}</span>
                     <span class="money" ng-class="{negative : history.money < 0, first : $first}">{{history.money}}</span>
                 </li>
                 <li class="sum">
