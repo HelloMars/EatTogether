@@ -585,7 +585,7 @@ exports.FormatTuanDetail = wrapper(function (tuanobj) {
                 'sex': user.get('sex'),
                 'headimgurl': formatHeadImgUrl(user, 132),
                 'money': formatFloat(results[i].get('money')),
-                'history': user.get('history'),
+                'history': results[i].get('history'),
                 'subscribed': user.get('state') > 0
             });
         }
