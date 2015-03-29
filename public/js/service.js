@@ -22,6 +22,8 @@ tuanService.factory('tuan', ['$http',
 
             modTuanInfo : modTuanInfo,
 
+            getUserHistory : getUserHistory,
+
             setUserName : setUserName,
 
             bill: bill,
@@ -150,6 +152,19 @@ tuanService.factory('tuan', ['$http',
                 data: {
                     id : id,
                     info : jsonObj
+                }
+            });
+
+            return (request.then(handleSuccess, handleError));
+        }
+
+        /** 获取用户在该团的简单历史 */
+        function getUserHistory (id) {
+            var request = $http({
+                url: SERVER + 'userhistory',
+                method: 'GET',
+                params: {
+                    id : id
                 }
             });
 

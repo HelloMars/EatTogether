@@ -649,19 +649,21 @@ exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) 
         query.include('user');
         query.matchesQuery('user', userQuery);
         return query.find().then(function(results) {
-            // 给团成员记账
-            var promises = [];
-            for (var i = 0; i < results.length; i++) {
-                recordAccount(results[i], -avg, true);
-                if (results[i].get('user').id != user.id) {
-                    // 给其他成员发送模板消息和抖动消息
-                    sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
-                    results[i].increment('news');
-                }
-                promises.push(results[i].save());
-            }
             // 给买单者记账
             recordAccount(account, avg * members.length, true);
+            // 给团成员记账(注意团成员中包含买单者的情况)
+            var promises = [];
+            for (var i = 0; i < results.length; i++) {
+                if (results[i].get('user').id == user.id) {
+                    recordAccount(account, -avg, true);
+                } else {
+                    recordAccount(results[i], -avg, true);
+                }
+                // 发送模板消息和抖动消息
+                sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
+                results[i].increment('news');
+                promises.push(results[i].save());
+            }
             promises.push(account.save());
             // 给买单者记总账
             user.increment('money', avg * members.length);
@@ -730,6 +732,8 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         usermap[members[i]] = prices[i];
                         sum += prices[i];
                     }
+                    // 给买单者记账
+                    recordAccount(account, sum, true);
                     // 给参与者发交款通知
                     var promises = [];
                     var needFinish = true;
@@ -741,15 +745,17 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                             results[i].set('abbill', tuanHistory);
                             needFinish = false;
                         } else {
-                            // 记账并发消费提醒
-                            recordAccount(results[i], -usermap[toUser.id], true);
+                            // 记账并发消费提醒(注意团成员中包含买单者的情况)
+                            if (results[i].get('user').id == user.id) {
+                                recordAccount(account, -usermap[toUser.id], true);
+                            } else {
+                                recordAccount(results[i], -usermap[toUser.id], true);
+                            }
                             sendTempModABUp(user, toUser, tuan, usermap[toUser.id]);
                         }
                         results[i].increment('news');
                         promises.push(results[i].save());
                     }
-                    // 给买单者记账
-                    recordAccount(account, sum, true);
                     promises.push(account.save());
                     // 给买单者记总账
                     user.increment('money', sum);
