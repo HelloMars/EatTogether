@@ -282,6 +282,7 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             });
         };
         $scope.goDetail = function (history) {
+            if (history.type < 10) return;
             $location.url('/tuan/' + $routeParams.tuanId + '/history/' + history.id);
         };
     }
