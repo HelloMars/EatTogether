@@ -712,7 +712,7 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                     var sum = 0;
                     var usermap = {};
                     for (i = 0; i < members.length; i++) {
-                        prices[i] = prices[i].toFixed(2);
+                        prices[i] = Number(prices[i].toFixed(2));
                         usermap[members[i]] = prices[i];
                         sum += prices[i];
                     }
@@ -1047,7 +1047,7 @@ function recordAccount(account, money, isnew) {
             });
         } else {
             // 修改消费(修改最后一个消费记录)
-            history[history.length-1].money = formatFloat(money + history[history.length-1].money);
+            history[history.length-1].money = formatFloat(money + Number(history[history.length-1].money));
             history[history.length-1].time = new Date().getTime();
         }
     }
