@@ -1031,22 +1031,22 @@ function recordAccount(account, money, isnew) {
         // 正向消费或尚未有历史记录(抹除之前记录，写入当前余额和本次消费金额)
         history = [];
         history.push({
-            'money' : account.get('money')
+            'money' : formatFloat(account.get('money'))
         });
         history.push({
-            'money' : money,
+            'money' : formatFloat(money),
             'time': new Date().getTime()
         });
     } else {
         if (isnew) {
             // 新的负向消费(加入一笔记录)
             history.push({
-                'money' : money,
+                'money' : formatFloat(money),
                 'time': new Date().getTime()
             });
         } else {
             // 修改消费(修改最后一个消费记录)
-            history[history.length-1].money += money;
+            history[history.length-1].money = formatFloat(money + history[history.length-1].money);
             history[history.length-1].time = new Date().getTime();
         }
     }
