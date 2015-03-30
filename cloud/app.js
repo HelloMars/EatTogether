@@ -272,7 +272,7 @@ app.post('/abup', function(req, res) {
 
 app.post('/modabup', function(req, res) {
     // price 是修改的差值，即newprice-oldprice
-    var diff = Number(req.body.diff);
+    var diff = Number(req.body.diff).toFixed(2);
     utils.VerifyCreater(req.AV.user, req.body.historyId).then(function(history) {
         var ret = {};
         if (history) {

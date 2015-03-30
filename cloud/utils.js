@@ -709,6 +709,13 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                 query.include('user');
                 query.matchesQuery('user', userQuery);
                 return query.find().then(function(results) {
+                    var sum = 0;
+                    var usermap = {};
+                    for (i = 0; i < members.length; i++) {
+                        prices[i] = prices[i].toFixed(2);
+                        usermap[members[i]] = prices[i];
+                        sum += prices[i];
+                    }
                     // 生成消费记录
                     var tuanHistory = new exports.TuanHistory();
                     tuanHistory.fetchWhenSave(true);
@@ -723,12 +730,6 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         'members': members,
                         'prices': prices
                     });
-                    var sum = 0;
-                    var usermap = {};
-                    for (i = 0; i < members.length; i++) {
-                        usermap[members[i]] = prices[i];
-                        sum += prices[i];
-                    }
                     // 给买单者记账
                     recordAccount(account, sum, true);
                     // 给参与者发交款通知
