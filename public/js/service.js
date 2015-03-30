@@ -56,7 +56,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取团列表 */
         function getAll () {
             var request = $http({
-                url: SERVER + 'tuanlist',
+                url: wrapUrl('tuanlist'),
                 method: 'GET',
                 params: {}
             });
@@ -67,7 +67,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取单个团信息 */
         function getTuanInfo(id) {
             var request = $http({
-                url: SERVER + 'tuandetail',
+                url: wrapUrl('tuandetail'),
                 method: 'GET',
                 params: {
                     id : id
@@ -81,7 +81,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取单个团历史 */
         function getTuanHistory (id, start, length) {
             var request = $http({
-                url: SERVER + 'tuanhistory',
+                url: wrapUrl('tuanhistory'),
                 method: 'GET',
                 params: {
                     id : id,
@@ -96,7 +96,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取历史详情 */
         function getHistoryDetail (tuanId, historyId) {
             var request = $http({
-                url: SERVER + 'historyDetail',
+                url: wrapUrl('historyDetail'),
                 method: 'GET',
                 params: {
                     id : tuanId,
@@ -110,7 +110,7 @@ tuanService.factory('tuan', ['$http',
         /** 创建团 */
         function createTuan () {
             var request = $http({
-                url: SERVER + 'createtuan',
+                url: wrapUrl('createtuan'),
                 method: 'GET',
                 params: {}
             });
@@ -121,7 +121,7 @@ tuanService.factory('tuan', ['$http',
         /** 入团 */
         function joinTuan (id) {
             var request = $http({
-                url: SERVER + 'jointuan',
+                url: wrapUrl('jointuan'),
                 method: 'GET',
                 params: {
                     id : id
@@ -134,7 +134,7 @@ tuanService.factory('tuan', ['$http',
         /** 退团 */
         function quitTuan (id) {
             var request = $http({
-                url: SERVER + 'quittuan',
+                url: wrapUrl('quittuan'),
                 method: 'GET',
                 params: {
                     id : id
@@ -147,7 +147,7 @@ tuanService.factory('tuan', ['$http',
         /** 修改团信息 */
         function modTuanInfo (id, jsonObj) {
             var request = $http({
-                url: SERVER + 'modtuaninfo',
+                url: wrapUrl('modtuaninfo'),
                 method: 'POST',
                 data: {
                     id : id,
@@ -161,7 +161,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取用户在该团的简单历史 */
         function getUserHistory (id) {
             var request = $http({
-                url: SERVER + 'userhistory',
+                url: wrapUrl('userhistory'),
                 method: 'GET',
                 params: {
                     id : id
@@ -174,7 +174,7 @@ tuanService.factory('tuan', ['$http',
         /** 修改用户昵称 */
         function setUserName(nickname) {
             var request = $http({
-                url: SERVER + 'setusername',
+                url: wrapUrl('setusername'),
                 method: 'POST',
                 data: {
                     nickname : nickname
@@ -187,7 +187,7 @@ tuanService.factory('tuan', ['$http',
         /** 买单 */
         function bill (id, members, othersnum, price) {
             var request = $http({
-                url: SERVER + 'bill',
+                url: wrapUrl('bill'),
                 method: 'POST',
                 data: {
                     id : id,
@@ -203,7 +203,7 @@ tuanService.factory('tuan', ['$http',
         /** 筹款买单 */
         function abupBill (id, members, prices, price) {
             var request = $http({
-                url: SERVER + 'abup',
+                url: wrapUrl('abup'),
                 method: 'POST',
                 data: {
                     id : id,
@@ -219,7 +219,7 @@ tuanService.factory('tuan', ['$http',
         /** 修改筹款买单成员价格 */
         function modABUpBill (id, historyId, userid, diff) {
             var request = $http({
-                url: SERVER + 'modabup',
+                url: wrapUrl('modabup'),
                 method: 'POST',
                 data: {
                     id : id,
@@ -235,7 +235,7 @@ tuanService.factory('tuan', ['$http',
         /** 结束筹款买单 */
         function finishABUp (historyId) {
             var request = $http({
-                url: SERVER + 'finishabup',
+                url: wrapUrl('finishabup'),
                 method: 'POST',
                 data: {
                     historyId : historyId
@@ -248,7 +248,7 @@ tuanService.factory('tuan', ['$http',
         /** 分配买单 */
         function abdownBill (id, members, prices) {
             var request = $http({
-                url: SERVER + 'abdown',
+                url: wrapUrl('abdown'),
                 method: 'POST',
                 data: {
                     id : id,
@@ -263,7 +263,7 @@ tuanService.factory('tuan', ['$http',
         /** 撤销历史记录(目前只支持撤销最近一次消费) */
         function revertHistory (tuanId, historyId) {
             var request = $http({
-                url: SERVER + 'revertHistory',
+                url: wrapUrl('revertHistory'),
                 method: 'POST',
                 data: {
                     'tuanId': tuanId,
@@ -277,7 +277,7 @@ tuanService.factory('tuan', ['$http',
         /** 获取 JS Config */
         function getJsConfig () {
             var request = $http({
-                url: SERVER + 'jsconfig',
+                url: wrapUrl('jsconfig'),
                 method: 'GET',
                 params: {}
             });
@@ -285,5 +285,8 @@ tuanService.factory('tuan', ['$http',
             return (request.then(handleSuccess, handleError));
         }
 
+        function wrapUrl (path) {
+            return SERVER + path + '?t=' + new Date().getTime();
+        }
     }
 ]);
