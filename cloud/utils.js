@@ -1034,9 +1034,9 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
     tuan.increment('money', diff);
     createrAccount.set('tuan', tuan);
     history.set('data', data);
-    //if (!isnew) {
+    if (!isnew) {
         sendTempModABUp(creater, modified, tuan, money);
-    //}
+    }
     return AV.Promise.when(
         createrAccount.save(),
         modifiedAccount.save(),
