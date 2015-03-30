@@ -15,6 +15,9 @@
                     <span>{{member.money}}</span>
                 </li>
             </ul>
+            <ul ng-if="!member.history"  class="dropdown-menu">
+                <li> <span class="first">暂无历史</span> </li>
+            </ul>
         </div>
 
 
