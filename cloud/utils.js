@@ -948,7 +948,6 @@ exports.GetABUpAccounts = wrapper(function(username) {
     var query = new AV.Query(exports.Account);
     query.notEqualTo('state', -1);
     query.descending("createdAt");
-    query.include('user');
     query.matchesQuery('user', userQuery);
     return query.find().then(function(results) {
         var accounts = [];
@@ -962,10 +961,27 @@ exports.GetABUpAccounts = wrapper(function(username) {
 }, 'GetABUpAccounts');
 
 // 清算用户正在进行的ABUp Bill
-exports.ClearABUpBill = wrapper(function(user, account, money) {
+exports.ClearABUpBill = wrapper(function(account, money) {
+    return AV.Promise.when(
+        account.get('abbill').fetch(), account.get('user').fetch(), account.get('tuan').fetch()
+    ).then(function (history, user, tuan) {
+            var query = new AV.Query(exports.Account);
+            query.equalTo('user', history.get('creater'));
+            query.equalTo('tuan', tuan);
+            query.include('user');
+            return query.find().then(function(accounts) {
+                if (accounts.length == 1) {
+                    return modifyABUpBill(accounts[0].get('user'), accounts[0], user, account, tuan, history, money, true);
+                } else {
+                    return AV.Promise.error('Account Results Error');
+                }
+            });
+        });
+
     return account.get('abbill').fetch().then(function(history) {
         var query = new AV.Query(exports.Account);
         var creater = history.get('creater');
+        var user= account.get('user');
         var tuan = account.get('tuan');
         query.equalTo('user', creater);
         query.equalTo('tuan', tuan);
@@ -986,7 +1002,7 @@ exports.ClearABUpBill = wrapper(function(user, account, money) {
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
 function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff, isnew) {
-    recordAccount(createrAccount, diff, isnew);
+    recordAccount(createrAccount, diff, false);
     recordAccount(modifiedAccount, -diff, isnew);
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
@@ -1020,7 +1036,9 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
     tuan.increment('money', diff);
     createrAccount.set('tuan', tuan);
     history.set('data', data);
-    sendTempModABUp(creater, modified, tuan, money);
+    if (!isnew) {
+        sendTempModABUp(creater, modified, tuan, money);
+    }
     return AV.Promise.when(
         createrAccount.save(),
         modifiedAccount.save(),
