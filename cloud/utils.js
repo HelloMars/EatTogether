@@ -335,6 +335,8 @@ exports.Login = wrapper(function(username, password, userinfo) {
                     'province': userinfo.province,
                     'city': userinfo.city
                 };
+                // 如果没有sex，需要赋值为0来重写sex，防止用户一直加团
+                if (!userinfo.sex) userinfo.sex = 0;
                 modifyUserInfo(user, userinfo);
                 // 加入用户准备加入的团
                 if (tuanid >= 10) {
@@ -1216,6 +1218,7 @@ function formatABUpHistory(history, ret) {
     } else {
         ret.percent = 1-zeronum/data.members.length;
     }
+    ret.percent = parseFloat(ret.percent);
     ret.sum = sum;
 
     var userQuery = new AV.Query(AV.User);
