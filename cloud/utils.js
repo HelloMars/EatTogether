@@ -68,7 +68,7 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setTest();
+    setOnline();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
@@ -1237,7 +1237,7 @@ function formatABUpHistory(history, ret) {
     } else {
         ret.percent = 1-zeronum/data.members.length;
     }
-    ret.percent = parseFloat(ret.percent);
+    ret.percent = formatFloat(ret.percent);
     ret.sum = sum;
 
     var userQuery = new AV.Query(AV.User);

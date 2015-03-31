@@ -52,7 +52,7 @@ body{
             ul{
                 width: 110px;
                 min-width: 50px;
-                padding: 5px 10px;
+                padding: 5px 12px;
                 li{
                     font-size: 16px;
                     line-height: 2;
@@ -64,7 +64,7 @@ body{
                     }
                     .date{
                         display: inline-block;
-                        width: 46px;
+                        width: 40px;
                     }
                     .negative{
                         color: red;
@@ -74,7 +74,7 @@ body{
                     }
                     &.sum{
                         border-top: 1px solid $hTextC;
-                        text-align: right;
+                        padding-left: 45px;
                     }
                 }
             }
