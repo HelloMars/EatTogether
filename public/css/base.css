@@ -128,25 +128,28 @@ body {
       .s-members .members .member-wrap ul {
         width: 130px;
         min-width: 50px;
-        padding: 5px 13px; }
+        padding: 5px 12px; }
         .s-members .members .member-wrap ul li {
           font-size: 16px;
           line-height: 2; }
           .s-members .members .member-wrap ul li .first {
+            line-height: 1;
             font-size: 20px;
             width: 100%;
             text-align: center;
             display: inline-block; }
           .s-members .members .member-wrap ul li .date {
             display: inline-block;
-            width: 46px; }
+            width: 40px; }
           .s-members .members .member-wrap ul li .negative {
             color: red; }
             .s-members .members .member-wrap ul li .negative.first {
               color: #000; }
           .s-members .members .member-wrap ul li.sum {
             border-top: 1px solid #d8d8d8;
-            text-align: right; }
+            padding-left: 45px; }
+          .s-members .members .member-wrap ul li.nickname {
+            font-size: 12px; }
 
 .s-index {
   text-align: center; }

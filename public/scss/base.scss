@@ -50,13 +50,14 @@ body{
                 }
             }
             ul{
-                width: 110px;
+                width: 130px;
                 min-width: 50px;
                 padding: 5px 12px;
                 li{
                     font-size: 16px;
                     line-height: 2;
                     .first {
+                        line-height: 1;
                         font-size: 20px;
                         width: 100%;
                         text-align: center;
@@ -75,6 +76,9 @@ body{
                     &.sum{
                         border-top: 1px solid $hTextC;
                         padding-left: 45px;
+                    }
+                    &.nickname{
+                      font-size: 12px;
                     }
                 }
             }

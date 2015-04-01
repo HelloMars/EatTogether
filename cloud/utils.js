@@ -68,7 +68,7 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setOnline();
+    setTest();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {

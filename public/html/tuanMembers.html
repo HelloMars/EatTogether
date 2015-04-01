@@ -7,6 +7,9 @@
                 <p ng-style="member.moneyBgc">{{member.money}}</p>
             </a>
             <ul ng-if="member.history"  class="dropdown-menu">
+                <li class="nickname">
+                    <span>({{member.name}})</span>
+                </li>
                 <li ng-repeat="history in member.history">
                     <span ng-if="history.date" class="date">{{history.date}}</span>
                     <span class="money" ng-class="{negative : history.money < 0, first : $first}">{{history.money}}</span>
