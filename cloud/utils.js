@@ -68,14 +68,14 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setTest();
+    setOnline();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
     // 当前环境为「生产环境」，是线上正式运行的环境
     console.log('「生产环境」');
 
-    setOnline();
+    setTest();
 
     exports.SERVER = 'http://eat.avosapps.com/';
 } else {
@@ -790,7 +790,7 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
 }, 'ABUpBill');
 
 /** 修改 ABUp Bill 的成员金额 */
-exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, diff) {
+exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, newmoney, oldmoney) {
     var modified = new AV.User();
     modified.id = userid;
     var query = new AV.Query(exports.Account);
@@ -799,7 +799,8 @@ exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, 
     query.include('user');
     return query.find().then(function(accounts) {
         if (accounts.length == 1) {
-            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0], tuan, history, diff, false);
+            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0],
+                tuan, history, newmoney-oldmoney, Math.abs(oldmoney) < 0.001);
         } else {
             return AV.Promise.error('Account Results Error');
         }
@@ -1003,8 +1004,8 @@ exports.ClearABUpBill = wrapper(function(account, money) {
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
 function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff, isnew) {
-    recordAccount(createrAccount, diff, false);
     recordAccount(modifiedAccount, -diff, isnew);
+    recordAccount(createrAccount, diff, false);
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
     var sum = 0;
