@@ -271,15 +271,15 @@ app.post('/abup', function(req, res) {
 });
 
 app.post('/modabup', function(req, res) {
-    // price 是修改的差值，即newprice-oldprice
-    var diff = Number(Number(req.body.diff).toFixed(2));
+    var newmoney = Number(Number(req.body.newmoney).toFixed(2));
+    var oldmoney = Number(Number(req.body.oldmoney).toFixed(2));
     utils.VerifyCreater(req.AV.user, req.body.historyId).then(function(history) {
         var ret = {};
         if (history) {
             return utils.getUserTuanObj(req.AV.user, req.body.id).then(function(result) {
                 if (result.tuan && result.isin) {
                     return utils.ModifyABUpBill(result.user, result.tuan, result.account,
-                        history, req.body.userid, diff);
+                        history, req.body.userid, newmoney, oldmoney);
                 } else {
                     return AV.Promise.error('Illegal');
                 }

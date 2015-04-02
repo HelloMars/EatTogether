@@ -217,7 +217,7 @@ tuanService.factory('tuan', ['$http',
         }
 
         /** 修改筹款买单成员价格 */
-        function modABUpBill (id, historyId, userid, diff) {
+        function modABUpBill (id, historyId, userid, newmoney, oldmoney) {
             var request = $http({
                 url: wrapUrl('modabup'),
                 method: 'POST',
@@ -225,7 +225,8 @@ tuanService.factory('tuan', ['$http',
                     id : id,
                     historyId : historyId,
                     userid : userid,
-                    diff : diff
+                    newmoney : newmoney,
+                    oldmoney : oldmoney
                 }
             });
 
