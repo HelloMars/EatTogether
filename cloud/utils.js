@@ -68,14 +68,14 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setOnline();
+    setTest();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
     // 当前环境为「生产环境」，是线上正式运行的环境
     console.log('「生产环境」');
 
-    setTest();
+    setOnline();
 
     exports.SERVER = 'http://eat.avosapps.com/';
 } else {
@@ -733,8 +733,6 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         'members': members,
                         'prices': prices
                     });
-                    // 给买单者记账
-                    recordAccount(account, sum, true);
                     // 给参与者发交款通知
                     var promises = [];
                     var needFinish = true;
@@ -748,7 +746,7 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         } else {
                             // 记账并发消费提醒(注意团成员中包含买单者的情况)
                             if (results[i].get('user').id == user.id) {
-                                recordAccount(account, -usermap[toUser.id], true);
+                                sum -= usermap[toUser.id];
                             } else {
                                 recordAccount(results[i], -usermap[toUser.id], true);
                             }
@@ -757,6 +755,8 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         results[i].increment('news');
                         promises.push(results[i].save());
                     }
+                    // 给买单者记账
+                    recordAccount(account, sum, true);
                     promises.push(account.save());
                     // 给买单者记总账
                     user.increment('money', sum);
@@ -1004,8 +1004,11 @@ exports.ClearABUpBill = wrapper(function(account, money) {
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
 function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff, isnew) {
-    recordAccount(modifiedAccount, -diff, isnew);
-    recordAccount(createrAccount, diff, false);
+    // 如果是同一个用户则不做任何操作
+    if (creater.id != modified.id) {
+        recordAccount(modifiedAccount, -diff, isnew);
+        recordAccount(createrAccount, diff, false);
+    }
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
     var sum = 0;
@@ -1050,7 +1053,7 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
 // 记录一笔消费
 function recordAccount(account, money, isnew) {
     var history = account.get('history'); // 个人近期消费历史，记录时间和金额
-    if (isnew && (money > 0 || !history)) {
+    if (isnew && (money >= 0 || !history)) {
         // 正向消费或尚未有历史记录(抹除之前记录，写入当前余额和本次消费金额)
         history = [];
         history.push({
