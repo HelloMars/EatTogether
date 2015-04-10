@@ -6,9 +6,7 @@ var WechatOAuth = require('wechat-oauth');
 
 exports.TOKEN = 'EatTogether';
 var APPID, APPSECRET, API, OAUTH, TEMPID_BILL, TEMPID_JOIN,
-    TEMPID_QUIT, TEMPID_ABUP, TEMPID_MODAB, USER_STATE;
-
-var ACCESS_TOKEN_ID = '55275526e4b00e097d5ec2de';
+    TEMPID_QUIT, TEMPID_ABUP, TEMPID_MODAB, USER_STATE, ACCESS_TOKEN_ID;
 
 var QRCODE_EXP = 1800;
 
@@ -117,6 +115,8 @@ function setOnline() {
     APPID = 'wx215f75c4627af14a';
     APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 
+    ACCESS_TOKEN_ID = '55275526e4b00e097d5ec2de';
+
     TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
     TEMPID_QUIT = '32wmlUVHgjnaWJU0K1Rucc4_STGmw8gnGwJo6fUZ1iQ';
@@ -125,7 +125,7 @@ function setOnline() {
 
     USER_STATE = 1;
 
-    API = new WechatAPI(APPID, APPSECRET);
+    API = newWechatAPI(APPID, APPSECRET, ACCESS_TOKEN_ID);
     OAUTH = new WechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("Tuan");
@@ -137,6 +137,8 @@ function setTest() {
     APPID = 'wxdb12e53d561de28e';
     APPSECRET = '2d36952cf863088f293d57f0d99449eb';
 
+    ACCESS_TOKEN_ID = '552764f4e4b0b40da3507573';
+
     TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
     TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
     TEMPID_QUIT = 's73IbvdYJ0pqx2-466UbxWBqFoE6b2DoUl1FE1SPtuE';
@@ -145,32 +147,7 @@ function setTest() {
 
     USER_STATE = 2;
 
-    API = new WechatAPI(APPID, APPSECRET, function (callback) {
-        // 传入一个获取全局token的方法
-        var query = new AV.Query(exports.Config);
-        query.get(ACCESS_TOKEN_ID).then(function (config) {
-            if (config) {
-                console.log("Get: " + config.get('value').AccessToken);
-                callback(null, config.get('value').AccessToken);
-            } else {
-                callback('Get Access Token Config Error');
-            }
-        });
-    }, function (token, callback) {
-        // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
-        // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
-        console.log("Save: %j", token);
-        var query = new AV.Query(exports.Config);
-        query.get(ACCESS_TOKEN_ID).then(function (config) {
-            if (config) {
-                config.set('value', {'AccessToken': JSON.stringify(token)});
-                config.save();
-                callback(null);
-            } else {
-                callback('Get Access Token Config Error');
-            }
-        });
-    });
+    API = newWechatAPI(APPID, APPSECRET, ACCESS_TOKEN_ID);
 
     OAUTH = new WechatOAuth(APPID, APPSECRET);
 
@@ -178,6 +155,36 @@ function setTest() {
     exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
     exports.Account = AV.Object.extend("DEVAccount");
 }
+
+function newWechatAPI(appid, appsecret, acess_token_id) {
+    return new WechatAPI(appid, appsecret, function (callback) {
+        // 传入一个获取全局token的方法
+        var query = new AV.Query(exports.Config);
+        query.get(acess_token_id).then(function (config) {
+            if (config) {
+                console.log("Get: %j", config.get('value'));
+                callback(null, config.get('value'));
+            } else {
+                callback('Get Access Token Config Error');
+            }
+        });
+    }, function (token, callback) {
+        // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
+        // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
+        var query = new AV.Query(exports.Config);
+        query.get(acess_token_id).then(function (config) {
+            if (config) {
+                console.log("Save: %j", token);
+                config.set('value', token);
+                config.save();
+                callback(null);
+            } else {
+                callback('Get Access Token Config Error');
+            }
+        });
+    });
+}
+
 
 function addConfig(key, value) {
     var query = new AV.Query(exports.Config);
