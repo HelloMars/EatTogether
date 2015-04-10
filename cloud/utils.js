@@ -64,64 +64,6 @@ var HISTORY_TYPE = {
 
 exports.Config = AV.Object.extend("Config");
 
-var API_TOKENGET = function (callback) {
-    // 传入一个获取全局token的方法
-    var query = new AV.Query(exports.Config);
-    query.get(API_TOKEN_ID).then(function (config) {
-        if (config) {
-            console.log("Get: %j", config.get('value'));
-            callback(null, config.get('value'));
-        } else {
-            callback('Get Access Token Config Error');
-        }
-    });
-};
-
-var API_TOKENSAVE = function (token, callback) {
-    // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
-    // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
-    var query = new AV.Query(exports.Config);
-    query.get(API_TOKEN_ID).then(function (config) {
-        if (config) {
-            console.log("Save: %j", token);
-            config.set('value', token);
-            config.save();
-            callback(null);
-        } else {
-            callback('Get Access Token Config Error');
-        }
-    });
-};
-
-var OAUTH_TOKENGET = function (callback) {
-    // 传入一个获取全局token的方法
-    var query = new AV.Query(exports.Config);
-    query.get(OAUTH_TOKEN_ID).then(function (config) {
-        if (config) {
-            console.log("Get: %j", config.get('value'));
-            callback(null, config.get('value'));
-        } else {
-            callback('Get Access Token Config Error');
-        }
-    });
-};
-
-var OAUTH_TOKENSAVE = function (token, callback) {
-    // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
-    // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
-    var query = new AV.Query(exports.Config);
-    query.get(OAUTH_TOKEN_ID).then(function (config) {
-        if (config) {
-            console.log("Save: %j", token);
-            config.set('value', token);
-            config.save();
-            callback(null);
-        } else {
-            callback('Get Access Token Config Error');
-        }
-    });
-};
-
 if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
@@ -184,8 +126,8 @@ function setOnline() {
 
     USER_STATE = 1;
 
-    API = new WechatAPI(APPID, APPSECRET, API_TOKENGET, API_TOKENSAVE);
-    OAUTH = new WechatOAuth(APPID, APPSECRET, OAUTH_TOKENGET, OAUTH_TOKENSAVE);
+    API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
+    OAUTH = newWechatOAuth(APPID, APPSECRET, OAUTH_TOKEN_ID);
 
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
@@ -207,21 +149,20 @@ function setTest() {
 
     USER_STATE = 2;
 
-    API = new WechatAPI(APPID, APPSECRET, API_TOKENGET, API_TOKENSAVE);
-    OAUTH = new WechatOAuth(APPID, APPSECRET, OAUTH_TOKENGET, OAUTH_TOKENSAVE);
+    API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
+    OAUTH = newWechatOAuth(APPID, APPSECRET, OAUTH_TOKEN_ID);
 
     exports.Tuan = AV.Object.extend("DEVTuan");
     exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
     exports.Account = AV.Object.extend("DEVAccount");
 }
 
-function newWechatAPI(appid, appsecret, acess_token_id) {
+function newWechatAPI(appid, appsecret, api_token_id) {
     return new WechatAPI(appid, appsecret, function (callback) {
         // 传入一个获取全局token的方法
         var query = new AV.Query(exports.Config);
-        query.get(acess_token_id).then(function (config) {
+        query.get(api_token_id).then(function (config) {
             if (config) {
-                console.log("Get: %j", config.get('value'));
                 callback(null, config.get('value'));
             } else {
                 callback('Get Access Token Config Error');
@@ -231,7 +172,7 @@ function newWechatAPI(appid, appsecret, acess_token_id) {
         // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
         // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
         var query = new AV.Query(exports.Config);
-        query.get(acess_token_id).then(function (config) {
+        query.get(api_token_id).then(function (config) {
             if (config) {
                 console.log("Save: %j", token);
                 config.set('value', token);
@@ -244,6 +185,33 @@ function newWechatAPI(appid, appsecret, acess_token_id) {
     });
 }
 
+function newWechatOAuth(appid, appsecret, oauth_token_id) {
+    return new WechatOAuth(appid, appsecret, function (callback) {
+        // 传入一个获取全局token的方法
+        var query = new AV.Query(exports.Config);
+        query.get(oauth_token_id).then(function (config) {
+            if (config) {
+                callback(null, config.get('value'));
+            } else {
+                callback('Get Access Token Config Error');
+            }
+        });
+    }, function (token, callback) {
+        // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
+        // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
+        var query = new AV.Query(exports.Config);
+        query.get(oauth_token_id).then(function (config) {
+            if (config) {
+                console.log("Save: %j", token);
+                config.set('value', token);
+                config.save();
+                callback(null);
+            } else {
+                callback('Get Access Token Config Error');
+            }
+        });
+    });
+}
 
 function addConfig(key, value) {
     var query = new AV.Query(exports.Config);
