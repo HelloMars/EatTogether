@@ -768,8 +768,6 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         'members': members,
                         'prices': prices
                     });
-                    // 给买单者记账
-                    recordAccount(account, sum, true);
                     // 给参与者发交款通知
                     var promises = [];
                     var needFinish = true;
@@ -783,7 +781,7 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         } else {
                             // 记账并发消费提醒(注意团成员中包含买单者的情况)
                             if (results[i].get('user').id == user.id) {
-                                recordAccount(account, -usermap[toUser.id], true);
+                                sum -= usermap[toUser.id];
                             } else {
                                 recordAccount(results[i], -usermap[toUser.id], true);
                             }
@@ -792,6 +790,8 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
                         results[i].increment('news');
                         promises.push(results[i].save());
                     }
+                    // 给买单者记账
+                    recordAccount(account, sum, true);
                     promises.push(account.save());
                     // 给买单者记总账
                     user.increment('money', sum);
@@ -825,7 +825,7 @@ exports.ABUpBill = wrapper(function(user, tuan, account, members, prices, money)
 }, 'ABUpBill');
 
 /** 修改 ABUp Bill 的成员金额 */
-exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, diff) {
+exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, newmoney, oldmoney) {
     var modified = new AV.User();
     modified.id = userid;
     var query = new AV.Query(exports.Account);
@@ -834,7 +834,8 @@ exports.ModifyABUpBill = wrapper(function(user, tuan, account, history, userid, 
     query.include('user');
     return query.find().then(function(accounts) {
         if (accounts.length == 1) {
-            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0], tuan, history, diff, false);
+            return modifyABUpBill(user, account, accounts[0].get('user'), accounts[0],
+                tuan, history, newmoney-oldmoney, Math.abs(oldmoney) < 0.001);
         } else {
             return AV.Promise.error('Account Results Error');
         }
@@ -1038,8 +1039,11 @@ exports.ClearABUpBill = wrapper(function(account, money) {
 // 给createrAccount加钱，给modifiedAccount扣款清状态，并修改history状态
 // 给买单人记总账，给该团记总帐
 function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan, history, diff, isnew) {
-    recordAccount(createrAccount, diff, false);
-    recordAccount(modifiedAccount, -diff, isnew);
+    // 如果是同一个用户则不做任何操作
+    if (creater.id != modified.id) {
+        recordAccount(modifiedAccount, -diff, isnew);
+        recordAccount(createrAccount, diff, false);
+    }
     modifiedAccount.set('abbill', null);
     var data = history.get('data');
     var sum = 0;
@@ -1084,7 +1088,7 @@ function modifyABUpBill(creater, createrAccount, modified, modifiedAccount, tuan
 // 记录一笔消费
 function recordAccount(account, money, isnew) {
     var history = account.get('history'); // 个人近期消费历史，记录时间和金额
-    if (isnew && (money > 0 || !history)) {
+    if (isnew && (money >= 0 || !history)) {
         // 正向消费或尚未有历史记录(抹除之前记录，写入当前余额和本次消费金额)
         history = [];
         history.push({
