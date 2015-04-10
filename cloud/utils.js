@@ -6,7 +6,7 @@ var WechatOAuth = require('wechat-oauth');
 
 exports.TOKEN = 'EatTogether';
 var APPID, APPSECRET, API, OAUTH, TEMPID_BILL, TEMPID_JOIN,
-    TEMPID_QUIT, TEMPID_ABUP, TEMPID_MODAB, USER_STATE, API_TOKEN_ID, OAUTH_TOKEN_ID;
+    TEMPID_QUIT, TEMPID_ABUP, TEMPID_MODAB, USER_STATE, API_TOKEN_ID;
 
 var QRCODE_EXP = 1800;
 
@@ -116,7 +116,6 @@ function setOnline() {
     APPSECRET = 'c4dfb380644d4fb5266468da939935d5';
 
     API_TOKEN_ID = '55275526e4b00e097d5ec2de';
-    OAUTH_TOKEN_ID = '55276db6e4b0b40da350b8bf';
 
     TEMPID_BILL = 'yqYazavKFfpXfbSOLkObhsA5u3hMRukHm41Diy3YL8o';
     TEMPID_JOIN = '6ADofGKCi-z1R1iE_Q0fkPxLEXmYFdh4Q-pMFfdChbc';
@@ -127,7 +126,7 @@ function setOnline() {
     USER_STATE = 1;
 
     API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
-    OAUTH = newWechatOAuth(APPID, APPSECRET, OAUTH_TOKEN_ID);
+    OAUTH = newWechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
@@ -139,7 +138,6 @@ function setTest() {
     APPSECRET = '2d36952cf863088f293d57f0d99449eb';
 
     API_TOKEN_ID = '552764f4e4b0b40da3507573';
-    OAUTH_TOKEN_ID = '55276dd1e4b00e097d60ff80';
 
     TEMPID_BILL = 'g02ufxkZ4S3BhaSIMPCbWWyw_PypuYqcWqgLtAEI5MY';
     TEMPID_JOIN = 'G5nuBGoANZi9WZgR6tR7zM0WuRdDSv_epAVrQDT9zqY';
@@ -150,7 +148,7 @@ function setTest() {
     USER_STATE = 2;
 
     API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
-    OAUTH = newWechatOAuth(APPID, APPSECRET, OAUTH_TOKEN_ID);
+    OAUTH = newWechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("DEVTuan");
     exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
@@ -165,7 +163,7 @@ function newWechatAPI(appid, appsecret, api_token_id) {
             if (config) {
                 callback(null, config.get('value'));
             } else {
-                callback('Get Access Token Config Error');
+                callback('newWechatAPI Error');
             }
         });
     }, function (token, callback) {
@@ -179,35 +177,37 @@ function newWechatAPI(appid, appsecret, api_token_id) {
                 config.save();
                 callback(null);
             } else {
-                callback('Get Access Token Config Error');
+                callback('newWechatAPI Error');
             }
         });
     });
 }
 
-function newWechatOAuth(appid, appsecret, oauth_token_id) {
-    return new WechatOAuth(appid, appsecret, function (callback) {
+function newWechatOAuth(appid, appsecret) {
+    return new WechatOAuth(appid, appsecret, function (openid, callback) {
         // 传入一个获取全局token的方法
-        var query = new AV.Query(exports.Config);
-        query.get(oauth_token_id).then(function (config) {
-            if (config) {
-                callback(null, config.get('value'));
+        var query = new AV.Query(AV.User);
+        query.equalTo('username', openid);
+        return query.first().then(function(user) {
+            if (user) {
+                callback(null, user.get('token'));
             } else {
-                callback('Get Access Token Config Error');
+                callback('newWechatOAuth Error');
             }
         });
-    }, function (token, callback) {
+    }, function (openid, token, callback) {
         // 请将token存储到全局，跨进程、跨机器级别的全局，比如写到数据库、redis等
         // 这样才能在cluster模式及多机情况下使用，以下为写入到文件的示例
-        var query = new AV.Query(exports.Config);
-        query.get(oauth_token_id).then(function (config) {
-            if (config) {
-                console.log("Save: %j", token);
-                config.set('value', token);
-                config.save();
+        var query = new AV.Query(AV.User);
+        query.equalTo('username', openid);
+        return query.first().then(function(user) {
+            if (user) {
+                console.log("Save: " + openid + ", %j", token);
+                user.set('token', token);
+                user.save();
                 callback(null);
             } else {
-                callback('Get Access Token Config Error');
+                callback('newWechatOAuth Error');
             }
         });
     });
