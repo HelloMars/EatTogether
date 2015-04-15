@@ -68,7 +68,7 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setTest();
+    setOnline();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
@@ -126,7 +126,7 @@ function setOnline() {
     USER_STATE = 1;
 
     API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
-    OAUTH = newWechatOAuth(APPID, APPSECRET);
+    OAUTH = new WechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("Tuan");
     exports.TuanHistory = AV.Object.extend("TuanHistory");
@@ -148,7 +148,7 @@ function setTest() {
     USER_STATE = 2;
 
     API = newWechatAPI(APPID, APPSECRET, API_TOKEN_ID);
-    OAUTH = newWechatOAuth(APPID, APPSECRET);
+    OAUTH = new WechatOAuth(APPID, APPSECRET);
 
     exports.Tuan = AV.Object.extend("DEVTuan");
     exports.TuanHistory = AV.Object.extend("DEVTuanHistory");
