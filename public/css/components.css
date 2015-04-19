@@ -53,28 +53,45 @@
   left: 10px; }
 
 .nav ul {
-  background: #fff;
+  background: #f6f6f6;
   width: 100%;
-  height: 40px;
-  line-height: 40px;
+  height: 60px;
+  line-height: 60px;
   position: fixed;
   bottom: 0;
   text-align: center;
   border-top: 1px solid #e0dee1;
-  z-index: 2; }
+  z-index: 2;
+  font-size: 30px; }
   .nav ul li {
     text-align: center;
     display: inline-block;
-    width: 25%;
-    font-size: 16px;
+    width: 20%;
     float: left; }
     .nav ul li a {
       text-decoration: none;
-      color: #888;
-      width: 100%; }
+      width: 100%;
+      color: #7d7d7d; }
     .nav ul li.cur a {
-      color: #609700; }
-    .nav ul li.me a {
-      font-size: 20px; }
+      color: #ff9b25; }
+
+.index-btn {
+  position: fixed;
+  bottom: 20px;
+  z-index: 10;
+  left: 50%;
+  margin-left: -40px;
+  height: 75px;
+  width: 75px;
+  box-shadow: 0 0 0 5px #f6f6f6;
+  line-height: 1;
+  background-color: #ff9b25;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 0 0 5px #f6f6f6; }
+  .index-btn .icon {
+    margin-top: 5px;
+    font-size: 40px;
+    display: block; }
 
 /*# sourceMappingURL=components.css.map */

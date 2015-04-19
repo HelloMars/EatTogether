@@ -59,37 +59,54 @@
 
 .nav{
     ul{
-      background: $bgc;
+      background: #f6f6f6;
       width: 100%;
-      height: 40px;
-      line-height: 40px;
+      height: 60px;
+      line-height: 60px;
       position: fixed;
       bottom:0;
       text-align: center;
       border-top:1px solid $bgc1;
       z-index: 2;
+      font-size: 30px;
         li{
             text-align: center;
             display: inline-block;
-            width:25%;
-            font-size: 16px;
+            width:20%;
             float:left;
             a{
                 text-decoration: none;
-                color: $textC;
                 width:100%;
+                color: #7d7d7d;
+
             }
             &.cur{
               a{
-                color: $btnActiveBgc;
-              }
-            }
-            &.me{
-              a{
-                font-size: 20px;
+                color: #ff9b25;
               }
             }
         }
     }
 }
 
+
+.index-btn{
+  position: fixed;
+  bottom: 20px;
+  z-index: 10;
+  left: 50%;
+  margin-left: -40px;
+  height: 75px;
+  width: 75px;
+  box-shadow:0 0 0 5px #f6f6f6;
+  line-height: 1;
+  background-color: #ff9b25;
+  color: #fff;
+  text-decoration: none;
+  box-shadow:0 0 0 5px #f6f6f6;
+  .icon{
+    margin-top: 5px;
+    font-size: 40px;
+    display: block;
+  }
+}

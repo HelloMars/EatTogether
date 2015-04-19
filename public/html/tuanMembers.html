@@ -1,16 +1,15 @@
 <div class="s-members">
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
+    <h1 class="tuan-name">{{name}}</h1>
     <div class="members" ng-show="loaded">
         <div class="member-wrap dropdown" dropdown on-toggle="toggled(open)" ng-repeat="member in list">
             <a  ng-style="member.avatarBg" href class="member dropdown-toggle" dropdown-toggle>
-                <p ng-style="member.moneyBgc">{{member.money}}</p>
             </a>
+            <p ng-class="{owe : status}">{{member.money}}</p>
             <ul ng-if="member.history"  class="dropdown-menu">
-                <li class="nickname">
-                    <span>({{member.name}})</span>
-                </li>
-                <li ng-repeat="history in member.history">
+                <li class="nickname">{{member.name}} </li>
+                <li ng-repeat="history in member.history" ng-class="{spec : !history.date }">
                     <span ng-if="history.date" class="date">{{history.date}}</span>
                     <span class="money" ng-class="{negative : history.money < 0, first : $first}">{{history.money}}</span>
                 </li>
@@ -19,12 +18,15 @@
                 </li>
             </ul>
             <ul ng-if="!member.history"  class="dropdown-menu">
-                <li class="nickname"> <span>({{member.name}})</span> </li>
+                <li class="nickname">{{member.name}} </li>
                 <li> <span class="first">暂无历史</span> </li>
             </ul>
         </div>
 
 
-        <a href="javascript:;"   ng-click="bill()" class="circle-btn circle-btn-right">买单</a>
+        <a href="javascript:;"   ng-click="bill()" class="index-btn circle-btn circle-btn-right">
+            <span class="icon icon-yen"></span>
+            <span class="tip">买单</span>
+        </a>
     </div>
 </div>

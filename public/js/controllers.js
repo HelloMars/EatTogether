@@ -88,9 +88,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                 member.avatarBg = {
                     'background-image': 'url(' + member.headimgurl + ')'
                 };
-                member.moneyBgc = {
-                    'background' : (member.sex === 1 ? '#A3B1CF' : 'rgb(240, 188, 240)')
-                };
+                member.status = member.money < 0;
                 $scope.list.push(member);
                 if (member.history) {
                     member.history = member.history.map(function(his){
@@ -101,6 +99,7 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                     });
                 }
             });
+            $scope.name = res.name;
             $scope.loaded = true;
         });
         $scope.bill = function() {
@@ -129,7 +128,6 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
             $scope.numberErr = false;
             $scope.abMode = false;
             $scope.all = true;
-
             $scope.members.forEach(function(member) {
                 member.avatarBg = {
                     'background-image' : 'url(' + member.headimgurl + ')'
