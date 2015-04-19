@@ -119,7 +119,7 @@ app.get('/createtuan', function(req, res) {
     req.AV.user.fetch().then(function(user) {
         return utils.CreateTuan(user).then(function(tuan) {
             return utils.JoinTuan(user, tuan, null).then(function() {
-                return utils.FormatTuanDetail(tuan);
+                return utils.FormatTuanDetail(user, tuan);
             });
         });
     }).then(function(tuan) {
@@ -135,7 +135,7 @@ app.get('/jointuan', function(req, res) {
     utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
         if (result.tuan && !result.isin) {
             return utils.JoinTuan(result.user, result.tuan, result.account).then(function() {
-                return utils.FormatTuanDetail(result.tuan);
+                return utils.FormatTuanDetail(result.user, result.tuan);
             });
         } else {
             return AV.Promise.error('Illegal');
