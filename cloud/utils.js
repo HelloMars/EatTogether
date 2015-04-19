@@ -563,13 +563,18 @@ exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
     }
 }, 'ModifyTuan');
 
-exports.FormatTuanDetail = wrapper(function (tuanobj) {
+exports.FormatTuanDetail = wrapper(function (user, tuanobj) {
     var tuan = {};
     tuan.id = tuanobj.get('tuanid');
     tuan.name = tuanobj.get('name');
     tuan.news = tuanobj.get('news');
     tuan.slogan = tuanobj.get('slogan');
     tuan.money = formatFloat(tuanobj.get('money'));
+    tuan.user = {
+        'uid': user.id,
+        'name': user.get('nickname'),
+        'headimgurl': formatHeadImgUrl(user, 132)
+    };
 
     var query = new AV.Query(exports.Account);
     query.equalTo('tuan', tuanobj);

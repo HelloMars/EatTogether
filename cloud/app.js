@@ -167,7 +167,7 @@ app.get('/quittuan', function(req, res) {
 app.get('/tuandetail', function(req, res) {
     utils.getUserTuanObj(req.AV.user, req.query.id).then(function(result) {
         if (result.tuan && result.isin) {
-            return utils.FormatTuanDetail(result.tuan);
+            return utils.FormatTuanDetail(result.user, result.tuan);
         } else {
             return AV.Promise.error('Illegal');
         }
