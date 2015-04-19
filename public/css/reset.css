@@ -6,5 +6,7 @@ body {
   body h1, body h2, body h3, body h4, body h5 {
     font-size: 1em;
     font-weight: normal; }
+  body li {
+    list-style: none; }
 
 /*# sourceMappingURL=reset.css.map */

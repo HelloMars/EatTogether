@@ -142,11 +142,12 @@ $width:270px;
 }
 .s-history{
     .history{
+        overflow: hidden;
         li{
             font-size: 14px;
             padding: 10px;
             border-bottom:1px solid $textAreaBg;
-            position: relative;
+            position: static;
             line-height: 1.5;
             img{
                 width: 30px;
@@ -170,14 +171,31 @@ $width:270px;
                 height: 30px;
                 line-height: 30px;
             }
+            &.deletable{
+                position: relative;
+            }
+            .item{
+                position: relative;
+            }
             .delete{
                 position: absolute;
-                right: 0;
+                right: -50px;
                 background-color: red;
                 color: #fff;
+                z-index: 10;
+                display: block;
+                height: 100%;
+                top: 0;
+                vertical-align: middle;
+                padding: 0 10px;
+                span{
+                    vertical-align:  middle;
+                }
             }
             &.deleted{
-                text-decoration: line-through;
+                .detail{
+                    text-decoration: line-through;
+                }
             }
         }
     }

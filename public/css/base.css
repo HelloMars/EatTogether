@@ -6,6 +6,8 @@ body {
   body h1, body h2, body h3, body h4, body h5 {
     font-size: 1em;
     font-weight: normal; }
+  body li {
+    list-style: none; }
 
 /** components */
 .btn-s {
@@ -192,38 +194,52 @@ body {
     .s-index .qrcode img {
       width: 265px; }
 
-.s-history .history li {
-  font-size: 14px;
-  padding: 10px;
-  border-bottom: 1px solid #dddddd;
-  position: relative;
-  line-height: 1.5; }
-  .s-history .history li img {
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 10px 0 0; }
-  .s-history .history li .time {
-    display: inline-block;
-    position: absolute;
-    right: 10px;
-    height: 30px;
-    line-height: 30px; }
-  .s-history .history li .detail {
-    display: inline-block;
-    width: 80%;
-    padding: 0 50px 0 0;
-    height: 30px;
-    line-height: 30px; }
-  .s-history .history li .delete {
-    position: absolute;
-    right: 0;
-    background-color: red;
-    color: #fff; }
-  .s-history .history li.deleted {
-    text-decoration: line-through; }
+.s-history .history {
+  overflow: hidden; }
+  .s-history .history li {
+    font-size: 14px;
+    padding: 10px;
+    border-bottom: 1px solid #dddddd;
+    position: static;
+    line-height: 1.5; }
+    .s-history .history li img {
+      width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      display: inline-block;
+      vertical-align: top;
+      margin: 0 10px 0 0; }
+    .s-history .history li .time {
+      display: inline-block;
+      position: absolute;
+      right: 10px;
+      height: 30px;
+      line-height: 30px; }
+    .s-history .history li .detail {
+      display: inline-block;
+      width: 80%;
+      padding: 0 50px 0 0;
+      height: 30px;
+      line-height: 30px; }
+    .s-history .history li.deletable {
+      position: relative; }
+    .s-history .history li .item {
+      position: relative; }
+    .s-history .history li .delete {
+      position: absolute;
+      right: -50px;
+      background-color: red;
+      color: #fff;
+      z-index: 10;
+      display: block;
+      height: 100%;
+      top: 0;
+      vertical-align: middle;
+      padding: 0 10px; }
+      .s-history .history li .delete span {
+        vertical-align: middle; }
+    .s-history .history li.deleted .detail {
+      text-decoration: line-through; }
 
 .s-bill .bill {
   padding: 0 20px; }
