@@ -6,18 +6,25 @@ var eatTogetherControllers = angular.module('eatTogetherControllers', []);
 
 
 /** 饭团列表 */
+var randomBgColor = ['229, 207, 99', '91, 204, 190', '250, 154, 99', '161,189,220', '234,110,111'];
 eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan', '$modal',
     function ($scope, $location, tuan, $modal) {
         $scope.loaded = false;
         $scope.column = 1;
         $scope.list = [];
+
         tuan.getAll().then(function(res) {
             res.tuans.map(function(tuan) {
+                var inx = Math.floor(Math.random()*5);
+                tuan.style = {
+                    'background' : 'rgb(' + randomBgColor[inx] + ')',
+                    'box-shadow' : '0 0 0 5px rgba('+ randomBgColor[inx] + ', .3)'
+                };
                 if (tuan.news !== 0) {
-                    tuan.animatDelayStyle = {
+                    tuan.style = angular.extend(tuan.style, {
                         '-webkit-animation-delay' :  Math.random() + 's',
                         'animation-delay' :  Math.random() + 's'
-                    };
+                    });
 
                 }
                 $scope.list.push(tuan);
@@ -122,6 +129,8 @@ eatTogetherControllers.controller('TuanBillCtrl', ['$scope', '$routeParams', '$l
         $scope.column = 2;
         $scope.tuanId = $routeParams.tuanId;
         tuan.getTuanInfo($scope.tuanId).then(function (res) {
+            $scope.user = res.user;
+            $scope.name = res.name;
             $scope.members = res.members;
             $scope.curTotal = res.members.length;
             $scope.notMember = 0;
@@ -268,6 +277,9 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
 
         $scope.leftMoveStyle = {
           'left' : '0'
+        };
+        $scope.goTop = function () {
+            document.body.scrollTop = 0;
         };
         $scope.swipeLeft = function (enableRevert, $event) {
             if (!enableRevert) return;

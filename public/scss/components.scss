@@ -70,6 +70,9 @@
       z-index: 2;
       font-size: 30px;
         li{
+            &.placeholder{
+              color: #f6f6f6;
+            }
             text-align: center;
             display: inline-block;
             width:20%;
@@ -109,4 +112,8 @@
     font-size: 40px;
     display: block;
   }
+}
+.index-btn:active,.index-btn:focus,.index-btn:hover{
+  color: #fff;
+  text-decoration: none;
 }

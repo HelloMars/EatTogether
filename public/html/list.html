@@ -2,7 +2,7 @@
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <div ng-show="loaded" >
         <div class="list">
-            <div ng-class="{shake : data.news !== 0, bounceIn : data.new}" ng-style="{{data.animatDelayStyle}}" ng-repeat="data in list" class="tuan  animated infinite" ng-click="enterTuan(data)">
+            <div ng-class="{shake : data.news !== 0, bounceIn : data.new}" ng-style="{{data.style}}" ng-repeat="data in list" class="tuan  animated infinite" ng-click="enterTuan(data)">
                 <span ng-show="data.news !== 0" class="new">{{data.news}}</span>
                 <span class="name">{{data.name}}</span>
             </div>

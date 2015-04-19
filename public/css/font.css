@@ -68,3 +68,9 @@
 .icon-user-outline:before {
   content: "j";
 }
+.icon-logout:before {
+  content: "k";
+}
+.icon-up-bold:before {
+  content: "l";
+}
