@@ -1,7 +1,7 @@
 <div class="s-members">
     <ng-include src="'./html/nav.html'"></ng-include>
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
-    <h1 class="tuan-name">{{name}}</h1>
+    <h1 class="tuan-name" ng-show="loaded">{{name}}</h1>
     <div class="members" ng-show="loaded">
         <div class="member-wrap dropdown" dropdown on-toggle="toggled(open)" ng-repeat="member in list">
             <a  ng-style="member.avatarBg" href class="member dropdown-toggle" dropdown-toggle>
