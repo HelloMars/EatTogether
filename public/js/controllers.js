@@ -107,7 +107,6 @@ eatTogetherControllers.controller('TuanMembersCtrl', ['$scope', '$routeParams', 
                 }
             });
             $scope.name = res.name;
-            debugger;
 
             $scope.loaded = true;
         });

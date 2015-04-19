@@ -32,7 +32,7 @@
                 消费金额：
                 <input type="number" placeholder="输入买单金额" ng-model="totalMoney" >
                 <span class="tips" ng-show="abMode" ng-click="abModeTipShow = !abModeTipShow">?</span>
-                <div class="tip-panel" ng-show="abModeTipShow">
+                <div class="tip-panel" ng-show="abMode && abModeTipShow">
                     筹款模式下"总消费"金额选填。不填时当所有人都已付款则自动结束筹款，不验证筹款总额。
                 </div>
                 <span ng-show="!abMode" class="aver">人均：<span class="average">{{totalMoney/(curTotal + notMember) | checkAverage}}</span></span>
