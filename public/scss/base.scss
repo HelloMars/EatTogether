@@ -15,7 +15,7 @@ body{
 
 .s-members{
     text-align: justify;
-    h1{
+    .tuan-name{
         width: 100%;
         background-color: #f6f6f6;
         text-align: center;
@@ -25,21 +25,22 @@ body{
         font-size: 20px;
     }
     .members{
-        padding: 30px;
+        padding: 20px;
+        text-align: center;
         .member-wrap{
             display: inline-block;
-            margin: 0 10px;
-            width: 80px;
-            height: 80px;
+            margin: 0 15px;
+            width: 60px;
+            height: 100px;
             .member{
                 display: inline-block;
-                width: 80px;
-                height: 80px;
+                width: 60px;
+                height: 60px;
                 background-size: 100%;
                 border-radius: 40px;
                 position: relative;
                 overflow: hidden;
-                box-shadow:0 0 0 5px #ededed;
+                box-shadow:0 0 0 3px #ededed;
                 img{
                     max-width: 100%;
                 }
@@ -162,6 +163,7 @@ $width:270px;
 .s-history{
     .history{
         overflow: hidden;
+        padding:0 0 60px 0;
         li{
             font-size: 14px;
             padding: 10px;
@@ -252,9 +254,12 @@ $width:270px;
     }
 
     .bd{
-        padding:10px 20px;
         position: relative;
+        padding: 10px 0 0 0;
         border-bottom: 1px dashed #aaa;
+        h2{
+            padding:0 0 0 15px;
+        }
         .all{
             position: absolute;
             right: 15px;
@@ -266,6 +271,7 @@ $width:270px;
         }
         .members{
             margin: 5px 0 0 0;
+            text-align: center;
             input{
                 height: 20px;
                 line-height: 20px;
@@ -276,16 +282,16 @@ $width:270px;
 
             label{
                 display: inline-block;
-                width:50px;
-                height: 50px;
+                width:40px;
+                height: 40px;
                 border-radius: 25px;
                 background-size: 100%;
-                line-height: 50px;
+                line-height: 40px;
                 text-align: center;
                 position: relative;
-                margin: 5px;
-                box-shadow: 0 0 0 5px #ededed;
-                padding-top: 50px;
+                margin: 0 15px;
+                box-shadow: 0 0 0 3px #ededed;
+                padding-top: 40px;
                 input{
                     display: none;
                 }
@@ -305,6 +311,7 @@ $width:270px;
                     overflow: hidden;
                     white-space:nowrap;
                     color: #676767;
+                    font-size: 12px;
                 }
             }
         }
@@ -371,7 +378,6 @@ $width:270px;
         display: inline-block;
         height: 80px;
         width: 80px;
-        border-radius: 40px;
         line-height: 80px;
         margin: 10px;
         border-radius: 50%;
@@ -517,6 +523,7 @@ $width:270px;
             height: 50px;
             border-radius: 25px;
             background-size: 100%;
+            background-repeat: no-repeat;
             line-height: 50px;
             text-align: center;
             position: relative;

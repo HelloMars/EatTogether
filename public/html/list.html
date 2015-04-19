@@ -10,7 +10,7 @@
 
         <div class="index-nav">
             <span class="self">
-                <span class="avatar"><img src="{{user.headimgurl}}" alt=""/></span>
+                <span class="avatar"  ng-click="changeName()"><img src="{{user.headimgurl}}" alt=""/></span>
                 <span class="user-info">
                     <span class="user" ng-show="!modName" ng-click="changeName()">{{user.nickname}}</span>
                     <span class="total">共消费<span class="money">{{user.money}}</span>元</span>

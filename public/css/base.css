@@ -120,7 +120,7 @@ body {
 
 .s-members {
   text-align: justify; }
-  .s-members h1 {
+  .s-members .tuan-name {
     width: 100%;
     background-color: #f6f6f6;
     text-align: center;
@@ -129,21 +129,22 @@ body {
     color: #636363;
     font-size: 20px; }
   .s-members .members {
-    padding: 30px; }
+    padding: 20px;
+    text-align: center; }
     .s-members .members .member-wrap {
       display: inline-block;
-      margin: 0 10px;
-      width: 80px;
-      height: 80px; }
+      margin: 0 15px;
+      width: 60px;
+      height: 100px; }
       .s-members .members .member-wrap .member {
         display: inline-block;
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         background-size: 100%;
         border-radius: 40px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 0 0 5px #ededed; }
+        box-shadow: 0 0 0 3px #ededed; }
         .s-members .members .member-wrap .member img {
           max-width: 100%; }
       .s-members .members .member-wrap p {
@@ -233,7 +234,8 @@ body {
       width: 265px; }
 
 .s-history .history {
-  overflow: hidden; }
+  overflow: hidden;
+  padding: 0 0 60px 0; }
   .s-history .history li {
     font-size: 14px;
     padding: 10px;
@@ -303,9 +305,11 @@ body {
       .s-bill .hd .mode .choosen {
         background: #ff9b25; }
   .s-bill .bd {
-    padding: 10px 20px;
     position: relative;
+    padding: 10px 0 0 0;
     border-bottom: 1px dashed #aaa; }
+    .s-bill .bd h2 {
+      padding: 0 0 0 15px; }
     .s-bill .bd .all {
       position: absolute;
       right: 15px;
@@ -314,7 +318,8 @@ body {
       color: #ff9b25;
       font-size: 20px; }
     .s-bill .bd .members {
-      margin: 5px 0 0 0; }
+      margin: 5px 0 0 0;
+      text-align: center; }
       .s-bill .bd .members input {
         height: 20px;
         line-height: 20px;
@@ -323,16 +328,16 @@ body {
         padding: 0 10px; }
       .s-bill .bd .members label {
         display: inline-block;
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         border-radius: 25px;
         background-size: 100%;
-        line-height: 50px;
+        line-height: 40px;
         text-align: center;
         position: relative;
-        margin: 5px;
-        box-shadow: 0 0 0 5px #ededed;
-        padding-top: 50px; }
+        margin: 0 15px;
+        box-shadow: 0 0 0 3px #ededed;
+        padding-top: 40px; }
         .s-bill .bd .members label input {
           display: none; }
         .s-bill .bd .members label .icon {
@@ -348,7 +353,8 @@ body {
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
-          color: #676767; }
+          color: #676767;
+          font-size: 12px; }
   .s-bill .ft {
     padding: 10px 10px; }
     .s-bill .ft h2 {
@@ -398,7 +404,6 @@ body {
   display: inline-block;
   height: 80px;
   width: 80px;
-  border-radius: 40px;
   line-height: 80px;
   margin: 10px;
   border-radius: 50%;
@@ -516,6 +521,7 @@ body {
   height: 50px;
   border-radius: 25px;
   background-size: 100%;
+  background-repeat: no-repeat;
   line-height: 50px;
   text-align: center;
   position: relative;
