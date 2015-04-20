@@ -3,7 +3,7 @@
     <ng-include ng-show="!loaded" src="'./html/loading.html'"></ng-include>
     <div ng-show="loaded" class="bill">
         <div class="hd">
-            <img src="{{user.headimgurl}}" alt=""/>
+            <img ng-src="{{user.headimgurl}}" alt=""/>
             <p><span class="user">{{user.nickname}}</span>为<span>{{name}}团</span>买单</p>
             <div class="mode">
                 <span ng-class="{choosen : !abMode}" ng-click="abMode = false">AA模式</span>
