@@ -12,7 +12,8 @@
 
 }
 
-[data-icon]:before {
+[data-icon]:before,
+.icon{
   font-family: "eattogether" !important;
   content: attr(data-icon);
   font-style: normal !important;
