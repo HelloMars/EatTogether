@@ -5,7 +5,7 @@
 (function(){
     var eatTogether = angular.module("EatTogether",[
         'ngRoute',
-        //'ngTouch',
+        'ngTouch',
         'eatTogetherControllers',
         'tuanService',
         'tuanFilters',
@@ -15,9 +15,7 @@
     eatTogether.run(['tuan', function(tuan) {
             AV.initialize("vk84p7j0sizwl03zgvb3y1eg6z7klbs97hrgock7ilfascaf",
                 "pxbvfffu8uli2tcld6sg9pgfouoq1fbse6l4bf0xt1ukaqrq");
-            FastClick.attach(document.body);
-
-    }]);
+        }]);
 
 
     eatTogether.config(['$routeProvider', 'hammerDefaultOptsProvider',
@@ -54,13 +52,13 @@
                     redirectTo: '/tuan'
                 });
 
-            //hammerDefaultOptsProvider.set({
-            //    recognizers: [
-            //        [Hammer.Tap],
-            //        [Hammer.Press],
-            //        [Hammer.Pan]
-            //    ]
-            //});
+            hammerDefaultOptsProvider.set({
+                recognizers: [
+                    [Hammer.Tap],
+                    [Hammer.Press],
+                    [Hammer.Pan]
+                ]
+            });
         }]);
 
 })();
