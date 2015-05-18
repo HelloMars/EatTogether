@@ -840,6 +840,6 @@
   }
 }());
 
-$(function() {
+document.addEventListener("DOMContentLoaded", function(event) {
     FastClick.attach(document.body);
 });

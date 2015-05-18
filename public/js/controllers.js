@@ -339,6 +339,7 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
         tuan.getHistoryDetail($scope.tuanId, $scope.historyId)
         .then(function (res) {
             angular.extend($scope, res);
+            $scope.abMode = $scope.type > 11;
             $scope.members.forEach(function(member) {
                 member.avatarBg = {
                     'background-image' : 'url(' + member.headimgurl + ')'
