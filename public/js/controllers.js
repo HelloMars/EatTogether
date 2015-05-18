@@ -283,34 +283,37 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             document.body.scrollTop = 0;
         };
         $scope.swipeLeft = function (enableRevert, $event) {
-            if (!enableRevert) return;
-            if ($scope.leftMoveStyle.left === '-50px') return;
-            var deltaX = Math.abs($event.deltaX);
-            if (deltaX > 50 ) {
-                $scope.leftMoveStyle = {
-                    'left' : '-50px'
-                };
+            if (enableRevert) {
+                if ($scope.leftMoveStyle.left === '-50px') return;
+                var deltaX = Math.abs($event.deltaX);
+                if (deltaX > 50 ) {
+                    $scope.leftMoveStyle = {
+                        'left' : '-50px'
+                    };
 
-            } else {
-                $scope.leftMoveStyle = {
-                    'left' : deltaX + 'px'
-                };
+                } else {
+                    $scope.leftMoveStyle = {
+                        'left' : deltaX + 'px'
+                    };
+                }
+
             }
         };
         $scope.swipeRight = function (enableRevert, $event) {
-            if (!enableRevert) return;
-            var deltaX = Math.abs($event.deltaX);
-            if ($scope.leftMoveStyle.left === 0) return;
-            if (deltaX > 50) {
-                $scope.leftMoveStyle = {
-                    left : 0
+            if (enableRevert) {
+                var deltaX = Math.abs($event.deltaX);
+                if ($scope.leftMoveStyle.left === 0) return;
+                if (deltaX > 50) {
+                    $scope.leftMoveStyle = {
+                        left : 0
+                    }
+                } else {
+                    $scope.leftMoveStyle = {
+                        left : (- 50 + deltaX) + 'px'
+                    }
                 }
-            } else {
-                $scope.leftMoveStyle = {
-                    left : (- 50 + deltaX) + 'px'
-                }
+                console.log($event.deltaX);
             }
-            console.log($event.deltaX);
         };
         $scope.revert = function ( history) {
             tuan.revertHistory($scope.tuanId, history.id).then(function (res) {

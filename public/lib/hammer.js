@@ -2194,7 +2194,7 @@
             }
 
             // run the touch-action polyfill
-            this.touchAction.preventDefaults(inputData);
+            // this.touchAction.preventDefaults(inputData);
 
             var recognizer;
             var recognizers = this.recognizers;
