@@ -324,6 +324,9 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
             if (history.type < 10) return;
             $location.url('/tuan/' + $routeParams.tuanId + '/history/' + history.id);
         };
+        $scope.bill = function() {
+            $location.url('/tuan/' + $scope.tuanId + '/bill');
+        };
     }
 
 ]);
@@ -382,7 +385,7 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
             modalInstance.result.then(function (money) {
                 tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, money, member.money).then(function (res) {
                     if (res.code === 0) {
-                        location.reload();
+                        $location.url('/tuan/' + $scope.tuanId + '/history/' + $scope.historyId + '?modMoney');
                     } else {
                         alert(res.message);
                     }
