@@ -274,10 +274,14 @@ body {
       display: block;
       height: 100%;
       top: 0;
+      width: 50px;
       vertical-align: middle;
       padding: 0 10px; }
       .s-history .history li .delete span {
-        vertical-align: middle; }
+        vertical-align: middle;
+        font-size: 20px;
+        line-height: 3;
+        text-align: center; }
     .s-history .history li.deleted .detail {
       text-decoration: line-through; }
 

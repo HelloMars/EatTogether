@@ -20,7 +20,7 @@
             hm-drag-left="swipeLeft(history.revertable, $event)"
             hm-drag-right="swipeRight(history.revertable, $event)"
             ng-style="leftMoveStyle">
-            <div ng-if="history.revertable" class="delete"  ng-click="revert(history)"><span>删除</span></div>
+            <div ng-if="history.revertable" class="delete"  ng-click="revert(history)"><span>X</span></div>
             <div ng-click="goDetail(history)" class="item" ng-style="">
                 <img ng-src="{{history.creater.headimgurl}}" alt=""/>
                 <div class="detail" ng-switch-when="1">

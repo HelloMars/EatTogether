@@ -293,9 +293,10 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
 
                 } else {
                     $scope.leftMoveStyle = {
-                        'left' : deltaX + 'px'
+                        'left' : - deltaX + 'px'
                     };
                 }
+                // console.log('left', $event.deltaX);
 
             }
         };
@@ -312,7 +313,6 @@ eatTogetherControllers.controller('TuanHistoryCtrl', ['$scope', '$routeParams', 
                         left : (- 50 + deltaX) + 'px'
                     }
                 }
-                console.log($event.deltaX);
             }
         };
         $scope.revert = function ( history) {
