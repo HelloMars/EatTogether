@@ -68,7 +68,7 @@ if (__local) {
     // 当前环境为「开发环境」，是由命令行工具启动的
     console.log('「开发环境」');
 
-    setOnline();
+    setTest();
 
     exports.SERVER = 'http://127.0.0.1:3000/';
 } else if(__production) {
@@ -1271,6 +1271,7 @@ function formatTuan(tuanobj, news) {
 
 function formatAAHistory(history, ret) {
     var data = history.get('data');
+    ret.tuanname = data.tuanname;
     ret.money = data.money;
     ret.othersnum = data.othersnum;
 
@@ -1287,12 +1288,21 @@ function formatAAHistory(history, ret) {
             });
         }
         ret.members = members;
+        return history.get('creater').fetch();
+    }).then(function(user) {
+        ret.user = {
+            'uid': user.id,
+            'name': user.get('nickname'),
+            'sex': user.get('sex'),
+            'headimgurl': formatHeadImgUrl(user, 132)
+        };
         return AV.Promise.as(ret);
     });
 }
 
 function formatABUpHistory(history, ret) {
     var data = history.get('data');
+    ret.tuanname = data.tuanname;
     ret.money = data.money;
 
     var sum = 0;
@@ -1325,6 +1335,14 @@ function formatABUpHistory(history, ret) {
             });
         }
         ret.members = members;
+        return history.get('creater').fetch();
+    }).then(function(user) {
+        ret.user = {
+            'uid': user.id,
+            'name': user.get('nickname'),
+            'sex': user.get('sex'),
+            'headimgurl': formatHeadImgUrl(user, 132)
+        };
         return AV.Promise.as(ret);
     });
 }
