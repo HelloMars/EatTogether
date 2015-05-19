@@ -355,7 +355,7 @@ body {
         .s-bill .bd .members label .icon, .s-history-detail .bd .members label .icon {
           position: absolute;
           top: 40px;
-          right: -11px;
+          right: 0px;
           font-size: 25px;
           color: #7d7d7d; }
         .s-bill .bd .members label .icon-check-mark-2, .s-history-detail .bd .members label .icon-check-mark-2 {
@@ -367,7 +367,8 @@ body {
           white-space: nowrap;
           color: #676767;
           font-size: 12px;
-          margin: 10px 0 0 0; }
+          margin: 10px 0 0 0;
+          line-height: 1; }
           .s-bill .bd .members label p span, .s-history-detail .bd .members label p span {
             display: block;
             line-height: 1.5; }
@@ -511,7 +512,8 @@ body {
     display: inline-block;
     border-radius: 20px;
     text-align: center;
-    line-height: 30px; }
+    line-height: 30px;
+    color: #000; }
   .s-history-detail .process-bar .total {
     display: inline-block;
     height: 30px;
