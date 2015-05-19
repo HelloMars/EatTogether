@@ -385,7 +385,7 @@ eatTogetherControllers.controller('TuanHistoryDetailCtrl', ['$scope', '$routePar
             modalInstance.result.then(function (money) {
                 tuan.modABUpBill($scope.tuanId, $scope.historyId, member.uid, money, member.money).then(function (res) {
                     if (res.code === 0) {
-                        $location.url('/tuan/' + $scope.tuanId + '/history/' + $scope.historyId + '?modMoney');
+                        $location.url('/tuan/' + $scope.tuanId + '/history/' + $scope.historyId + '?_=' + (new Date()).toString());
                     } else {
                         alert(res.message);
                     }
