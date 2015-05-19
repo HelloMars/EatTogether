@@ -17,7 +17,10 @@
             <div class="members">
                 <label ng-click="modMoney(member)" ng-style="member.avatarBg" ng-class="choosen" ng-repeat="member in members">
                     <span ng-show="member.inThis" class="icon icon-check-mark-2"></span>
-                    <p>{{member.name}}</p>
+                    <p>
+                        <span>{{member.name}}</span>
+                        <span>{{member.money}}元</span>
+                    </p>
                 </label>
             </div>
         </div>
