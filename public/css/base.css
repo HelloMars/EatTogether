@@ -341,7 +341,7 @@ body {
         position: relative;
         margin: 0 15px 40px;
         box-shadow: 0 0 0 3px #ededed;
-        padding-top: 50px;
+        padding-top: 60px;
         background-repeat: no-repeat; }
         .s-bill .bd .members label input, .s-history-detail .bd .members label input {
           visibility: hidden;
@@ -366,7 +366,11 @@ body {
           overflow: hidden;
           white-space: nowrap;
           color: #676767;
-          font-size: 12px; }
+          font-size: 12px;
+          margin: 10px 0 0 0; }
+          .s-bill .bd .members label p span, .s-history-detail .bd .members label p span {
+            display: block;
+            line-height: 1.5; }
   .s-bill .ft, .s-history-detail .ft {
     padding: 10px 10px 70px; }
     .s-bill .ft h2, .s-history-detail .ft h2 {
