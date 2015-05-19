@@ -19,7 +19,7 @@
                     <span ng-show="member.inThis" class="icon icon-check-mark-2"></span>
                     <p>
                         <span>{{member.name}}</span>
-                        <span>{{member.money}}元</span>
+                        <span ng-show='abMode'>{{member.money}}元</span>
                     </p>
                 </label>
             </div>
