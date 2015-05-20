@@ -6,6 +6,7 @@
                 'JOIN': 2,              // 入团记录。date, username 加入 tuanname 团
                 'QUIT': 3,              // 退团记录。date, username 退出 tuanname 团
                 'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
+                'MODIFY_SLOGAN': 6,     // 修改团口号记录。date, fromname 团的口号被 username 修改为 toname
                 'BILL': 10,             // 消费记录。date, username 请大家(members.length+othersnum 人)消费了 money
                 'REVERT_BILL': 11,      // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
                 'ABUP_BILL': 12,        // 正在进行的ABUp消费。date, username 发起了一次(members.length 人)筹款消费
@@ -34,6 +35,9 @@
                 </div>
                 <div class="detail" ng-switch-when="5">
                     <span class="oldtuan">{{history.data.fromname}}</span>团的团名被<span class="who">{{history.data.username}}</span>修改为<span class="tuan">{{history.data.toname}}</span>
+                </div>
+                <div class="detail" ng-switch-when="6">
+                    <span class="oldtuan">{{history.data.fromname}}</span>团的口号被<span class="who">{{history.data.username}}</span>修改为<span class="tuan">{{history.data.toname}}</span>
                 </div>
                 <div class="detail" ng-switch-when="10">
                     <span class="who">{{history.data.username}}</span>请大家<span class="members-count">{{history.data.members.length + history.data.othersnum}}</span>人消费了<span class="money">{{history.data.money}}</span> 元 <span ng-if="!history.included">(除我)</span>

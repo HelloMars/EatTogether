@@ -52,6 +52,7 @@ var HISTORY_TYPE = {
     'JOIN': 2,              // 入团记录。date, username 加入 tuanname 团
     'QUIT': 3,              // 退团记录。date, username 退出 tuanname 团
     'MODIFY_NAME': 5,       // 修改团名记录。date, fromname 团的团名被 username 修改为 toname
+    'MODIFY_SLOGAN': 6,     // 修改团口号记录。date, fromname 团的口号被 username 修改为 toname
     'BILL': 10,             // 消费记录。date, username 请大家(members.length+othersnum 人)消费了 money
     'REVERT_BILL': 11,      // 已经撤销的消费记录。date, xxx 请大家消费了 xxx (已撤销)
     'ABUP_BILL': 12,        // 正在进行的ABUp消费。date, username 发起了一次(members.length 人)筹款消费
@@ -593,15 +594,15 @@ exports.DisableAccount = wrapper(function(user, tuan, account) {
 }, 'DisableAccount');
 
 exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
+    // 生成修改记录
+    var tuanHistory = new exports.TuanHistory();
+    tuanHistory.set('creater', user);
+    tuanHistory.set('tuan', tuan);
     var modified = false;
-    if (infoJson && infoJson.name) {
+    if (infoJson && infoJson.name != tuan.get('name')) {
         if (infoJson.name.length > 10) {
             infoJson.name = infoJson.name.substring(10);
         }
-        // 生成修改记录
-        var tuanHistory = new exports.TuanHistory();
-        tuanHistory.set('creater', user);
-        tuanHistory.set('tuan', tuan);
         tuanHistory.set('type', HISTORY_TYPE.MODIFY_NAME);
         tuanHistory.set('data', {
             'username': user.get('nickname'),
@@ -612,10 +613,17 @@ exports.ModifyTuan = wrapper(function(user, tuan, infoJson) {
         tuan.set('name', infoJson.name);
         modified = true;
     }
-    if (infoJson && infoJson.slogan) {
+    if (infoJson && infoJson.slogan != tuan.get('slogan')) {
         if (infoJson.slogan.length > 100) {
             infoJson.slogan = infoJson.slogan.substring(100);
         }
+        tuanHistory.set('type', HISTORY_TYPE.MODIFY_NAME);
+        tuanHistory.set('data', {
+            'username': user.get('nickname'),
+            'fromname': tuan.get('slogan'),
+            'toname': infoJson.slogan
+        });
+        tuanHistory.save();
         tuan.set('slogan', infoJson.slogan);
         modified = true;
     }
