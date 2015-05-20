@@ -721,15 +721,15 @@ exports.Bill = wrapper(function(user, tuan, account, members, othersnum, price) 
             // 给团成员记账(注意团成员中包含买单者的情况)
             var promises = [];
             for (var i = 0; i < results.length; i++) {
-                if (results[i].get('user').id == user.id) {
-                    recordAccount(account, -avg, true);
-                } else {
-                    recordAccount(results[i], -avg, true);
+                var current = results[i];
+                if (current.get('user').id == user.id) {
+                    current = account;
                 }
+                recordAccount(current, -avg, true);
                 // 发送模板消息和抖动消息
-                sendTempBill(user, results[i].get('user'), tuan, price, members.length + othersnum, avg, results[i].get('money'));
-                results[i].increment('news');
-                promises.push(results[i].save());
+                sendTempBill(user, current.get('user'), tuan, price, members.length + othersnum, avg, current.get('money'));
+                current.increment('news');
+                promises.push(current.save());
             }
             promises.push(account.save());
             // 给买单者记总账
