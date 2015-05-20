@@ -34,12 +34,7 @@ eatTogetherControllers.controller('TuanListCtrl', ['$scope', '$location', 'tuan'
             $scope.loaded = true;
         });
         $scope.enterTuan = function(tuanObj) {
-            if (tuanObj.news !== 0) {
-                $location.url('/tuan/' + tuanObj.id + '/history');
-            } else {
-                $location.url('/tuan/' + tuanObj.id + '/members');
-
-            }
+            $location.url('/tuan/' + tuanObj.id + '/members');
         };
         $scope.changeName = function () {
 
