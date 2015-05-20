@@ -308,7 +308,9 @@ exports.getUserTuanObj = wrapper(function(requser, tuanid) {
             exports.getTuanObj(tuanid).then(function (tuan) {
                 var query = new AV.Query(exports.Account);
                 query.equalTo('user', user);
+                query.include('user');
                 query.equalTo('tuan', tuan);
+                query.include('tuan');
                 query.find().then(function (accounts) {
                     if (accounts.length == 0) {
                         promise.resolve({
