@@ -54,6 +54,10 @@ app.get('/hello', function(req, res) {
     res.render('hello', { message: 'Congrats, you just set up your app!' });
 });
 
+app.get('/index.html', function(req, res) {
+    res.render('index.html');
+});
+
 app.get('/myet', function(req, res) {
     var code = req.query.code;
     if (!code) {
